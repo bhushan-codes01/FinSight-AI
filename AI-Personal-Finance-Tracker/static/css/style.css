@@ -1,0 +1,134 @@
+:root {
+  --bg-dark: #07121f;
+  --surface-dark: #111c2b;
+  --surface-darker: #0b1726;
+  --accent: #4f9dff;
+  --accent-soft: #2e5aa5;
+  --text: #e8f1ff;
+  --text-muted: #94a3b8;
+}
+
+body {
+  background: radial-gradient(circle at top, rgba(79, 157, 255, 0.18), transparent 30%),
+    linear-gradient(180deg, var(--bg-dark) 0%, #040b16 100%);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.auth-body,
+.dashboard-body {
+  min-height: 100vh;
+}
+
+.auth-card,
+.metric-card,
+.chart-card,
+.budget-card,
+.chat-card,
+.card {
+  background: rgba(14, 25, 41, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.form-control-dark,
+.form-select-dark {
+  background: rgba(22, 31, 47, 0.95);
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.form-control-dark:focus,
+.form-select-dark:focus {
+  box-shadow: 0 0 0 0.2rem rgba(79, 157, 255, 0.2);
+  border-color: rgba(79, 157, 255, 0.6);
+}
+
+.navbar-dark .navbar-brand,
+.nav-link,
+.btn-outline-light,
+.text-muted,
+.table th,
+.table td,
+.form-label,
+.h5,
+.h4,
+.h2,
+.h1,
+.p {
+  color: var(--text) !important;
+}
+
+.metric-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 26px 44px rgba(0, 0, 0, 0.18);
+}
+
+.chart-card,
+.chat-card,
+.auth-card,
+.budget-card {
+  border-radius: 1rem;
+}
+
+.budget-item {
+  background: rgba(12, 20, 32, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 1rem;
+  border-radius: 0.85rem;
+}
+
+.budget-item.over-budget {
+  border-color: rgba(220, 38, 38, 0.5);
+}
+
+.budget-item.warning {
+  border-color: rgba(245, 158, 11, 0.5);
+}
+
+.budget-item.on-track {
+  border-color: rgba(34, 197, 94, 0.5);
+}
+
+.chat-window {
+  min-height: 320px;
+  max-height: 480px;
+  overflow-y: auto;
+  padding: 1rem;
+  background: rgba(10, 18, 30, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+}
+
+.chat-bubble {
+  padding: 1rem 1.2rem;
+  border-radius: 1rem;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+  animation: fadeInUp 0.4s ease;
+}
+
+.chat-user {
+  background: rgba(79, 157, 255, 0.18);
+  border: 1px solid rgba(79, 157, 255, 0.35);
+  text-align: right;
+}
+
+.chat-ai {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

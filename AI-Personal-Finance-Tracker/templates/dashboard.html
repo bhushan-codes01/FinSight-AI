@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - AI Finance Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/css/style.css" />
+  </head>
+  <body class="dashboard-body">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/dashboard">Finance Tracker</a>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link" href="/transactions">Transactions</a></li>
+            <li class="nav-item"><a class="nav-link" href="/budgets">Budgets</a></li>
+            <li class="nav-item"><a class="nav-link" href="/chatbot">Chatbot</a></li>
+          </ul>
+        </div>
+        <form method="POST" action="/logout" class="d-inline">
+          <button class="btn btn-outline-light">Logout</button>
+        </form>
+      </div>
+    </nav>
+
+    <main class="container-fluid px-4 py-5">
+      <div class="row g-4">
+        <div class="col-12">
+          <h1 class="display-6 text-white">Welcome back</h1>
+          <p class="text-muted">Your financial snapshot for the current period.</p>
+        </div>
+
+        <div class="col-md-3">
+          <div class="card metric-card border-0 shadow-sm p-4">
+            <h6 class="text-muted">Total Income</h6>
+            <h2 class="fw-bold">${{ summary.income }}</h2>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card metric-card border-0 shadow-sm p-4">
+            <h6 class="text-muted">Total Expenses</h6>
+            <h2 class="fw-bold">${{ summary.expenses }}</h2>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card metric-card border-0 shadow-sm p-4">
+            <h6 class="text-muted">Balance</h6>
+            <h2 class="fw-bold">${{ summary.balance }}</h2>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card metric-card border-0 shadow-sm p-4">
+            <h6 class="text-muted">Savings Rate</h6>
+            <h2 class="fw-bold">{{ summary.savings_rate }}%</h2>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="card chart-card border-0 shadow-sm p-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="mb-0">Expense Breakdown</h5>
+            </div>
+            <canvas id="expenseChart"></canvas>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card chart-card border-0 shadow-sm p-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="mb-0">Monthly Trend</h5>
+            </div>
+            <canvas id="trendChart"></canvas>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="card border-0 shadow-sm p-4">
+            <h5 class="mb-3">Recent Transactions</h5>
+            <div class="table-responsive">
+              <table class="table table-dark table-borderless align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for txn in recent_transactions %}
+                  <tr>
+                    <td>{{ txn.transaction_date }}</td>
+                    <td>{{ txn.description }}</td>
+                    <td>{{ txn.category }}</td>
+                    <td>{{ txn.transaction_type }}</td>
+                    <td>${{ txn.amount }}</td>
+                  </tr>
+                  {% else %}
+                  <tr><td colspan="5" class="text-center text-muted">No transactions available.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="card border-0 shadow-sm p-4">
+            <h5 class="mb-3">Budget Status</h5>
+            <div class="list-group">
+              {% for budget in budget_status %}
+              <div class="list-group-item budget-item {{ budget.status }}">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="mb-1">{{ budget.category }} — {{ budget.month }}</h6>
+                    <small class="text-muted">Budgeted ${{ budget.budget_amount }} • Spent ${{ budget.spent }}</small>
+                  </div>
+                  <span class="badge bg-{{ 'danger' if budget.status == 'over-budget' else 'warning' if budget.status == 'warning' else 'success' }} rounded-pill">{{ budget.status.replace('-', ' ').title() }}</span>
+                </div>
+                <div class="mt-3 progress" style="height: 8px;">
+                  <div class="progress-bar" role="progressbar" style="width: {{ ((budget.spent / budget.budget_amount * 100) if budget.budget_amount > 0 else 0) }}%;" aria-valuenow="{{ budget.spent }}" aria-valuemin="0" aria-valuemax="{{ budget.budget_amount }}"></div>
+                </div>
+              </div>
+              {% else %}
+              <div class="text-center text-muted">No budgets configured yet.</div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+  </body>
+</html>
