@@ -6,3 +6,4 @@ weasyprint==62.0
 Flask-Mail==0.9.1
 gunicorn==21.2.0
 pandas
+gunicorn==21.2.0
