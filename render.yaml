@@ -14,3 +14,5 @@ services:
         sync: false
       - key: EMAIL_PASS
         sync: false
+      - key: PYTHON_VERSION
+        value: 3.11.5

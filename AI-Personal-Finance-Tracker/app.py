@@ -227,6 +227,7 @@ def toggle_notifications():
     return redirect(url_for("dashboard"))
 
 
+ensure_database()
+
 if __name__ == "__main__":
-    ensure_database()
     app.run(debug=True)
