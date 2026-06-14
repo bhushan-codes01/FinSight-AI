@@ -34,8 +34,8 @@ def manage_transactions():
         description = request.form.get("description", "").strip()
         transaction_type = request.form.get("transaction_type", "expense")
         transaction_date = request.form.get("transaction_date", "").strip()
-        is_recurring = int(request.form.get("is_recurring", 0))
-        recurrence_type = request.form.get("recurrence_type", None) if is_recurring else None
+        is_recurring = 1 if request.form.get("is_recurring") == "1" else 0
+        recurrence_type = request.form.get("recurrence_type", "none").strip().lower() if is_recurring else "none"
 
         if amount <= 0 or transaction_type not in ["income", "expense"] or not transaction_date:
             flash("Please provide a valid transaction form.", "danger")
@@ -48,6 +48,60 @@ def manage_transactions():
             (user_id, amount, category, description, transaction_type, transaction_date, is_recurring, recurrence_type, next_due_date),
         )
         db.commit()
+
+        # Check budget alerts for expenses
+        if transaction_type == "expense":
+            user = db.execute("SELECT email, name, email_notifications FROM users WHERE id = ?", (user_id,)).fetchone()
+            if user and user["email_notifications"]:
+                try:
+                    month_str = transaction_date[:7] # YYYY-MM
+                    budget_row = db.execute(
+                        "SELECT budget_amount FROM budgets WHERE user_id = ? AND category = ? AND month = ?",
+                        (user_id, category, month_str)
+                    ).fetchone()
+                    
+                    if budget_row:
+                        budget_amount = budget_row["budget_amount"]
+                        spent_row = db.execute(
+                            "SELECT SUM(amount) as total_spent FROM transactions "
+                            "WHERE user_id = ? AND category = ? AND transaction_type = 'expense' "
+                            "AND strftime('%Y-%m', transaction_date) = ?",
+                            (user_id, category, month_str)
+                        ).fetchone()
+                        
+                        total_spent = spent_row["total_spent"] or 0.0
+                        pct = (total_spent / budget_amount * 100) if budget_amount > 0 else 0
+                        
+                        from services.email_service import EmailAlertsService
+                        email_service = EmailAlertsService(current_app)
+                        
+                        if pct >= 100:
+                            alert_sent = db.execute(
+                                "SELECT 1 FROM sent_alerts WHERE user_id = ? AND category = ? AND month = ? AND alert_type = 'exceeded'",
+                                (user_id, category, month_str)
+                            ).fetchone()
+                            if not alert_sent:
+                                email_service.send_budget_exceeded(user["email"], user["name"], category, total_spent, budget_amount)
+                                db.execute(
+                                    "INSERT INTO sent_alerts (user_id, category, month, alert_type) VALUES (?, ?, ?, 'exceeded')",
+                                    (user_id, category, month_str)
+                                )
+                                db.commit()
+                        elif pct >= 80:
+                            alert_sent = db.execute(
+                                "SELECT 1 FROM sent_alerts WHERE user_id = ? AND category = ? AND month = ? AND alert_type IN ('warning', 'exceeded')",
+                                (user_id, category, month_str)
+                            ).fetchone()
+                            if not alert_sent:
+                                email_service.send_budget_warning(user["email"], user["name"], category, total_spent, budget_amount)
+                                db.execute(
+                                    "INSERT INTO sent_alerts (user_id, category, month, alert_type) VALUES (?, ?, ?, 'warning')",
+                                    (user_id, category, month_str)
+                                )
+                                db.commit()
+                except Exception as e:
+                    print(f"Error checking budget alerts: {e}")
+
         flash("Transaction added successfully." + (" (Recurring)" if is_recurring else ""), "success")
         return redirect(url_for("transactions.manage_transactions"))
 
@@ -86,6 +140,61 @@ def manage_transactions():
     ).fetchall()
 
     return render_template("transactions.html", transactions=transactions, recurring=recurring)
+
+
+def get_upcoming_recurring(user_id):
+    db = get_db()
+    rows = db.execute(
+        "SELECT id, amount, category, description, transaction_type, transaction_date, is_recurring, recurrence_type FROM transactions WHERE user_id = ? AND is_recurring = 1",
+        (user_id,)
+    ).fetchall()
+
+    today = datetime.now().date()
+    week_later = today + timedelta(days=7)
+    upcoming = []
+
+    for row in rows:
+        try:
+            start_date = datetime.strptime(row["transaction_date"], "%Y-%m-%d").date()
+        except Exception:
+            continue
+
+        rec_type = row["recurrence_type"]
+        if not rec_type or rec_type == "none":
+            continue
+
+        next_date = start_date
+        while next_date < today:
+            if rec_type == "weekly":
+                next_date += timedelta(days=7)
+            elif rec_type == "monthly":
+                try:
+                    month = next_date.month + 1
+                    year = next_date.year
+                    if month > 12:
+                        month = 1
+                        year += 1
+                    day = min(next_date.day, 28 if month == 2 else 30 if month in [4,6,9,11] else 31)
+                    next_date = next_date.replace(year=year, month=month, day=day)
+                except Exception:
+                    next_date += timedelta(days=30)
+            else:
+                break
+
+        if today <= next_date <= week_later:
+            days_until = (next_date - today).days
+            upcoming.append({
+                "id": row["id"],
+                "description": row["description"] or row["category"],
+                "category": row["category"],
+                "amount": row["amount"],
+                "transaction_type": row["transaction_type"],
+                "due_date": next_date.strftime("%Y-%m-%d"),
+                "days_until": days_until
+            })
+
+    upcoming.sort(key=lambda x: x["due_date"])
+    return upcoming
 
 
 @transactions_bp.route("/transactions/upcoming", methods=["GET"])

@@ -3,1030 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinanceAI - AI-Powered Personal Finance Tracker</title>
+    <title>FinanceAI - Personal Finance Management</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --bg-primary: #0a0a0f;
-            --bg-secondary: #111118;
-            --bg-card: #16161f;
-            --bg-hover: #1e1e2a;
-            --accent-purple: #7c3aed;
-            --accent-blue: #2563eb;
-            --accent-cyan: #06b6d4;
-            --accent-green: #10b981;
-            --accent-red: #ef4444;
-            --accent-yellow: #f59e0b;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --text-muted: #475569;
-            --border: #1e1e2e;
-            --gradient-1: linear-gradient(135deg, #7c3aed, #2563eb);
-            --gradient-2: linear-gradient(135deg, #06b6d4, #10b981);
-            --gradient-3: linear-gradient(135deg, #f59e0b, #ef4444);
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            overflow-x: hidden;
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--bg-primary);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--accent-purple);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #9f7aea;
-        }
-
-        /* Typography */
-        h1, h2, h3, h4, h5, h6 {
-            font-weight: 700;
-            letter-spacing: -0.02em;
-        }
-
-        h1 {
-            font-size: 3.5rem;
-            font-weight: 800;
-            line-height: 1.1;
-        }
-
-        h2 {
-            font-size: 2.5rem;
-            line-height: 1.2;
-        }
-
-        h3 {
-            font-size: 1.5rem;
-        }
-
-        p {
-            font-weight: 400;
-            line-height: 1.6;
-        }
-
-        /* Navigation */
-        nav {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 999;
-            backdrop-filter: blur(20px);
-            background: rgba(10, 10, 15, 0.8);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        nav.scrolled {
-            background: rgba(10, 10, 15, 0.95);
-            box-shadow: 0 0 40px rgba(124, 58, 237, 0.08);
-        }
-
-        .nav-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            text-decoration: none;
-            font-weight: 800;
-            font-size: 1.5rem;
-            background: var(--gradient-1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .logo-icon {
-            width: 32px;
-            height: 32px;
-            background: var(--gradient-1);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            color: white;
-            font-size: 1.2rem;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 3rem;
-            align-items: center;
-            list-style: none;
-        }
-
-        .nav-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-
-        .nav-links a:hover {
-            color: var(--accent-purple);
-        }
-
-        .nav-buttons {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-decoration: none;
-        }
-
-        .btn-ghost {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: var(--text-primary);
-        }
-
-        .btn-ghost:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.4);
-        }
-
-        .btn-gradient {
-            background: var(--gradient-1);
-            color: white;
-            padding: 0.75rem 2rem;
-            border-radius: 50px;
-        }
-
-        .btn-gradient:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(124, 58, 237, 0.3);
-        }
-
-        /* Hero Section */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-            margin-top: 4rem;
-            padding: 2rem;
-        }
-
-        .gradient-mesh {
-            position: absolute;
-            width: 800px;
-            height: 800px;
-            background: radial-gradient(circle at 30% 50%, rgba(124, 58, 237, 0.3) 0%, transparent 50%),
-                        radial-gradient(circle at 70% 50%, rgba(37, 99, 235, 0.25) 0%, transparent 50%);
-            animation: gradientShift 8s ease-in-out infinite;
-            filter: blur(80px);
-            top: -200px;
-            left: -200px;
-            pointer-events: none;
-        }
-
-        @keyframes gradientShift {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(100px, 50px); }
-        }
-
-        .gradient-mesh-2 {
-            position: absolute;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle at 50% 30%, rgba(6, 182, 212, 0.2) 0%, transparent 50%);
-            animation: gradientShift 10s ease-in-out infinite reverse;
-            filter: blur(80px);
-            bottom: -100px;
-            right: -100px;
-            pointer-events: none;
-        }
-
-        .hero-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 1;
-            text-align: center;
-        }
-
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: rgba(124, 58, 237, 0.1);
-            border: 1px solid rgba(124, 58, 237, 0.3);
-            padding: 0.75rem 1.5rem;
-            border-radius: 50px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--accent-purple);
-            margin-bottom: 1.5rem;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-        }
-
-        .hero-badge::before {
-            content: '✨';
-            font-size: 1.1rem;
-        }
-
-        .hero h1 {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            line-height: 1.15;
-        }
-
-        .hero h1 .gradient-text {
-            background: var(--gradient-1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero-subtitle {
-            font-size: 1.25rem;
-            color: var(--text-secondary);
-            max-width: 520px;
-            margin: 0 auto 2rem;
-            line-height: 1.7;
-        }
-
-        .hero-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            margin-bottom: 4rem;
-            flex-wrap: wrap;
-        }
-
-        .btn-large {
-            padding: 1rem 2.5rem;
-            font-size: 1rem;
-        }
-
-        .btn-play {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text-primary);
-        }
-
-        .btn-play:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-
-        /* Floating Stats */
-        .floating-stats {
-            display: grid;
-            grid-template-columns: repeat(3, auto);
-            gap: 2rem;
-            justify-content: center;
-            margin-bottom: 3rem;
-        }
-
-        .stat-pill {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            padding: 1.25rem 1.5rem;
-            border-radius: 16px;
-            animation: float 4s ease-in-out infinite;
-            animation-delay: 0.3s;
-        }
-
-        .stat-pill:nth-child(2) {
-            animation-delay: 0.6s;
-        }
-
-        .stat-pill:nth-child(3) {
-            animation-delay: 0.9s;
-        }
-
-        .stat-pill-icon {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-pill-value {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--accent-purple);
-        }
-
-        .stat-pill-label {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-top: 0.25rem;
-        }
-
-        /* Mock Dashboard */
-        .dashboard-mockup {
-            width: 100%;
-            max-width: 900px;
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 16px;
-            padding: 2rem;
-            margin: 0 auto;
-            box-shadow: 0 0 40px rgba(124, 58, 237, 0.08);
-            animation: fadeInUp 0.8s ease-out;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(40px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .mockup-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        }
-
-        .mockup-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-
-        .mockup-bars {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-        }
-
-        .mockup-bar {
-            height: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .mockup-bar-fill {
-            height: 100%;
-            background: var(--gradient-1);
-            border-radius: 4px;
-            animation: slideRight 1.5s ease-out forwards;
-            animation-delay: 0.3s;
-            opacity: 0;
-        }
-
-        @keyframes slideRight {
-            from {
-                width: 0;
-                opacity: 1;
-            }
-            to {
-                width: 100%;
-                opacity: 1;
-            }
-        }
-
-        /* Features Section */
-        .section {
-            padding: 6rem 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .section-label {
-            font-size: 0.85rem;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--accent-purple);
-            margin-bottom: 1rem;
-        }
-
-        .section-title {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-            color: var(--text-primary);
-        }
-
-        .section-subtitle {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-            margin-bottom: 3rem;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 2rem;
-        }
-
-        .feature-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            padding: 2rem;
-            border-radius: 16px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
-            transition: left 0.5s;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-8px);
-            border-color: rgba(124, 58, 237, 0.3);
-            box-shadow: 0 20px 40px rgba(124, 58, 237, 0.15);
-        }
-
-        .feature-card:hover::before {
-            left: 100%;
-        }
-
-        .feature-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.75rem;
-            margin-bottom: 1.25rem;
-            background: var(--gradient-1);
-        }
-
-        .feature-card:nth-child(2) .feature-icon {
-            background: linear-gradient(135deg, #2563eb, #06b6d4);
-        }
-
-        .feature-card:nth-child(3) .feature-icon {
-            background: linear-gradient(135deg, #06b6d4, #10b981);
-        }
-
-        .feature-card:nth-child(4) .feature-icon {
-            background: linear-gradient(135deg, #f59e0b, #ef4444);
-        }
-
-        .feature-card:nth-child(5) .feature-icon {
-            background: linear-gradient(135deg, #10b981, #06b6d4);
-        }
-
-        .feature-card:nth-child(6) .feature-icon {
-            background: linear-gradient(135deg, #ef4444, #f59e0b);
-        }
-
-        .feature-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin-bottom: 0.75rem;
-        }
-
-        .feature-description {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            line-height: 1.6;
-        }
-
-        /* Stats Section */
-        .stats-section {
-            background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(37, 99, 235, 0.1));
-            padding: 4rem 2rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        }
-
-        .stats-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 2rem;
-            text-align: center;
-        }
-
-        .stat-box {
-            animation: fadeInUp 0.8s ease-out backwards;
-        }
-
-        .stat-box:nth-child(2) { animation-delay: 0.1s; }
-        .stat-box:nth-child(3) { animation-delay: 0.2s; }
-        .stat-box:nth-child(4) { animation-delay: 0.3s; }
-
-        .stat-number {
-            font-size: 2.75rem;
-            font-weight: 800;
-            background: var(--gradient-1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 0.5rem;
-            line-height: 1;
-        }
-
-        .stat-label {
-            color: var(--text-secondary);
-            font-size: 1rem;
-        }
-
-        /* How It Works */
-        .how-it-works {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2rem;
-            margin-top: 3rem;
-            position: relative;
-        }
-
-        .how-it-works::before {
-            content: '';
-            position: absolute;
-            top: 60px;
-            left: 10%;
-            right: 10%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--accent-purple), transparent);
-            z-index: 0;
-        }
-
-        .step {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            padding: 2rem;
-            border-radius: 16px;
-            text-align: center;
-            position: relative;
-            z-index: 1;
-            animation: fadeInUp 0.8s ease-out backwards;
-        }
-
-        .step:nth-child(2) { animation-delay: 0.1s; }
-        .step:nth-child(3) { animation-delay: 0.2s; }
-
-        .step-number {
-            width: 60px;
-            height: 60px;
-            background: var(--gradient-1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 1.5rem;
-            margin: 0 auto 1.5rem;
-            color: white;
-        }
-
-        .step-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin-bottom: 0.75rem;
-        }
-
-        .step-description {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-        }
-
-        /* CTA Section */
-        .cta-section {
-            background: var(--gradient-1);
-            padding: 4rem 2rem;
-            text-align: center;
-            border-radius: 24px;
-            margin: 4rem auto;
-            max-width: 800px;
-        }
-
-        .cta-title {
-            font-size: 2rem;
-            font-weight: 800;
-            color: white;
-            margin-bottom: 1.5rem;
-        }
-
-        .cta-button {
-            background: white;
-            color: var(--accent-purple);
-            font-weight: 700;
-            padding: 1rem 2.5rem;
-            border-radius: 50px;
-            border: none;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.3s;
-        }
-
-        .cta-button:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Footer */
-        footer {
-            background: var(--bg-secondary);
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-            padding: 3rem 2rem;
-            margin-top: 4rem;
-        }
-
-        .footer-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
-            margin-bottom: 3rem;
-        }
-
-        .footer-left {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .footer-logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-weight: 800;
-            font-size: 1.25rem;
-            background: var(--gradient-1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            width: fit-content;
-        }
-
-        .footer-tagline {
-            color: var(--text-secondary);
-            max-width: 300px;
-        }
-
-        .footer-links {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2rem;
-        }
-
-        .footer-link-group h4 {
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--text-primary);
-        }
-
-        .footer-link-group a {
-            display: block;
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.9rem;
-            margin-bottom: 0.75rem;
-            transition: color 0.3s;
-        }
-
-        .footer-link-group a:hover {
-            color: var(--accent-purple);
-        }
-
-        .footer-bottom {
-            text-align: center;
-            padding-top: 2rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-            color: var(--text-muted);
-            font-size: 0.85rem;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2.5rem;
-            }
-
-            h2 {
-                font-size: 1.75rem;
-            }
-
-            .nav-links {
-                display: none;
-            }
-
-            .hero {
-                margin-top: 5rem;
-            }
-
-            .hero h1 {
-                font-size: 2rem;
-            }
-
-            .floating-stats {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-
-            .how-it-works {
-                grid-template-columns: 1fr;
-            }
-
-            .how-it-works::before {
-                display: none;
-            }
-
-            .footer-content {
-                grid-template-columns: 1fr;
-            }
-
-            .footer-links {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav id="navbar">
-        <div class="nav-container">
-            <a href="/" class="logo">
-                <div class="logo-icon">₹</div>
-                FinanceAI
-            </a>
-            <ul class="nav-links">
-                <li><a href="#features">Features</a></li>
-                <li><a href="#how-it-works">How It Works</a></li>
-                <li><a href="#stats">Pricing</a></li>
-            </ul>
-            <div class="nav-buttons">
-                <a href="/login" class="btn btn-ghost">Sign In</a>
-                <a href="/register" class="btn btn-gradient">Get Started</a>
-            </div>
+    <!-- Sticky Glassmorphism Landing Navbar -->
+    <nav class="landing-nav" id="landingNav">
+        <a href="/" class="landing-nav-logo">
+            <span>🏺</span> FinanceAI
+        </a>
+        <div class="landing-nav-right">
+            <a href="/login" class="btn btn-ghost">Login</a>
+            <a href="/register" class="btn btn-primary" style="border-radius: 50px !important;">Get Started</a>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero">
-        <div class="gradient-mesh"></div>
-        <div class="gradient-mesh-2"></div>
-        <div class="hero-content">
-            <div class="hero-badge">AI-Powered Finance</div>
-            <h1>
-                Take Control of Your<br>
-                <span class="gradient-text">Financial Future</span>
-            </h1>
-            <p class="hero-subtitle">
-                Smart budgeting, AI insights, and real-time analytics to help you save more, spend wisely, and build wealth.
-            </p>
-            <div class="hero-buttons">
-                <a href="/register" class="btn btn-gradient btn-large">Start Free Today</a>
-                <button class="btn btn-play btn-large">
-                    <i class="fas fa-play"></i> Watch Demo
-                </button>
-            </div>
-
-            <div class="floating-stats">
-                <div class="stat-pill">
-                    <div class="stat-pill-icon">📈</div>
-                    <div class="stat-pill-value">+24%</div>
-                    <div class="stat-pill-label">Avg. Savings</div>
-                </div>
-                <div class="stat-pill">
-                    <div class="stat-pill-icon">💰</div>
-                    <div class="stat-pill-value">₹12.4K</div>
-                    <div class="stat-pill-label">Avg. Saved/Month</div>
-                </div>
-                <div class="stat-pill">
-                    <div class="stat-pill-icon">🤖</div>
-                    <div class="stat-pill-value">AI Insights</div>
-                    <div class="stat-pill-label">Personalized</div>
-                </div>
-            </div>
-
-            <div class="dashboard-mockup">
-                <div class="mockup-header">
-                    <div class="mockup-title">Dashboard Overview</div>
-                    <div style="font-size: 0.85rem; color: var(--text-muted);">This Month</div>
-                </div>
-                <div class="mockup-bars">
-                    <div class="mockup-bar"><div class="mockup-bar-fill" style="animation-delay: 0.3s;"></div></div>
-                    <div class="mockup-bar"><div class="mockup-bar-fill" style="animation-delay: 0.5s;"></div></div>
-                    <div class="mockup-bar"><div class="mockup-bar-fill" style="animation-delay: 0.7s;"></div></div>
-                    <div class="mockup-bar"><div class="mockup-bar-fill" style="animation-delay: 0.9s;"></div></div>
-                </div>
-            </div>
+    <header class="hero-section">
+        <!-- Animated Blobs -->
+        <div class="blob-container">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
+            <div class="blob blob-3"></div>
         </div>
-    </section>
+
+        <div class="hero-badge">AI-Powered Financial Freedom</div>
+        <h1 class="hero-title">
+            Take Control of Your<br>
+            <span class="gradient-text-hero">Financial Future</span>
+        </h1>
+        <p class="hero-subtitle">
+            Harness the power of AI to track spending, build custom budget plans, save for goals, and automatically analyze bank statements in a secure glassmorphism workspace.
+        </p>
+        <div class="hero-ctas">
+            <a href="/register" class="btn btn-primary btn-large">Get Started Free</a>
+            <a href="/login" class="btn btn-ghost btn-large">Sign In</a>
+        </div>
+    </header>
 
     <!-- Features Section -->
-    <section class="section" id="features">
-        <div class="section-label">Features</div>
-        <h2 class="section-title">Everything you need to master your money</h2>
-        <p class="section-subtitle">Powerful tools designed to give you complete control over your finances.</p>
-
+    <section class="features-section" id="features">
+        <h2 class="section-title">Smart Features for Smart Wealth</h2>
         <div class="features-grid">
+            <!-- Feature 1: AI Financial Assistant -->
             <div class="feature-card">
-                <div class="feature-icon">🤖</div>
-                <h3 class="feature-title">AI Financial Assistant</h3>
-                <p class="feature-description">Get personalized financial advice powered by advanced AI analysis of your spending patterns.</p>
+                <div class="feature-icon-wrapper">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h3>🤖 AI Financial Assistant</h3>
+                <p>Chat with a dedicated assistant that analyzes transaction lists, offers savings advice, and answers custom finance questions instantly.</p>
             </div>
+            
+            <!-- Feature 2: Smart Budget Tracking -->
             <div class="feature-card">
-                <div class="feature-icon">📊</div>
-                <h3 class="feature-title">Smart Analytics</h3>
-                <p class="feature-description">Visual dashboards with deep insights into your income, expenses, and spending trends.</p>
+                <div class="feature-icon-wrapper">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <h3>📊 Smart Budget Tracking</h3>
+                <p>Configure category limits for transactions and monitor status progress bars that warn you before you exceed configured thresholds.</p>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">💰</div>
-                <h3 class="feature-title">Budget Planning</h3>
-                <p class="feature-description">Create custom budgets by category and get real-time alerts when you're close to limits.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🔔</div>
-                <h3 class="feature-title">Smart Alerts</h3>
-                <p class="feature-description">Receive notifications for unusual spending, budget warnings, and savings milestones.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">📈</div>
-                <h3 class="feature-title">Spending Trends</h3>
-                <p class="feature-description">Track monthly trends and identify patterns to optimize your financial decisions.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">📁</div>
-                <h3 class="feature-title">CSV Import</h3>
-                <p class="feature-description">Upload bank statements and let AI analyze your transaction history automatically.</p>
-            </div>
-        </div>
-    </section>
 
-    <!-- Stats Section -->
-    <section class="stats-section" id="stats">
-        <div class="stats-container">
-            <div class="stat-box">
-                <div class="stat-number">50K+</div>
-                <div class="stat-label">Active Users</div>
+            <!-- Feature 3: Savings Goals -->
+            <div class="feature-card">
+                <div class="feature-icon-wrapper">
+                    <i class="fas fa-bullseye"></i>
+                </div>
+                <h3>🎯 Savings Goals</h3>
+                <p>Set up milestone objectives, contribute custom amounts, and request personalized AI advice on hitting target dates quickly.</p>
             </div>
-            <div class="stat-box">
-                <div class="stat-number">₹2Cr+</div>
-                <div class="stat-label">Money Tracked</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-number">98%</div>
-                <div class="stat-label">Accuracy</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-number">4.9★</div>
-                <div class="stat-label">User Rating</div>
-            </div>
-        </div>
-    </section>
 
-    <!-- How It Works -->
-    <section class="section" id="how-it-works">
-        <div class="section-label">Process</div>
-        <h2 class="section-title">How it works</h2>
-        <div class="how-it-works">
-            <div class="step">
-                <div class="step-number">1</div>
-                <h3 class="step-title">Create Account</h3>
-                <p class="step-description">Sign up with your email and set up your financial profile in seconds.</p>
+            <!-- Feature 4: Spending Analytics -->
+            <div class="feature-card">
+                <div class="feature-icon-wrapper">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>📈 Spending Analytics</h3>
+                <p>Explore gorgeous breakdowns and line trends mapping income, recurring outflows, and category usage over months.</p>
             </div>
-            <div class="step">
-                <div class="step-number">2</div>
-                <h3 class="step-title">Add Transactions</h3>
-                <p class="step-description">Manually add transactions or import your bank statements via CSV.</p>
-            </div>
-            <div class="step">
-                <div class="step-number">3</div>
-                <h3 class="step-title">Get AI Insights</h3>
-                <p class="step-description">Receive personalized recommendations and detailed financial analysis.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="section">
-        <div class="cta-section">
-            <h2 class="cta-title">Ready to transform your finances?</h2>
-            <a href="/register" class="cta-button">Get Started Free</a>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer>
+    <footer class="footer-landing">
         <div class="footer-content">
-            <div class="footer-left">
-                <div class="footer-logo">
-                    <div class="logo-icon">₹</div>
-                    FinanceAI
-                </div>
-                <p class="footer-tagline">AI-powered personal finance management for everyone.</p>
-            </div>
-            <div class="footer-links">
-                <div class="footer-link-group">
-                    <h4>Product</h4>
-                    <a href="#">Features</a>
-                    <a href="#">Pricing</a>
-                    <a href="#">Security</a>
-                </div>
-                <div class="footer-link-group">
-                    <h4>Company</h4>
-                    <a href="#">About</a>
-                    <a href="#">Blog</a>
-                    <a href="#">Careers</a>
-                </div>
-                <div class="footer-link-group">
-                    <h4>Legal</h4>
-                    <a href="#">Privacy</a>
-                    <a href="#">Terms</a>
-                    <a href="#">Contact</a>
-                </div>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2026 FinanceAI. All rights reserved. Powered by Gemini AI.</p>
+            <a href="/" class="footer-logo">
+                <span>🏺</span> FinanceAI
+            </a>
+            <p class="footer-text">&copy; 2026 FinanceAI. All rights reserved. Your financial assistant powered by Gemini.</p>
         </div>
     </footer>
 
     <script>
-        // Navbar scroll effect
+        // Navbar sticky logic
         window.addEventListener('scroll', () => {
-            const navbar = document.getElementById('navbar');
-            if (window.scrollY > 50) {
-                navbar.classList.add('scrolled');
+            const navbar = document.getElementById('landingNav');
+            if (window.scrollY > 30) {
+                navbar.style.background = "rgba(10, 10, 15, 0.9)";
+                navbar.style.boxShadow = "0 8px 30px rgba(0, 0, 0, 0.3)";
             } else {
-                navbar.classList.remove('scrolled');
+                navbar.style.background = "rgba(10, 10, 15, 0.7)";
+                navbar.style.boxShadow = "none";
             }
         });
 
-        // Smooth scroll for nav links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                const href = this.getAttribute('href');
-                if (href !== '#' && document.querySelector(href)) {
-                    e.preventDefault();
-                    document.querySelector(href).scrollIntoView({ behavior: 'smooth' });
-                }
-            });
-        });
-
-        // Intersection Observer for fade-in animations
+        // Simple Intersection Observer to fade feature cards in
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -1034,13 +116,13 @@
                     entry.target.style.transform = 'translateY(0)';
                 }
             });
-        }, { threshold: 0.1 });
+        }, { threshold: 0.15 });
 
-        document.querySelectorAll('.feature-card, .step, .stat-box').forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(20px)';
-            el.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
-            observer.observe(el);
+        document.querySelectorAll('.feature-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+            observer.observe(card);
         });
     </script>
 </body>

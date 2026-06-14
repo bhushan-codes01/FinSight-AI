@@ -1,6 +1,7 @@
 import sqlite3
 from flask import Blueprint, request, redirect, url_for, session, current_app, g, jsonify, send_file, flash
 from services.pdf_service import PDFReportService
+from services.report_generator import ReportGeneratorService
 from services.email_service import EmailAlertsService
 from datetime import datetime
 
@@ -27,15 +28,26 @@ def download_report():
     if not session.get("user_id"):
         return redirect(url_for("auth.login"))
 
-    month_year = request.args.get("month", datetime.now().strftime("%Y-%m"))
+    now = datetime.now()
+    month = request.args.get("month", now.strftime("%m"))
+    year = request.args.get("year", now.strftime("%Y"))
     db = get_db()
 
-    pdf_service = PDFReportService(db, session["user_id"])
-    pdf_bytes, filename = pdf_service.generate_monthly_report(month_year)
+    html_content = ReportGeneratorService.generate_monthly_report_html(db, session["user_id"], month, year)
+    pdf_bytes = ReportGeneratorService.html_to_pdf(html_content)
+
+    if pdf_bytes:
+        mimetype = "application/pdf"
+        filename = f"FinSight_Report_{month}_{year}.pdf"
+        data_bytes = pdf_bytes
+    else:
+        mimetype = "text/html"
+        filename = f"FinSight_Report_{month}_{year}.html"
+        data_bytes = html_content.encode("utf-8")
 
     return send_file(
-        __import__("io").BytesIO(pdf_bytes),
-        mimetype="application/pdf",
+        __import__("io").BytesIO(data_bytes),
+        mimetype=mimetype,
         as_attachment=True,
         download_name=filename
     )

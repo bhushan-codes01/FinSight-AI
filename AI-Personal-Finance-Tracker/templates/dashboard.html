@@ -6,20 +6,24 @@
     <title>Dashboard - AI Finance Tracker</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="/static/css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
   <body class="dashboard-body">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="/dashboard">Finance Tracker</a>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link" href="/transactions">Transactions</a></li>
-            <li class="nav-item"><a class="nav-link" href="/budgets">Budgets</a></li>
-            <li class="nav-item"><a class="nav-link" href="/chatbot">Chatbot</a></li>
-          </ul>
-        </div>
-        <form method="POST" action="/logout" class="d-inline">
-          <button class="btn btn-outline-light">Logout</button>
+    <!-- Navbar -->
+    <nav class="navbar-custom">
+      <a class="navbar-brand-custom" href="/dashboard">
+        <span>🏺</span> FinanceAI
+      </a>
+      <ul class="navbar-nav-custom">
+        <li><a href="/dashboard" class="active"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+        <li><a href="/transactions"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
+        <li><a href="/budgets"><i class="fas fa-wallet"></i> Budgets</a></li>
+        <li><a href="/goals"><i class="fas fa-bullseye"></i> Savings Goals</a></li>
+        <li><a href="/chatbot"><i class="fas fa-robot"></i> AI Assistant</a></li>
+      </ul>
+      <div class="navbar-right">
+        <form method="POST" action="/logout" style="margin: 0;">
+          <button class="btn btn-outline-danger"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </form>
       </div>
     </nav>
@@ -27,8 +31,23 @@
     <main class="container-fluid px-4 py-5">
       <div class="row g-4">
         <div class="col-12">
-          <h1 class="display-6 text-white">Welcome back</h1>
-          <p class="text-muted">Your financial snapshot for the current period.</p>
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+              <h1 class="display-6 text-white">Welcome back</h1>
+              <p class="text-muted mb-0">Your financial snapshot for the current period.</p>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+              <form action="/settings/notifications" method="POST" class="d-inline-flex align-items-center gap-2" id="notificationForm" style="background: rgba(255, 255, 255, 0.05); padding: 0.5rem 1rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                <div class="form-check form-switch mb-0">
+                  <input class="form-check-input" type="checkbox" name="email_notifications" value="1" id="emailNotificationsCheck" {% if email_notifications %}checked{% endif %} onchange="document.getElementById('notificationForm').submit()">
+                  <label class="form-check-label text-white small" for="emailNotificationsCheck" style="margin-left: 0.35rem; cursor: pointer;">Email Alerts</label>
+                </div>
+              </form>
+              <a href="/reports/pdf" class="btn btn-outline-light d-inline-flex align-items-center gap-2" style="padding: 0.65rem 1.25rem; border-radius: 12px;">
+                <i class="fas fa-file-pdf text-danger"></i> Download PDF Report
+              </a>
+            </div>
+          </div>
         </div>
 
         <div class="col-md-3">
@@ -125,6 +144,43 @@
               {% else %}
               <div class="text-center text-muted">No budgets configured yet.</div>
               {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="card border-0 shadow-sm p-4">
+            <h5 class="text-white mb-3">Upcoming Recurring Expenses (Next 7 Days)</h5>
+            <div class="table-responsive">
+              <table class="table table-dark table-borderless align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Due Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for txn in upcoming_recurring %}
+                  <tr style="{% if txn.days_until <= 2 %}background: rgba(245, 158, 11, 0.08); border-left: 4px solid #f59e0b;{% endif %}">
+                    <td>{{ txn.description }}</td>
+                    <td>{{ txn.category }}</td>
+                    <td class="fw-bold">${{ txn.amount }}</td>
+                    <td>
+                      {{ txn.due_date }}
+                      {% if txn.days_until <= 2 %}
+                        <span class="badge bg-warning text-dark ms-1">Due soon ({{ txn.days_until }}d)</span>
+                      {% else %}
+                        <span class="badge bg-secondary ms-1">({{ txn.days_until }}d)</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% else %}
+                  <tr><td colspan="4" class="text-center text-muted">No upcoming recurring expenses in the next 7 days.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

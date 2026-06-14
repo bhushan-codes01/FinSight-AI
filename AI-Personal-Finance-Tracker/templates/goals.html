@@ -6,6 +6,7 @@
     <title>Savings Goals - FinanceAI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
     <style>
         * {
             margin: 0;
@@ -16,8 +17,8 @@
         :root {
             --bg-primary: #0a0a0f;
             --bg-secondary: #111118;
-            --bg-card: #16161f;
-            --bg-hover: #1e1e2a;
+            --bg-card: rgba(22, 22, 31, 0.6);
+            --bg-hover: rgba(30, 30, 42, 0.8);
             --accent-purple: #7c3aed;
             --accent-blue: #2563eb;
             --accent-cyan: #06b6d4;
@@ -25,9 +26,10 @@
             --accent-red: #ef4444;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
-            --text-muted: #475569;
-            --border: #1e1e2e;
+            --text-muted: #64748b;
+            --border: rgba(255, 255, 255, 0.08);
             --gradient-1: linear-gradient(135deg, #7c3aed, #2563eb);
+            --gradient-glow: 0 8px 32px 0 rgba(124, 58, 237, 0.2);
         }
 
         body {
@@ -35,98 +37,75 @@
             background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(124, 58, 237, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(37, 99, 235, 0.1) 0px, transparent 50%);
+            background-attachment: fixed;
         }
 
-        .navbar {
-            background: rgba(10, 10, 15, 0.95);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            backdrop-filter: blur(20px);
-        }
-
-        .navbar-brand {
-            font-weight: 800;
-            font-size: 1.3rem;
-            background: var(--gradient-1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-decoration: none;
-        }
-
-        .navbar-nav {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .navbar-nav a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-
-        .navbar-nav a:hover,
-        .navbar-nav a.active {
-            color: var(--accent-purple);
-        }
-
-        .navbar-right {
-            display: flex;
-            gap: 1rem;
-        }
 
         .btn {
-            padding: 0.75rem 1.5rem;
+            padding: 0.65rem 1.25rem;
             border-radius: 12px;
             font-weight: 600;
             border: none;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-decoration: none;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 0.5rem;
+            font-size: 0.9rem;
         }
 
         .btn-ghost {
             background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             color: var(--text-primary);
         }
 
         .btn-ghost:hover {
             background: rgba(255, 255, 255, 0.05);
+            border-color: var(--accent-purple);
         }
 
         .btn-gradient {
             background: var(--gradient-1);
             color: white;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);
         }
 
         .btn-gradient:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(124, 58, 237, 0.3);
+            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.35);
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 2.5rem 2rem;
         }
 
         .page-header {
-            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .header-title-area {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
         }
 
         .page-title {
-            font-size: 2rem;
+            font-size: 2.25rem;
             font-weight: 800;
-            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
         }
 
         .page-subtitle {
@@ -134,7 +113,7 @@
             font-size: 1rem;
         }
 
-        /* Goal Form Modal */
+        /* Modal Dialogs */
         .modal {
             display: none;
             position: fixed;
@@ -142,11 +121,12 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
-            z-index: 999;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
             align-items: center;
             justify-content: center;
+            padding: 1rem;
         }
 
         .modal.active {
@@ -154,149 +134,155 @@
         }
 
         .modal-content {
-            background: rgba(22, 22, 31, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 16px;
-            padding: 2rem;
-            width: 90%;
-            max-width: 500px;
-            backdrop-filter: blur(20px);
+            background: rgba(18, 18, 29, 0.95);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2.25rem;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: modalSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.75rem;
         }
 
         .modal-title {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 700;
+            letter-spacing: -0.01em;
         }
 
         .close-btn {
             background: none;
             border: none;
             color: var(--text-secondary);
-            font-size: 1.5rem;
+            font-size: 1.75rem;
             cursor: pointer;
-            transition: color 0.3s;
+            line-height: 1;
+            transition: color 0.2s;
         }
 
         .close-btn:hover {
-            color: var(--text-primary);
+            color: var(--accent-red);
         }
 
         .form-group {
-            margin-bottom: 1rem;
+            margin-bottom: 1.25rem;
         }
 
         .form-label {
             display: block;
-            font-weight: 600;
+            font-weight: 500;
             margin-bottom: 0.5rem;
-            color: var(--text-primary);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
         }
 
-        .form-input,
-        .form-textarea {
+        .form-input {
             width: 100%;
-            padding: 0.75rem 1rem;
+            padding: 0.8rem 1rem;
             background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
             color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
+            font-family: inherit;
             font-size: 0.95rem;
-            transition: all 0.3s;
+            transition: all 0.25s;
         }
 
-        .form-input:focus,
-        .form-textarea:focus {
+        .form-input:focus {
             outline: none;
             border-color: var(--accent-purple);
-            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.25);
         }
 
         .form-buttons {
             display: flex;
             gap: 1rem;
-            margin-top: 1.5rem;
+            margin-top: 2rem;
         }
 
-        .btn-submit {
+        .form-buttons .btn {
             flex: 1;
-            background: var(--gradient-1);
-            color: white;
-            padding: 0.75rem;
-            border-radius: 12px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
         }
 
-        .btn-cancel {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text-primary);
-            padding: 0.75rem;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        /* Goals Grid */
+        /* Goals Grid Layout */
         .goals-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
         }
 
         .goal-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
             padding: 2rem;
             backdrop-filter: blur(20px);
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
         }
 
         .goal-card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-5px);
             border-color: rgba(124, 58, 237, 0.3);
-            box-shadow: 0 20px 40px rgba(124, 58, 237, 0.15);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 20px rgba(124, 58, 237, 0.15);
         }
 
         .goal-header {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
             margin-bottom: 1.5rem;
         }
 
         .goal-title {
-            font-size: 1.25rem;
+            font-size: 1.35rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
+            letter-spacing: -0.01em;
+            color: var(--text-primary);
         }
 
         .goal-deadline {
             font-size: 0.85rem;
-            color: var(--text-muted);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
         }
 
-        /* SVG Progress Ring */
+        .goal-deadline i {
+            color: var(--accent-purple);
+        }
+
+        /* Animated Progress Circle */
         .progress-ring-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 200px;
+            height: 170px;
             margin-bottom: 1.5rem;
         }
 
         .progress-ring-wrapper {
             position: relative;
-            width: 160px;
-            height: 160px;
+            width: 150px;
+            height: 150px;
         }
 
         .progress-ring {
@@ -305,9 +291,10 @@
         }
 
         .progress-ring-circle {
-            transition: stroke-dashoffset 0.35s;
+            transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
             transform-origin: center;
-            stroke-dasharray: 377;
+            stroke-dasharray: 377; /* 2 * PI * r = 2 * 3.14159 * 60 = 376.99 */
+            stroke-dashoffset: 377;
         }
 
         .progress-ring-text {
@@ -320,7 +307,7 @@
         }
 
         .progress-percentage {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: 800;
             background: var(--gradient-1);
             -webkit-background-clip: text;
@@ -331,9 +318,13 @@
         .progress-label {
             font-size: 0.75rem;
             color: var(--text-muted);
-            margin-top: 0.25rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.15rem;
         }
 
+        /* Goal Stats Panel */
         .goal-stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -341,30 +332,42 @@
             margin-bottom: 1.5rem;
             padding: 1rem;
             background: rgba(255, 255, 255, 0.02);
-            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 14px;
         }
 
         .stat {
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
         }
 
         .stat-label {
             font-size: 0.75rem;
             color: var(--text-muted);
-            margin-bottom: 0.25rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .stat-value {
-            font-size: 1rem;
+            font-size: 1.05rem;
             font-weight: 700;
             color: var(--text-primary);
         }
 
         .stat-value.highlight {
-            color: var(--accent-purple);
+            color: var(--accent-green);
         }
 
+        /* Actions block */
         .goal-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .actions-row {
             display: flex;
             gap: 0.75rem;
         }
@@ -373,123 +376,175 @@
             flex: 1;
             padding: 0.6rem;
             border-radius: 10px;
-            border: none;
             font-size: 0.85rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            border: none;
+        }
+
+        .btn-add-money {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-add-money:hover {
+            background: rgba(16, 185, 129, 0.25);
+            transform: translateY(-1px);
         }
 
         .btn-advice {
-            background: linear-gradient(135deg, #06b6d4, #10b981);
-            color: white;
+            background: rgba(6, 182, 212, 0.15);
+            color: #06b6d4;
+            border: 1px solid rgba(6, 182, 212, 0.3);
         }
 
         .btn-advice:hover {
-            transform: translateY(-2px);
+            background: rgba(6, 182, 212, 0.25);
+            transform: translateY(-1px);
         }
 
-        .btn-delete {
+        .btn-delete-card {
             background: rgba(239, 68, 68, 0.1);
             color: var(--accent-red);
-            border: 1px solid rgba(239, 68, 68, 0.3);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            width: 100%;
         }
 
-        .btn-delete:hover {
+        .btn-delete-card:hover {
             background: rgba(239, 68, 68, 0.2);
+            border-color: var(--accent-red);
+        }
+
+        /* AI Advice Dynamic Container */
+        .advice-box {
+            margin-top: 1.25rem;
+            padding: 1.15rem;
+            background: rgba(6, 182, 212, 0.03);
+            border: 1px dashed rgba(6, 182, 212, 0.25);
+            border-radius: 14px;
+            animation: adviceFadeIn 0.4s ease-out;
+            font-size: 0.85rem;
+            color: #d1d5db;
+            line-height: 1.6;
+        }
+
+        @keyframes adviceFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .advice-box-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.6rem;
+            color: #06b6d4;
+            font-weight: 700;
+        }
+
+        .advice-box-header span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .advice-box-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.1rem;
+            line-height: 1;
+        }
+
+        .advice-box-close:hover {
+            color: var(--text-primary);
+        }
+
+        .advice-box-content {
+            white-space: pre-line;
         }
 
         /* Empty State */
         .empty-state {
             text-align: center;
-            padding: 3rem 2rem;
-            color: var(--text-muted);
+            padding: 5rem 2rem;
+            background: var(--bg-card);
+            border: 1px dashed var(--border);
+            border-radius: 24px;
+            backdrop-filter: blur(20px);
+            max-width: 600px;
+            margin: 2rem auto;
         }
 
         .empty-state-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            opacity: 0.5;
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+            filter: drop-shadow(0 0 15px rgba(124, 58, 237, 0.4));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
 
         .empty-state-title {
-            font-size: 1.25rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
         }
 
         .empty-state-desc {
-            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 1rem;
+            line-height: 1.6;
         }
 
-        /* Action Bar */
-        .action-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        /* Flash Messages */
+        .flash-messages {
             margin-bottom: 2rem;
         }
 
-        .btn-new-goal {
-            background: var(--gradient-1);
-            color: white;
-        }
-
-        /* Advice Modal */
-        .advice-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
-            z-index: 998;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .advice-modal.active {
+        .flash-message {
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 500;
+            margin-bottom: 0.75rem;
             display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border: 1px solid transparent;
         }
 
-        .advice-content {
-            background: rgba(22, 22, 31, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 16px;
-            padding: 2rem;
-            width: 90%;
-            max-width: 600px;
-            backdrop-filter: blur(20px);
+        .flash-message.success {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.2);
+            color: #34d399;
         }
 
-        .advice-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            color: var(--accent-purple);
-        }
-
-        .advice-text {
-            color: var(--text-secondary);
-            line-height: 1.8;
-            white-space: pre-wrap;
+        .flash-message.danger {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
         }
 
         @media (max-width: 768px) {
-            .goals-container {
-                grid-template-columns: 1fr;
-            }
-
             .navbar-nav {
                 display: none;
             }
 
-            .action-bar {
+            .page-header {
                 flex-direction: column;
-                gap: 1rem;
+                align-items: flex-start;
             }
 
             .btn-new-goal {
@@ -500,31 +555,50 @@
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar">
-        <a href="/" class="navbar-brand">💰 FinanceAI</a>
-        <ul class="navbar-nav">
-            <li><a href="/dashboard">Dashboard</a></li>
-            <li><a href="/transactions">Transactions</a></li>
-            <li><a href="/budgets">Budgets</a></li>
-            <li><a href="/goals" class="active">Savings Goals</a></li>
-            <li><a href="/chatbot">AI Assistant</a></li>
-        </ul>
-        <div class="navbar-right">
-            <form method="POST" action="/logout" style="margin: 0;">
-                <button class="btn btn-ghost">Logout</button>
-            </form>
-        </div>
+    <nav class="navbar-custom">
+      <a class="navbar-brand-custom" href="/dashboard">
+        <span>🏺</span> FinanceAI
+      </a>
+      <ul class="navbar-nav-custom">
+        <li><a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+        <li><a href="/transactions"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
+        <li><a href="/budgets"><i class="fas fa-wallet"></i> Budgets</a></li>
+        <li><a href="/goals" class="active"><i class="fas fa-bullseye"></i> Savings Goals</a></li>
+        <li><a href="/chatbot"><i class="fas fa-robot"></i> AI Assistant</a></li>
+      </ul>
+      <div class="navbar-right">
+        <form method="POST" action="/logout" style="margin: 0;">
+          <button class="btn btn-outline-danger"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </form>
+      </div>
     </nav>
 
     <!-- Main Content -->
     <div class="container">
-        <div class="page-header">
-            <h1 class="page-title">Savings Goals</h1>
-            <p class="page-subtitle">Track your financial targets and get AI-powered tips to reach them faster</p>
-        </div>
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            {% if category == 'success' %}
+                                <i class="fas fa-check-circle"></i>
+                            {% else %}
+                                <i class="fas fa-exclamation-circle"></i>
+                            {% endif %}
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
 
-        <div class="action-bar">
-            <button class="btn btn-new-goal" onclick="openModal()">
+        <div class="page-header">
+            <div class="header-title-area">
+                <h1 class="page-title">Savings Goals</h1>
+                <p class="page-subtitle">Track your long-term milestones and harness AI advice to hit targets faster</p>
+            </div>
+            <button class="btn btn-gradient btn-new-goal" onclick="openCreateGoalModal()">
                 <i class="fas fa-plus"></i> Create New Goal
             </button>
         </div>
@@ -532,168 +606,302 @@
         {% if goals %}
         <div class="goals-container">
             {% for goal in goals %}
-            <div class="goal-card">
-                <div class="goal-header">
-                    <h3 class="goal-title">{{ goal.title }}</h3>
-                    <p class="goal-deadline">
-                        <i class="fas fa-calendar"></i> Due: {{ goal.deadline }}
-                        {% if goal.days_left > 0 %}
-                            ({{ goal.days_left }} days left)
-                        {% else %}
-                            (Overdue)
-                        {% endif %}
-                    </p>
-                </div>
+            <div class="goal-card" id="goal-card-{{ goal.id }}">
+                <div class="goal-card-main-info">
+                    <div class="goal-header">
+                        <h3 class="goal-title">{{ goal.title }}</h3>
+                        <p class="goal-deadline" data-deadline="{{ goal.deadline }}">
+                            <i class="fas fa-hourglass-half"></i>
+                            <span class="countdown-text">Calculating time left...</span>
+                        </p>
+                    </div>
 
-                <div class="progress-ring-container">
-                    <div class="progress-ring-wrapper">
-                        <svg class="progress-ring" width="160" height="160">
-                            <circle cx="80" cy="80" r="60" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8"></circle>
-                            <circle class="progress-ring-circle" cx="80" cy="80" r="60" fill="none" 
-                                    stroke="url(#grad{{ goal.id }})" stroke-width="8"
-                                    style="stroke-dashoffset: {{ 377 * (1 - goal.progress_pct / 100) }}">
-                            </circle>
-                            <defs>
-                                <linearGradient id="grad{{ goal.id }}" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:#2563eb;stop-opacity:1" />
-                                </linearGradient>
-                            </defs>
-                        </svg>
-                        <div class="progress-ring-text">
-                            <div class="progress-percentage">{{ goal.progress_pct }}%</div>
-                            <div class="progress-label">Complete</div>
+                    <div class="progress-ring-container">
+                        <div class="progress-ring-wrapper">
+                            <svg class="progress-ring" width="150" height="150">
+                                <circle cx="75" cy="75" r="60" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="8"></circle>
+                                <circle class="progress-ring-circle" cx="75" cy="75" r="60" fill="none" 
+                                        stroke="url(#grad{{ goal.id }})" stroke-width="8"
+                                        data-pct="{{ goal.progress_pct }}">
+                                </circle>
+                                <defs>
+                                    <linearGradient id="grad{{ goal.id }}" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#7c3aed" />
+                                        <stop offset="100%" style="stop-color:#2563eb" />
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            <div class="progress-ring-text">
+                                <div class="progress-percentage">{{ goal.progress_pct }}%</div>
+                                <div class="progress-label">Saved</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="goal-stats">
+                        <div class="stat">
+                            <span class="stat-label">Saved</span>
+                            <span class="stat-value highlight">₹{{ "{:,.0f}".format(goal.current_amount) }}</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Target</span>
+                            <span class="stat-value">₹{{ "{:,.0f}".format(goal.target_amount) }}</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="goal-stats">
-                    <div class="stat">
-                        <div class="stat-label">Saved</div>
-                        <div class="stat-value highlight">₹{{ "%.0f"|format(goal.current_amount) }}</div>
+                <div class="goal-card-actions-area">
+                    <div class="goal-actions">
+                        <div class="actions-row">
+                            <button class="btn-small btn-add-money" onclick="openAddMoneyModal({{ goal.id }}, '{{ goal.title }}')">
+                                <i class="fas fa-plus"></i> Add Money
+                            </button>
+                            <button class="btn-small btn-advice" onclick="fetchAIAdvice({{ goal.id }}, '{{ goal.title }}', {{ goal.target_amount }}, {{ goal.current_amount }}, '{{ goal.deadline }}')">
+                                <i class="fas fa-brain"></i> AI Advice
+                            </button>
+                        </div>
+                        <button class="btn-small btn-delete-card" onclick="deleteGoal({{ goal.id }})">
+                            <i class="fas fa-trash-alt"></i> Delete Goal
+                        </button>
                     </div>
-                    <div class="stat">
-                        <div class="stat-label">Target</div>
-                        <div class="stat-value">₹{{ "%.0f"|format(goal.target_amount) }}</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-label">Remaining</div>
-                        <div class="stat-value">₹{{ "%.0f"|format(goal.remaining) }}</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-label">Daily Rate</div>
-                        <div class="stat-value">₹{{ "%.0f"|format(goal.daily_rate) }}</div>
-                    </div>
-                </div>
 
-                <div class="goal-actions">
-                    <button class="btn-small btn-advice" onclick="getAdvice({{ goal.id }}, '{{ goal.title }}')">
-                        <i class="fas fa-lightbulb"></i> Get AI Advice
-                    </button>
-                    <button class="btn-small btn-delete" onclick="deleteGoal({{ goal.id }})">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
+                    <!-- AI Advice Section (Hidden by default, loaded via Ajax) -->
+                    <div class="advice-box" id="advice-box-{{ goal.id }}" style="display: none;">
+                        <div class="advice-box-header">
+                            <span><i class="fas fa-sparkles"></i> AI Recommendation</span>
+                            <button class="advice-box-close" onclick="closeAdviceBox({{ goal.id }})">×</button>
+                        </div>
+                        <div class="advice-box-content" id="advice-content-{{ goal.id }}">
+                            Loading recommendations...
+                        </div>
+                    </div>
                 </div>
             </div>
             {% endfor %}
         </div>
         {% else %}
         <div class="empty-state">
-            <div class="empty-state-icon">🎯</div>
-            <h2 class="empty-state-title">No Savings Goals Yet</h2>
-            <p class="empty-state-desc">Create your first savings goal to start tracking your financial targets.</p>
-            <button class="btn btn-gradient" onclick="openModal()">
-                <i class="fas fa-plus"></i> Create Your First Goal
+            <span class="empty-state-icon">🎯</span>
+            <h2 class="empty-state-title">No Savings Goals Set</h2>
+            <p class="empty-state-desc">Set specific targets for purchases, emergency funds, or vacations, and get immediate AI savings metrics.</p>
+            <button class="btn btn-gradient" onclick="openCreateGoalModal()">
+                <i class="fas fa-plus"></i> Set Your First Goal
             </button>
         </div>
         {% endif %}
     </div>
 
     <!-- Create Goal Modal -->
-    <div id="goalModal" class="modal">
+    <div id="createGoalModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Create Savings Goal</h2>
-                <button class="close-btn" onclick="closeModal()">×</button>
+                <button class="close-btn" onclick="closeCreateGoalModal()">×</button>
             </div>
             <form method="POST" action="/goals">
                 <div class="form-group">
                     <label class="form-label">Goal Title</label>
-                    <input type="text" name="title" class="form-input" placeholder="e.g., New Laptop, Emergency Fund" required>
+                    <input type="text" name="title" class="form-input" placeholder="e.g., Vacation Fund, New Laptop" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Target Amount (₹)</label>
-                    <input type="number" name="target_amount" class="form-input" placeholder="50000" step="1000" min="1000" required>
+                    <input type="number" name="target_amount" class="form-input" placeholder="e.g., 50000" min="100" step="any" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Target Deadline</label>
+                    <label class="form-label">Deadline Date</label>
                     <input type="date" name="deadline" class="form-input" required>
                 </div>
                 <div class="form-buttons">
-                    <button type="submit" class="btn-submit">Create Goal</button>
-                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-gradient">Create Goal</button>
+                    <button type="button" class="btn btn-ghost" onclick="closeCreateGoalModal()">Cancel</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- AI Advice Modal -->
-    <div id="adviceModal" class="advice-modal">
-        <div class="advice-content">
+    <!-- Add Money Modal -->
+    <div id="addMoneyModal" class="modal">
+        <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title" id="adviceTitle">AI Advice</h2>
-                <button class="close-btn" onclick="closeAdviceModal()">×</button>
+                <h2 class="modal-title" id="addMoneyTitle">Add Savings</h2>
+                <button class="close-btn" onclick="closeAddMoneyModal()">×</button>
             </div>
-            <div class="advice-text" id="adviceText">Loading advice...</div>
-            <button class="btn btn-gradient" onclick="closeAdviceModal()" style="width: 100%; margin-top: 1.5rem;">Got it!</button>
+            <form id="addMoneyForm" onsubmit="submitAddMoney(event)">
+                <input type="hidden" id="addMoneyGoalId">
+                <div class="form-group">
+                    <label class="form-label">Amount (₹)</label>
+                    <input type="number" id="addMoneyAmount" class="form-input" placeholder="e.g., 5000" min="1" step="any" required>
+                </div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-gradient">Confirm Contribution</button>
+                    <button type="button" class="btn btn-ghost" onclick="closeAddMoneyModal()">Cancel</button>
+                </div>
+            </form>
         </div>
     </div>
 
     <script>
-        function openModal() {
-            document.getElementById('goalModal').classList.add('active');
+        // Modal controls
+        function openCreateGoalModal() {
+            document.getElementById('createGoalModal').classList.add('active');
+        }
+        function closeCreateGoalModal() {
+            document.getElementById('createGoalModal').classList.remove('active');
         }
 
-        function closeModal() {
-            document.getElementById('goalModal').classList.remove('active');
+        let activeGoalIdForAdd = null;
+        function openAddMoneyModal(goalId, title) {
+            activeGoalIdForAdd = goalId;
+            document.getElementById('addMoneyGoalId').value = goalId;
+            document.getElementById('addMoneyTitle').innerText = `Contribute to: ${title}`;
+            document.getElementById('addMoneyAmount').value = '';
+            document.getElementById('addMoneyModal').classList.add('active');
+            setTimeout(() => document.getElementById('addMoneyAmount').focus(), 50);
+        }
+        function closeAddMoneyModal() {
+            document.getElementById('addMoneyModal').classList.remove('active');
         }
 
-        function closeAdviceModal() {
-            document.getElementById('adviceModal').classList.remove('active');
-        }
+        // Close modals on background click
+        window.addEventListener('click', (e) => {
+            const createModal = document.getElementById('createGoalModal');
+            const addModal = document.getElementById('addMoneyModal');
+            if (e.target === createModal) closeCreateGoalModal();
+            if (e.target === addModal) closeAddMoneyModal();
+        });
 
-        async function deleteGoal(goalId) {
-            if (!confirm('Are you sure you want to delete this goal?')) return;
-
-            const response = await fetch(`/goals/${goalId}`, { method: 'DELETE' });
-            if (response.ok) {
-                location.reload();
-            } else {
-                alert('Error deleting goal');
-            }
-        }
-
-        async function getAdvice(goalId, goalTitle) {
-            document.getElementById('adviceModal').classList.add('active');
-            document.getElementById('adviceTitle').innerText = `Advice for: ${goalTitle}`;
-            document.getElementById('adviceText').innerText = 'Loading personalized advice...';
+        // Add money API submission
+        async function submitAddMoney(event) {
+            event.preventDefault();
+            const goalId = document.getElementById('addMoneyGoalId').value;
+            const amount = parseFloat(document.getElementById('addMoneyAmount').value);
+            if (!amount || amount <= 0) return;
 
             try {
-                const response = await fetch(`/goals/${goalId}/advice`, { method: 'POST' });
+                const response = await fetch(`/goals/${goalId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ amount: amount })
+                });
+
                 const data = await response.json();
-                document.getElementById('adviceText').innerText = data.advice || 'Unable to generate advice.';
-            } catch (error) {
-                document.getElementById('adviceText').innerText = 'Error fetching advice. Please try again.';
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert(data.error || 'Failed to update progress.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('An error occurred during submission.');
             }
         }
 
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('goalModal');
-            if (event.target === modal) {
-                closeModal();
+        // Delete goal API submission
+        async function deleteGoal(goalId) {
+            if (!confirm('Are you sure you want to delete this savings goal? This cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/goals/${goalId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert(data.error || 'Failed to delete goal.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('An error occurred while deleting.');
             }
         }
+
+        // Get AI Advice API submission
+        async function fetchAIAdvice(goalId, title, target, current, deadline) {
+            const adviceBox = document.getElementById(`advice-box-${goalId}`);
+            const adviceContent = document.getElementById(`advice-content-${goalId}`);
+            
+            adviceBox.style.display = 'block';
+            adviceContent.innerHTML = '<span style="display:flex; align-items:center; gap:0.5rem;"><i class="fas fa-spinner fa-spin"></i> Consulting Gemini AI for recommendations...</span>';
+            
+            try {
+                const response = await fetch('/goals/advice', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        target_amount: target,
+                        current_amount: current,
+                        deadline: deadline,
+                        id: goalId
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    adviceContent.innerHTML = data.advice || 'No recommendations generated.';
+                } else {
+                    adviceContent.innerText = data.error || 'Could not fetch recommendations at this time.';
+                }
+            } catch (err) {
+                console.error(err);
+                adviceContent.innerText = 'Network error occurred while contacting AI.';
+            }
+        }
+
+        function closeAdviceBox(goalId) {
+            document.getElementById(`advice-box-${goalId}`).style.display = 'none';
+        }
+
+        // Animated circular rings and countdowns calculation
+        document.addEventListener('DOMContentLoaded', () => {
+            // Animate SVG circular progress rings
+            setTimeout(() => {
+                const circles = document.querySelectorAll('.progress-ring-circle');
+                circles.forEach(circle => {
+                    const pct = Math.min(Math.max(parseFloat(circle.getAttribute('data-pct')) || 0, 0), 100);
+                    const r = parseFloat(circle.getAttribute('r'));
+                    const circumference = 2 * Math.PI * r; // ~ 376.99
+                    const offset = circumference - (pct / 100) * circumference;
+                    circle.style.strokeDasharray = circumference;
+                    circle.style.strokeDashoffset = offset;
+                });
+            }, 150);
+
+            // Compute human-readable countdowns
+            const countdowns = document.querySelectorAll('.goal-deadline');
+            countdowns.forEach(el => {
+                const deadlineStr = el.getAttribute('data-deadline');
+                const textSpan = el.querySelector('.countdown-text');
+                if (!deadlineStr) return;
+
+                const deadline = new Date(deadlineStr);
+                const now = new Date();
+                deadline.setHours(0, 0, 0, 0);
+                now.setHours(0, 0, 0, 0);
+
+                const diffTime = deadline - now;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays > 1) {
+                    textSpan.innerText = `${diffDays} days left`;
+                } else if (diffDays === 1) {
+                    textSpan.innerText = `Tomorrow`;
+                } else if (diffDays === 0) {
+                    textSpan.innerText = `Today is the deadline`;
+                } else {
+                    textSpan.innerText = `Overdue by ${Math.abs(diffDays)} day${Math.abs(diffDays) > 1 ? 's' : ''}`;
+                    textSpan.style.color = '#ef4444';
+                }
+            });
+        });
     </script>
 </body>
 </html>

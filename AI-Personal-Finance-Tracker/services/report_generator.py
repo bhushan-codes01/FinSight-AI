@@ -1,0 +1,91 @@
+import os
+import sqlite3
+from flask import render_template
+from services.gemini_service import GeminiService
+
+try:
+    from weasyprint import HTML
+    WEASYPRINT_AVAILABLE = True
+except Exception:
+    WEASYPRINT_AVAILABLE = False
+
+
+class ReportGeneratorService:
+    @staticmethod
+    def generate_monthly_report_html(db, user_id, month, year):
+        # Format month to 2 digits (e.g. 6 -> '06')
+        month_str = f"{int(month):02d}"
+        year_str = str(year)
+        month_year = f"{year_str}-{month_str}"
+
+        # Fetch user
+        user = db.execute("SELECT name, email FROM users WHERE id = ?", (user_id,)).fetchone()
+        user_name = user["name"] if user else "Valued Client"
+
+        # Fetch transactions
+        transactions = db.execute(
+            "SELECT amount, category, description, transaction_type, transaction_date FROM transactions "
+            "WHERE user_id = ? AND strftime('%Y', transaction_date) = ? AND strftime('%m', transaction_date) = ? "
+            "ORDER BY transaction_date DESC",
+            (user_id, year_str, month_str)
+        ).fetchall()
+
+        income = sum(t["amount"] for t in transactions if t["transaction_type"] == "income")
+        expenses = sum(t["amount"] for t in transactions if t["transaction_type"] == "expense")
+        net = income - expenses
+        savings_rate = (net / income * 100) if income > 0 else 0.0
+
+        # Category breakdown
+        categories = {}
+        for t in transactions:
+            if t["transaction_type"] == "expense":
+                cat = t["category"]
+                categories[cat] = categories.get(cat, 0.0) + t["amount"]
+
+        # Calculate category percentages
+        category_breakdown = []
+        for cat, amt in sorted(categories.items(), key=lambda x: x[1], reverse=True):
+            pct = (amt / expenses * 100) if expenses > 0 else 0.0
+            category_breakdown.append({
+                "category": cat,
+                "amount": amt,
+                "percentage": round(pct, 1)
+            })
+
+        # Generate AI Summary using GeminiService
+        prompt = (
+            f"Please write a professional, concise financial report summary paragraph (2-3 sentences) "
+            f"for {user_name} for {month_year}. "
+            f"They had an income of ₹{income:,.2f}, expenses of ₹{expenses:,.2f}, a net balance of ₹{net:,.2f}, "
+            f"and a savings rate of {savings_rate:.1f}%. "
+            f"Their top spending categories were: {', '.join([c['category'] + ' (₹' + f'{c['amount']:,.0f}' + ')' for c in category_breakdown[:3]])}. "
+            f"Offer brief financial coaching advice."
+        )
+
+        try:
+            gemini = GeminiService()
+            ai_summary = gemini.analyze(prompt)
+        except Exception as e:
+            ai_summary = f"AI summary currently unavailable due to an error: {e}"
+
+        # Render report_template.html
+        return render_template(
+            "report_template.html",
+            user_name=user_name,
+            month=month_str,
+            year=year_str,
+            income=income,
+            expenses=expenses,
+            net=net,
+            savings_rate=round(savings_rate, 1),
+            category_breakdown=category_breakdown,
+            transactions=transactions,
+            ai_summary=ai_summary
+        )
+
+    @staticmethod
+    def html_to_pdf(html_content):
+        if WEASYPRINT_AVAILABLE:
+            return HTML(string=html_content).write_pdf()
+        else:
+            return None

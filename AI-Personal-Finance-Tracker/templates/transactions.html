@@ -4,22 +4,27 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Transactions - AI Finance Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="/static/css/style.css" />
   </head>
   <body class="dashboard-body">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="/dashboard">Finance Tracker</a>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" href="/budgets">Budgets</a></li>
-            <li class="nav-item"><a class="nav-link" href="/chatbot">Chatbot</a></li>
-          </ul>
-        </div>
-        <form method="POST" action="/logout" class="d-inline">
-          <button class="btn btn-outline-light">Logout</button>
+    <!-- Navbar -->
+    <nav class="navbar-custom">
+      <a class="navbar-brand-custom" href="/dashboard">
+        <span>🏺</span> FinanceAI
+      </a>
+      <ul class="navbar-nav-custom">
+        <li><a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+        <li><a href="/transactions" class="active"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
+        <li><a href="/budgets"><i class="fas fa-wallet"></i> Budgets</a></li>
+        <li><a href="/goals"><i class="fas fa-bullseye"></i> Savings Goals</a></li>
+        <li><a href="/chatbot"><i class="fas fa-robot"></i> AI Assistant</a></li>
+      </ul>
+      <div class="navbar-right">
+        <form method="POST" action="/logout" style="margin: 0;">
+          <button class="btn btn-outline-danger"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </form>
       </div>
     </nav>
@@ -65,6 +70,20 @@
               <div class="col-12">
                 <label class="form-label text-white">Description</label>
                 <textarea name="description" rows="2" class="form-control form-control-dark"></textarea>
+              </div>
+              <div class="col-md-6">
+                <div class="form-check form-switch mt-4">
+                  <input class="form-check-input" type="checkbox" name="is_recurring" value="1" id="isRecurringCheckbox" onchange="toggleRecurrenceSelect()">
+                  <label class="form-check-label text-white" for="isRecurringCheckbox">Recurring Transaction</label>
+                </div>
+              </div>
+              <div class="col-md-6" id="recurrenceTypeGroup" style="display: none;">
+                <label class="form-label text-white">Recurrence Type</label>
+                <select name="recurrence_type" class="form-select form-select-dark">
+                  <option value="none">None</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
               </div>
               <div class="col-12 text-end">
                 <button type="submit" class="btn btn-success">Save Transaction</button>
@@ -120,7 +139,12 @@
                   {% for txn in transactions %}
                   <tr>
                     <td>{{ txn.transaction_date }}</td>
-                    <td>{{ txn.description }}</td>
+                    <td>
+                      {{ txn.description }}
+                      {% if txn.is_recurring %}
+                      <span class="badge bg-info ms-2"><i class="fas fa-redo"></i> {{ txn.recurrence_type.title() }}</span>
+                      {% endif %}
+                    </td>
                     <td>{{ txn.category }}</td>
                     <td>{{ txn.transaction_type }}</td>
                     <td>${{ txn.amount }}</td>
@@ -135,5 +159,16 @@
         </div>
       </div>
     </main>
+    <script>
+      function toggleRecurrenceSelect() {
+        var checkBox = document.getElementById("isRecurringCheckbox");
+        var typeGroup = document.getElementById("recurrenceTypeGroup");
+        if (checkBox.checked) {
+          typeGroup.style.display = "block";
+        } else {
+          typeGroup.style.display = "none";
+        }
+      }
+    </script>
   </body>
 </html>

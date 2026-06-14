@@ -2,5 +2,6 @@ Flask==2.3.3
 Werkzeug==3.0.1
 python-dotenv==1.0.0
 requests==2.31.0
-weasyprint==60.1
+weasyprint==62.0
 Flask-Mail==0.9.1
+gunicorn==21.2.0

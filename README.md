@@ -4,12 +4,18 @@
 
 <br/>
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
+
+<br/>
+
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![Flask](https://img.shields.io/badge/Flask-3.0-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com)
 [![SQLite](https://img.shields.io/badge/SQLite-3-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org)
 [![Google Gemini](https://img.shields.io/badge/Google%20Gemini-AI-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev)
-[![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-[![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com)
+[![Render](https://img.shields.io/badge/Render-Deployment-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://render.com)
+[![Gunicorn](https://img.shields.io/badge/Gunicorn-Web_Server-499848?style=for-the-badge&logo=gunicorn&logoColor=white)](https://gunicorn.org)
+[![WeasyPrint](https://img.shields.io/badge/WeasyPrint-PDF_Report-red?style=for-the-badge)](https://weasyprint.org)
+[![Flask Mail](https://img.shields.io/badge/Flask_Mail-Alerts-orange?style=for-the-badge)](https://pythonhosted.org/Flask-Mail/)
 
 <br/>
 
@@ -67,7 +73,7 @@ Whether you want to track daily expenses, set savings goals, visualize spending 
 
 ## 🚀 Live Demo
 
-> 🔗 **[Click here to view the live demo](#)** ← *(Deploy to Render/Railway and update this link)*
+> 🔗 **[Click here to view the live demo](https://finsight-ai.onrender.com)** ← *(Updated Live Demo Link)*
 
 | Credential | Value |
 |:-----------|:------|
@@ -90,6 +96,18 @@ Whether you want to track daily expenses, set savings goals, visualize spending 
 > *Screenshot placeholder — add `/screenshots/dashboard.png`*
 ```
 [ Dashboard Screenshot Here ]
+```
+
+### 🎯 Savings Goals
+> *Screenshot placeholder — add `/screenshots/goals.png`*
+```
+[ Savings Goals Screenshot Here ]
+```
+
+### 📊 Financial PDF Report
+> *Screenshot placeholder — add `/screenshots/reports.png`*
+```
+[ PDF Report Screenshot Here ]
 ```
 
 ### 🤖 AI Assistant

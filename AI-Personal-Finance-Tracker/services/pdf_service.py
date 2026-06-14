@@ -1,7 +1,11 @@
 import os
 from datetime import datetime
 from io import BytesIO
-from weasyprint import HTML, CSS
+try:
+    from weasyprint import HTML, CSS
+    WEASYPRINT_AVAILABLE = True
+except Exception:
+    WEASYPRINT_AVAILABLE = False
 import sqlite3
 
 
@@ -42,8 +46,11 @@ class PDFReportService:
         html_content = self._create_html(user, month_year, income, expenses, net, transactions, categories, summary_text)
 
         # Generate PDF
-        pdf_bytes = HTML(string=html_content).write_pdf()
-        return pdf_bytes, f"FinanceAI_Report_{month_year}.pdf"
+        if WEASYPRINT_AVAILABLE:
+            pdf_bytes = HTML(string=html_content).write_pdf()
+            return pdf_bytes, f"FinanceAI_Report_{month_year}.pdf"
+        else:
+            return html_content.encode("utf-8"), f"FinanceAI_Report_{month_year}.html"
 
     def _generate_summary(self, income, expenses, net, categories):
         if expenses == 0:

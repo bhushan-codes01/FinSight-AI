@@ -3,46 +3,96 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chatbot - AI Finance Tracker</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <title>AI Assistant - FinanceAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="/static/css/style.css" />
   </head>
-  <body class="dashboard-body">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="/dashboard">Finance Tracker</a>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" href="/transactions">Transactions</a></li>
-            <li class="nav-item"><a class="nav-link" href="/budgets">Budgets</a></li>
-          </ul>
-        </div>
-        <form method="POST" action="/logout" class="d-inline">
-          <button class="btn btn-outline-light">Logout</button>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar-custom">
+      <a class="navbar-brand-custom" href="/dashboard">
+        <span>🏺</span> FinanceAI
+      </a>
+      <ul class="navbar-nav-custom">
+        <li><a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+        <li><a href="/transactions"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
+        <li><a href="/budgets"><i class="fas fa-wallet"></i> Budgets</a></li>
+        <li><a href="/goals"><i class="fas fa-bullseye"></i> Savings Goals</a></li>
+        <li><a href="/chatbot" class="active"><i class="fas fa-robot"></i> AI Assistant</a></li>
+      </ul>
+      <div class="navbar-right">
+        <form method="POST" action="/logout" style="margin: 0;">
+          <button class="btn btn-outline-danger"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </form>
       </div>
     </nav>
 
-    <main class="container py-5">
-      <div class="row justify-content-center">
-        <div class="col-lg-8">
-          <div class="card chat-card border-0 shadow-sm p-4">
-            <h2 class="text-white mb-3">Financial AI Assistant</h2>
-            <div class="chat-window mb-4" id="chatWindow"></div>
-            <form id="chatForm" class="row g-3">
-              <div class="col-12">
-                <textarea id="userQuestion" class="form-control form-control-dark" rows="3" placeholder="Ask your financial assistant about spending, budgets, or savings opportunities"></textarea>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label text-white">Upload CSV (Optional)</label>
-                <input type="file" id="statementFile" class="form-control form-control-dark" accept=".csv" />
-              </div>
-              <div class="col-md-6 text-end align-self-end">
-                <button type="submit" class="btn btn-primary w-100">Submit Question</button>
-              </div>
-            </form>
+    <main class="chat-page-container">
+      <div class="chat-card-premium">
+        <!-- Chat Header -->
+        <div class="chat-header-premium">
+          <div class="chat-header-icon">
+            <i class="fas fa-robot"></i>
           </div>
+          <div class="chat-header-text">
+            <h2>Financial AI Assistant</h2>
+            <p>Ask me anything about your finances, analyze statements, or request budgeting advice</p>
+          </div>
+        </div>
+
+        <!-- Chat Viewport -->
+        <div class="chat-messages-premium" id="chatWindow">
+          <!-- Empty State -->
+          <div class="chat-empty-state" id="chatEmptyState">
+            <div class="chat-empty-icon">
+              <i class="fas fa-robot"></i>
+            </div>
+            <h3>How can I help with your finances today?</h3>
+            <div class="suggestion-chips">
+              <button type="button" class="suggestion-chip" data-question="Analyze my spending">
+                <span>📊</span> Analyze my spending
+              </button>
+              <button type="button" class="suggestion-chip" data-question="Create a budget plan">
+                <span>💰</span> Create a budget plan
+              </button>
+              <button type="button" class="suggestion-chip" data-question="How can I save more?">
+                <span>💡</span> How can I save more?
+              </button>
+              <button type="button" class="suggestion-chip" data-question="Summarize this month">
+                <span>📅</span> Summarize this month
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sticky Input Area -->
+        <div class="chat-input-outer-premium">
+          <!-- File Chip Container -->
+          <div class="chat-chip-wrapper" id="fileChipContainer" style="display: none;">
+            <div class="file-chip-premium" id="fileChip">
+              <span>📄</span> <span id="fileNameDisplay">statement.csv</span>
+              <span class="close-chip" id="removeFileBtn" title="Remove attachment">✕</span>
+            </div>
+          </div>
+
+          <form id="chatForm">
+            <div class="chat-input-bar-premium">
+              <!-- Upload CSV button -->
+              <button type="button" class="chat-icon-btn-premium" id="uploadTriggerBtn" title="Upload CSV statement">
+                <i class="fas fa-paperclip"></i>
+              </button>
+              <input type="file" id="statementFile" accept=".csv" style="display: none;" />
+
+              <!-- Input text area -->
+              <textarea id="userQuestion" placeholder="Ask about your finances..." rows="1"></textarea>
+
+              <!-- Submit button -->
+              <button type="submit" class="chat-send-btn-premium" id="sendBtn" disabled>
+                <i class="fas fa-arrow-up"></i>
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </main>
