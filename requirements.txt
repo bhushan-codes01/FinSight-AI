@@ -1,4 +1,4 @@
-﻿blinker==1.9.0
+blinker==1.9.0
 brotli==1.2.0
 certifi==2026.5.20
 cffi==2.0.0
@@ -31,3 +31,4 @@ weasyprint==60.1
 webencodings==0.5.1
 Werkzeug==3.0.1
 zopfli==0.4.3
+gunicorn==21.2.0
