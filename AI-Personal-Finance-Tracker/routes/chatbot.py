@@ -335,6 +335,11 @@ def chat():
                 ai_response = f"Action failed: {result.get('error', 'Unknown database execution error.')}"
     else:
         ai_response = response_data.get("text", "No response returned from Gemini.")
+        if "AI service error:" in ai_response:
+            if "429" in ai_response or "quota" in ai_response.lower() or "limit" in ai_response.lower():
+                ai_response = "⚠️ The AI Assistant is currently experiencing a rate limit or has exceeded its daily/monthly quota. Please check your Gemini API key settings in Google AI Studio or try again in a few moments."
+            else:
+                ai_response = f"⚠️ AI Service Error: {ai_response.replace('AI service error: ', '')}"
 
     db.execute(
         "INSERT INTO chat_history (user_id, user_message, ai_response) VALUES (?, ?, ?)",
