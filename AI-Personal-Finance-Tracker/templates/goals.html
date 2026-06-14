@@ -603,8 +603,8 @@
             </button>
         </div>
 
-        {% if goals %}
-        <div class="goals-container">
+        <div class="goals-container" style="{% if not goals %}display: none;{% endif %}">
+            {% if goals %}
             {% for goal in goals %}
             <div class="goal-card" id="goal-card-{{ goal.id }}">
                 <div class="goal-card-main-info">
@@ -653,10 +653,10 @@
                 <div class="goal-card-actions-area">
                     <div class="goal-actions">
                         <div class="actions-row">
-                            <button class="btn-small btn-add-money" onclick="openAddMoneyModal({{ goal.id }}, '{{ goal.title }}')">
+                            <button class="btn-small btn-add-money" onclick="openAddMoneyModal({{ goal.id }}, '{{ goal.title|escape }}')">
                                 <i class="fas fa-plus"></i> Add Money
                             </button>
-                            <button class="btn-small btn-advice" onclick="fetchAIAdvice({{ goal.id }}, '{{ goal.title }}', {{ goal.target_amount }}, {{ goal.current_amount }}, '{{ goal.deadline }}')">
+                            <button class="btn-small btn-advice" onclick="fetchAIAdvice({{ goal.id }}, '{{ goal.title|escape }}', {{ goal.target_amount }}, {{ goal.current_amount }}, '{{ goal.deadline }}')">
                                 <i class="fas fa-brain"></i> AI Advice
                             </button>
                         </div>
@@ -678,9 +678,10 @@
                 </div>
             </div>
             {% endfor %}
+            {% endif %}
         </div>
-        {% else %}
-        <div class="empty-state">
+
+        <div class="empty-state" style="{% if goals %}display: none;{% endif %}">
             <span class="empty-state-icon">🎯</span>
             <h2 class="empty-state-title">No Savings Goals Set</h2>
             <p class="empty-state-desc">Set specific targets for purchases, emergency funds, or vacations, and get immediate AI savings metrics.</p>
@@ -688,7 +689,6 @@
                 <i class="fas fa-plus"></i> Set Your First Goal
             </button>
         </div>
-        {% endif %}
     </div>
 
     <!-- Create Goal Modal -->
@@ -698,18 +698,18 @@
                 <h2 class="modal-title">Create Savings Goal</h2>
                 <button class="close-btn" onclick="closeCreateGoalModal()">×</button>
             </div>
-            <form method="POST" action="/goals">
+            <form id="createGoalForm" onsubmit="submitCreateGoal(event)">
                 <div class="form-group">
                     <label class="form-label">Goal Title</label>
-                    <input type="text" name="title" class="form-input" placeholder="e.g., Vacation Fund, New Laptop" required>
+                    <input type="text" id="createGoalTitle" class="form-input" placeholder="e.g., Vacation Fund, New Laptop" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Target Amount (₹)</label>
-                    <input type="number" name="target_amount" class="form-input" placeholder="e.g., 50000" min="100" step="any" required>
+                    <input type="number" id="createGoalTargetAmount" class="form-input" placeholder="e.g., 50000" min="100" step="any" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Deadline Date</label>
-                    <input type="date" name="deadline" class="form-input" required>
+                    <input type="date" id="createGoalDeadline" class="form-input" required>
                 </div>
                 <div class="form-buttons">
                     <button type="submit" class="btn btn-gradient">Create Goal</button>
@@ -770,6 +770,196 @@
             if (e.target === addModal) closeAddMoneyModal();
         });
 
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function animateRing(goalId, pct) {
+            const circle = document.querySelector(`#goal-card-${goalId} .progress-ring-circle`);
+            if (!circle) return;
+            const r = parseFloat(circle.getAttribute('r')) || 60;
+            const circumference = 2 * Math.PI * r;
+            const boundedPct = Math.min(Math.max(parseFloat(pct) || 0, 0), 100);
+            const offset = circumference - (boundedPct / 100) * circumference;
+            circle.style.strokeDasharray = circumference;
+            circle.style.strokeDashoffset = offset;
+        }
+
+        function updateCountdown(goalId, deadlineStr) {
+            const el = document.querySelector(`#goal-card-${goalId} .goal-deadline`);
+            if (!el) return;
+            const textSpan = el.querySelector('.countdown-text');
+            if (!deadlineStr) return;
+
+            const deadline = new Date(deadlineStr);
+            const now = new Date();
+            deadline.setHours(0, 0, 0, 0);
+            now.setHours(0, 0, 0, 0);
+
+            const diffTime = deadline - now;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays > 1) {
+                textSpan.innerText = `${diffDays} days left`;
+                textSpan.style.color = '';
+            } else if (diffDays === 1) {
+                textSpan.innerText = `Tomorrow`;
+                textSpan.style.color = '';
+            } else if (diffDays === 0) {
+                textSpan.innerText = `Today is the deadline`;
+                textSpan.style.color = '';
+            } else {
+                textSpan.innerText = `Overdue by ${Math.abs(diffDays)} day${Math.abs(diffDays) > 1 ? 's' : ''}`;
+                textSpan.style.color = '#ef4444';
+            }
+        }
+
+        function renderGoalCard(goal) {
+            const formattedTarget = Number(goal.target_amount).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+            const formattedCurrent = Number(goal.current_amount).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+            
+            return `
+            <div class="goal-card" id="goal-card-${goal.id}" style="opacity: 0; transform: translateY(10px); transition: all 0.3s ease;">
+                <div class="goal-card-main-info">
+                    <div class="goal-header">
+                        <h3 class="goal-title">${escapeHtml(goal.title)}</h3>
+                        <p class="goal-deadline" data-deadline="${goal.deadline}">
+                            <i class="fas fa-hourglass-half"></i>
+                            <span class="countdown-text">Calculating time left...</span>
+                        </p>
+                    </div>
+
+                    <div class="progress-ring-container">
+                        <div class="progress-ring-wrapper">
+                            <svg class="progress-ring" width="150" height="150">
+                                <circle cx="75" cy="75" r="60" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="8"></circle>
+                                <circle class="progress-ring-circle" cx="75" cy="75" r="60" fill="none" 
+                                        stroke="url(#grad${goal.id})" stroke-width="8"
+                                        data-pct="${goal.progress_pct}">
+                                </circle>
+                                <defs>
+                                    <linearGradient id="grad${goal.id}" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#7c3aed" />
+                                        <stop offset="100%" style="stop-color:#2563eb" />
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            <div class="progress-ring-text">
+                                <div class="progress-percentage">${goal.progress_pct}%</div>
+                                <div class="progress-label">Saved</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="goal-stats">
+                        <div class="stat">
+                            <span class="stat-label">Saved</span>
+                            <span class="stat-value highlight">₹${formattedCurrent}</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Target</span>
+                            <span class="stat-value">₹${formattedTarget}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="goal-card-actions-area">
+                    <div class="goal-actions">
+                        <div class="actions-row">
+                            <button class="btn-small btn-add-money" onclick="openAddMoneyModal(${goal.id}, '${escapeHtml(goal.title)}')">
+                                <i class="fas fa-plus"></i> Add Money
+                            </button>
+                            <button class="btn-small btn-advice" onclick="fetchAIAdvice(${goal.id}, '${escapeHtml(goal.title)}', ${goal.target_amount}, ${goal.current_amount}, '${goal.deadline}')">
+                                <i class="fas fa-brain"></i> AI Advice
+                            </button>
+                        </div>
+                        <button class="btn-small btn-delete-card" onclick="deleteGoal(${goal.id})">
+                            <i class="fas fa-trash-alt"></i> Delete Goal
+                        </button>
+                    </div>
+
+                    <!-- AI Advice Section (Hidden by default, loaded via Ajax) -->
+                    <div class="advice-box" id="advice-box-${goal.id}" style="display: none;">
+                        <div class="advice-box-header">
+                            <span><i class="fas fa-sparkles"></i> AI Recommendation</span>
+                            <button class="advice-box-close" onclick="closeAdviceBox(${goal.id})">×</button>
+                        </div>
+                        <div class="advice-box-content" id="advice-content-${goal.id}">
+                            Loading recommendations...
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+        }
+
+        // Create goal API submission
+        async function submitCreateGoal(event) {
+            event.preventDefault();
+            const title = document.getElementById('createGoalTitle').value.trim();
+            const target_amount = parseFloat(document.getElementById('createGoalTargetAmount').value);
+            const deadline = document.getElementById('createGoalDeadline').value;
+
+            if (!title || !target_amount || !deadline) return;
+
+            try {
+                const response = await fetch('/goals', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        target_amount: target_amount,
+                        deadline: deadline
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    closeCreateGoalModal();
+                    
+                    // Clear form inputs
+                    document.getElementById('createGoalTitle').value = '';
+                    document.getElementById('createGoalTargetAmount').value = '';
+                    document.getElementById('createGoalDeadline').value = '';
+
+                    const container = document.querySelector('.goals-container');
+                    const emptyState = document.querySelector('.empty-state');
+                    
+                    // Insert the card
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = renderGoalCard(data.goal);
+                    const newCard = tempDiv.firstElementChild;
+                    container.appendChild(newCard);
+                    
+                    // Toggle visibility
+                    container.style.display = 'grid';
+                    emptyState.style.display = 'none';
+
+                    // Animate card entrance and ring
+                    setTimeout(() => {
+                        newCard.style.opacity = '1';
+                        newCard.style.transform = 'translateY(0)';
+                        animateRing(data.goal.id, data.goal.progress_pct);
+                        updateCountdown(data.goal.id, data.goal.deadline);
+                    }, 50);
+                } else {
+                    alert(data.error || 'Failed to create goal.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('An error occurred during submission.');
+            }
+        }
+
         // Add money API submission
         async function submitAddMoney(event) {
             event.preventDefault();
@@ -787,8 +977,30 @@
                 });
 
                 const data = await response.json();
-                if (response.ok) {
-                    location.reload();
+                if (response.ok && data.success) {
+                    closeAddMoneyModal();
+                    
+                    // Update goal card stats dynamically
+                    const card = document.getElementById(`goal-card-${goalId}`);
+                    if (card) {
+                        const savedVal = card.querySelector('.stat-value.highlight');
+                        if (savedVal) {
+                            savedVal.innerText = '₹' + Number(data.new_amount).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+                        }
+                        const percentageText = card.querySelector('.progress-percentage');
+                        if (percentageText) {
+                            percentageText.innerText = `${data.progress_pct}%`;
+                        }
+                        
+                        // Update advice button arguments dynamically
+                        const adviceBtn = card.querySelector('.btn-advice');
+                        if (adviceBtn) {
+                            adviceBtn.setAttribute('onclick', `fetchAIAdvice(${goalId}, '${escapeHtml(card.querySelector('.goal-title').innerText)}', ${data.target_amount}, ${data.new_amount}, '${card.querySelector('.goal-deadline').getAttribute('data-deadline')}')`);
+                        }
+
+                        // Re-animate the circle
+                        animateRing(goalId, data.progress_pct);
+                    }
                 } else {
                     alert(data.error || 'Failed to update progress.');
                 }
@@ -810,8 +1022,23 @@
                 });
 
                 const data = await response.json();
-                if (response.ok) {
-                    location.reload();
+                if (response.ok && data.success) {
+                    const card = document.getElementById(`goal-card-${goalId}`);
+                    if (card) {
+                        card.style.opacity = '0';
+                        card.style.transform = 'translateY(20px)';
+                        setTimeout(() => {
+                            card.remove();
+                            
+                            // If no cards left, show empty state
+                            const container = document.querySelector('.goals-container');
+                            const emptyState = document.querySelector('.empty-state');
+                            if (container.querySelectorAll('.goal-card').length === 0) {
+                                container.style.display = 'none';
+                                emptyState.style.display = 'block';
+                            }
+                        }, 300);
+                    }
                 } else {
                     alert(data.error || 'Failed to delete goal.');
                 }
@@ -860,15 +1087,15 @@
             document.getElementById(`advice-box-${goalId}`).style.display = 'none';
         }
 
-        // Animated circular rings and countdowns calculation
+        // Animated circular rings and countdowns calculation on load
         document.addEventListener('DOMContentLoaded', () => {
             // Animate SVG circular progress rings
             setTimeout(() => {
                 const circles = document.querySelectorAll('.progress-ring-circle');
                 circles.forEach(circle => {
                     const pct = Math.min(Math.max(parseFloat(circle.getAttribute('data-pct')) || 0, 0), 100);
-                    const r = parseFloat(circle.getAttribute('r'));
-                    const circumference = 2 * Math.PI * r; // ~ 376.99
+                    const r = parseFloat(circle.getAttribute('r')) || 60;
+                    const circumference = 2 * Math.PI * r;
                     const offset = circumference - (pct / 100) * circumference;
                     circle.style.strokeDasharray = circumference;
                     circle.style.strokeDashoffset = offset;
@@ -879,7 +1106,6 @@
             const countdowns = document.querySelectorAll('.goal-deadline');
             countdowns.forEach(el => {
                 const deadlineStr = el.getAttribute('data-deadline');
-                const textSpan = el.querySelector('.countdown-text');
                 if (!deadlineStr) return;
 
                 const deadline = new Date(deadlineStr);
@@ -889,6 +1115,7 @@
 
                 const diffTime = deadline - now;
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const textSpan = el.querySelector('.countdown-text');
 
                 if (diffDays > 1) {
                     textSpan.innerText = `${diffDays} days left`;

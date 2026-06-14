@@ -122,6 +122,38 @@ def ensure_database():
                 )
             """)
             modified = True
+        
+        # Check if budgets table exists
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='budgets'")
+        budgets_exists = cursor.fetchone()
+        if not budgets_exists:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS budgets (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    category TEXT NOT NULL,
+                    budget_amount REAL NOT NULL,
+                    month TEXT NOT NULL,
+                    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+                )
+            """)
+            modified = True
+
+        # Check if chat_history table exists
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='chat_history'")
+        chat_history_exists = cursor.fetchone()
+        if not chat_history_exists:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS chat_history (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    user_message TEXT NOT NULL,
+                    ai_response TEXT NOT NULL,
+                    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+                )
+            """)
+            modified = True
 
         # Check users columns
         cursor.execute("PRAGMA table_info(users)")

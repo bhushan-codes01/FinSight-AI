@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="/static/css/style.css" />
   </head>
   <body class="dashboard-body">
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" style="position: fixed; top: 80px; right: 20px; z-index: 1050; display: flex; flex-direction: column; align-items: flex-end; gap: 10px;"></div>
+
     <!-- Navbar -->
     <nav class="navbar-custom">
       <a class="navbar-brand-custom" href="/dashboard">
@@ -38,48 +41,256 @@
           </div>
         </div>
 
+        <!-- Add Budget Form -->
         <div class="col-12">
           <div class="card border-0 shadow-sm p-4 mb-4">
-            <form method="POST" action="/budgets" class="row g-3">
+            <form id="addBudgetForm" class="row g-3">
               <div class="col-md-4">
                 <label class="form-label text-white">Category</label>
-                <input name="category" type="text" class="form-control form-control-dark" required />
+                <input name="category" type="text" class="form-control form-control-dark" required placeholder="e.g. Food, Rent, Entertainment" />
               </div>
               <div class="col-md-4">
-                <label class="form-label text-white">Amount</label>
-                <input name="budget_amount" type="number" step="0.01" class="form-control form-control-dark" required />
+                <label class="form-label text-white">Budget Limit (₹)</label>
+                <input name="budget_amount" type="number" step="0.01" class="form-control form-control-dark" required placeholder="e.g. 5000" />
               </div>
               <div class="col-md-4">
                 <label class="form-label text-white">Month</label>
                 <input name="month" type="month" class="form-control form-control-dark" required />
               </div>
               <div class="col-12 text-end">
-                <button class="btn btn-success">Save Budget</button>
+                <button type="submit" class="btn btn-success">Save Budget Rule</button>
               </div>
             </form>
           </div>
         </div>
 
+        <!-- Budget Rules Cards Grid -->
         <div class="col-12">
           <div class="card border-0 shadow-sm p-4">
-            <div class="row g-3">
+            <h5 class="text-white mb-4">Active Category Budgets</h5>
+            <div class="row g-3" id="budgetsGrid">
               {% for budget in budgets %}
-              <div class="col-md-6">
-                <div class="card budget-card bg-secondary bg-opacity-10 border-0 p-3">
+              {% set pct = ((budget.spent / budget.budget_amount * 100) if budget.budget_amount > 0 else 0) %}
+              <div class="col-md-6" id="budget-card-{{ budget.id }}" style="transition: opacity 0.3s ease;">
+                <div class="card budget-card bg-secondary bg-opacity-10 border-0 p-4">
                   <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h6 class="text-white mb-0">{{ budget.category }}</h6>
+                    <h6 class="text-white mb-0" style="font-size: 1.15rem; font-weight: 700;">{{ budget.category }}</h6>
                     <span class="badge bg-light text-dark">{{ budget.month }}</span>
                   </div>
-                  <p class="mb-2 text-muted">Budgeted ${{ budget.budget_amount }}</p>
+                  
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <p class="mb-0 text-muted small">Budget: ₹{{ budget.budget_amount }} • Spent: ₹{{ budget.spent }}</p>
+                    {% if budget.status == 'over-budget' %}
+                      <span class="badge bg-danger">Over Budget</span>
+                    {% elif budget.status == 'warning' %}
+                      <span class="badge bg-warning text-dark">Warning</span>
+                    {% else %}
+                      <span class="badge bg-success">On Track</span>
+                    {% endif %}
+                  </div>
+
+                  <div class="progress mb-3" style="height: 10px;">
+                    <div class="progress-bar {% if budget.status == 'over-budget' %}bg-danger{% elif budget.status == 'warning' %}bg-warning{% else %}bg-success{% endif %}" 
+                         role="progressbar" 
+                         style="width: {{ 100 if pct > 100 else pct }}%;"></div>
+                  </div>
+
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted small">
+                      {% if budget.remaining >= 0 %}
+                        ₹{{ budget.remaining }} remaining
+                      {% else %}
+                        ₹{{ -budget.remaining }} over limit
+                      {% endif %}
+                    </span>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteBudget({{ budget.id }})">
+                      <i class="fas fa-trash-alt"></i> Delete
+                    </button>
+                  </div>
                 </div>
               </div>
               {% else %}
-              <div class="col-12 text-center text-muted">No budget rules added yet.</div>
+              <div class="col-12 text-center text-muted py-4" id="emptyBudgetsMessage">No budget rules added yet.</div>
               {% endfor %}
             </div>
           </div>
         </div>
       </div>
     </main>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Set current month in form
+      const now = new Date();
+      const currentMonth = now.toISOString().slice(0, 7); // YYYY-MM
+      document.querySelector('input[type="month"]').value = currentMonth;
+
+      // Toast Notification
+      function showToast(message, type = "success") {
+        const container = document.getElementById("toastContainer");
+        const toast = document.createElement("div");
+        toast.className = `alert alert-${type} shadow`;
+        toast.style.minWidth = "250px";
+        toast.style.borderRadius = "12px";
+        toast.style.transition = "opacity 0.4s ease";
+        toast.innerHTML = `<i class="fas ${type === "success" ? "fa-check-circle" : "fa-exclamation-circle"} me-2"></i> ${message}`;
+        container.appendChild(toast);
+        setTimeout(() => {
+          toast.style.opacity = "0";
+          setTimeout(() => toast.remove(), 400);
+        }, 3000);
+      }
+
+      // Add Budget via AJAX
+      const addForm = document.getElementById("addBudgetForm");
+      addForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = new FormData(addForm);
+        try {
+          const response = await fetch("/budgets", {
+            method: "POST",
+            body: formData,
+            headers: {
+              "Accept": "application/json"
+            }
+          });
+          const data = await response.json();
+          if (data.success) {
+            showToast(data.message || "Budget rule saved.");
+            addForm.reset();
+            document.querySelector('input[type="month"]').value = currentMonth;
+            fetchBudgets();
+          } else {
+            showToast(data.error || "Failed to save budget.", "danger");
+          }
+        } catch (error) {
+          showToast("Network error. Could not save budget.", "danger");
+        }
+      });
+
+      // Delete Budget via AJAX
+      async function deleteBudget(id) {
+        if (!confirm("Are you sure you want to delete this budget rule?")) return;
+
+        const card = document.getElementById(`budget-card-${id}`);
+        try {
+          const response = await fetch(`/budgets/${id}`, {
+            method: "DELETE"
+          });
+          const data = await response.json();
+          if (data.success) {
+            showToast("Budget rule deleted successfully.");
+            if (card) {
+              card.style.opacity = "0";
+              setTimeout(() => {
+                card.remove();
+                if (document.getElementById("budgetsGrid").querySelectorAll('[id^="budget-card-"]').length === 0) {
+                  fetchBudgets();
+                }
+              }, 300);
+            } else {
+              fetchBudgets();
+            }
+          } else {
+            showToast(data.error || "Delete failed.", "danger");
+          }
+        } catch (error) {
+          showToast("Network error. Could not delete budget.", "danger");
+        }
+      }
+
+      // Fetch Budgets list via AJAX
+      async function fetchBudgets() {
+        try {
+          const response = await fetch("/budgets?json=1", {
+            headers: {
+              "Accept": "application/json"
+            }
+          });
+          if (response.ok) {
+            const data = await response.json();
+            renderBudgets(data.budgets);
+          }
+        } catch (error) {
+          console.error("Error fetching budgets:", error);
+        }
+      }
+
+      function renderBudgets(budgets) {
+        const grid = document.getElementById("budgetsGrid");
+        grid.innerHTML = "";
+
+        if (budgets.length === 0) {
+          grid.innerHTML = `<div class="col-12 text-center text-muted py-4" id="emptyBudgetsMessage">No budget rules added yet.</div>`;
+          return;
+        }
+
+        budgets.forEach(budget => {
+          const cardCol = document.createElement("div");
+          cardCol.className = "col-md-6";
+          cardCol.id = `budget-card-${budget.id}`;
+          cardCol.style.transition = "opacity 0.3s ease";
+
+          const pct = budget.budget_amount > 0 ? (budget.spent / budget.budget_amount * 100) : 0;
+          const cappedPct = pct > 100 ? 100 : pct;
+
+          let badgeHtml = "";
+          let barClass = "bg-success";
+          if (budget.status === 'over-budget') {
+            badgeHtml = `<span class="badge bg-danger">Over Budget</span>`;
+            barClass = "bg-danger";
+          } else if (budget.status === 'warning') {
+            badgeHtml = `<span class="badge bg-warning text-dark">Warning</span>`;
+            barClass = "bg-warning";
+          } else {
+            badgeHtml = `<span class="badge bg-success">On Track</span>`;
+            barClass = "bg-success";
+          }
+
+          const remainingText = budget.remaining >= 0
+            ? `₹${budget.remaining} remaining`
+            : `₹${-budget.remaining} over limit`;
+
+          cardCol.innerHTML = `
+            <div class="card budget-card bg-secondary bg-opacity-10 border-0 p-4">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="text-white mb-0" style="font-size: 1.15rem; font-weight: 700;">${escapeHTML(budget.category)}</h6>
+                <span class="badge bg-light text-dark">${escapeHTML(budget.month)}</span>
+              </div>
+              
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <p class="mb-0 text-muted small">Budget: ₹${budget.budget_amount} • Spent: ₹${budget.spent}</p>
+                ${badgeHtml}
+              </div>
+
+              <div class="progress mb-3" style="height: 10px;">
+                <div class="progress-bar ${barClass}" role="progressbar" style="width: ${cappedPct}%;"></div>
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted small">${remainingText}</span>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteBudget(${budget.id})">
+                  <i class="fas fa-trash-alt"></i> Delete
+                </button>
+              </div>
+            </div>
+          `;
+          grid.appendChild(cardCol);
+        });
+      }
+
+      function escapeHTML(str) {
+        return str.replace(/[&<>'"]/g, 
+          tag => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+          }[tag] || tag)
+        );
+      }
+    </script>
   </body>
 </html>

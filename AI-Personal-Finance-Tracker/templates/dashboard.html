@@ -75,6 +75,18 @@
           </div>
         </div>
 
+        {% if not recent_transactions %}
+        <div class="col-12">
+          <div class="card border-0 shadow-sm p-5 text-center">
+            <div style="font-size: 3.5rem; margin-bottom: 1.5rem; filter: drop-shadow(0 0 15px rgba(124, 58, 237, 0.4));">📊</div>
+            <h3 class="text-white mb-2">No Transaction Data Available Yet</h3>
+            <p class="text-muted mb-4">Start tracking your income and expenses to see detailed analytics, breakdowns, and monthly trends here.</p>
+            <div>
+              <a href="/transactions" class="btn btn-primary"><i class="fas fa-plus"></i> Add your first transaction</a>
+            </div>
+          </div>
+        </div>
+        {% else %}
         <div class="col-lg-6">
           <div class="card chart-card border-0 shadow-sm p-3">
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -184,10 +196,17 @@
             </div>
           </div>
         </div>
+        {% endif %}
       </div>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+      window.expenseCategories = {{ expense_breakdown['categories'] | tojson }};
+      window.expenseValues = {{ expense_breakdown['values'] | tojson }};
+      window.trendLabels = {{ monthly_trend['labels'] | tojson }};
+      window.trendValues = {{ monthly_trend['values'] | tojson }};
+    </script>
     <script src="/static/js/dashboard.js"></script>
   </body>
 </html>

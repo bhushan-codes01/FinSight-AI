@@ -35,12 +35,16 @@ class AnalyticsService:
         return {"categories": categories, "values": values}
 
     def monthly_trend_data(self):
+        import datetime
+        six_months_ago = (datetime.datetime.now() - datetime.timedelta(days=180)).strftime("%Y-%m-%d")
         rows = self.db.execute(
-            "SELECT strftime('%Y-%m', transaction_date) AS month, SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE -amount END) AS net_total FROM transactions WHERE user_id = ? GROUP BY month ORDER BY month ASC",
-            (self.user_id,),
+            "SELECT strftime('%Y-%m', transaction_date) AS month, SUM(amount) AS total FROM transactions "
+            "WHERE user_id = ? AND transaction_type = 'expense' AND transaction_date >= ? "
+            "GROUP BY month ORDER BY month ASC",
+            (self.user_id, six_months_ago),
         ).fetchall()
         labels = [row["month"] for row in rows]
-        values = [round(row["net_total"], 2) for row in rows]
+        values = [round(row["total"], 2) for row in rows]
         return {"labels": labels, "values": values}
 
     def budget_status_summary(self):

@@ -62,25 +62,72 @@ def get_goals():
             "daily_rate": round(daily_rate, 2),
         })
 
+    if request.headers.get('Accept') == 'application/json' or request.args.get('json') == '1':
+        return jsonify({"goals": goal_data})
+
     return render_template("goals.html", goals=goal_data)
 
 
 @goals_bp.route("/goals", methods=["POST"])
 def create_goal():
     if not session.get("user_id"):
+        if request.headers.get('Accept') == 'application/json' or request.is_json:
+            return jsonify({"error": "Unauthorized"}), 401
         return redirect(url_for("auth.login"))
 
     user_id = session["user_id"]
-    title = request.form.get("title", "").strip()
-    target_amount = float(request.form.get("target_amount", 0))
-    deadline = request.form.get("deadline", "").strip()
+    
+    if request.is_json:
+        data = request.get_json() or {}
+        title = data.get("title", "").strip()
+        try:
+            target_amount = float(data.get("target_amount", 0))
+        except (TypeError, ValueError):
+            target_amount = 0
+        deadline = data.get("deadline", "").strip()
+    else:
+        title = request.form.get("title", "").strip()
+        try:
+            target_amount = float(request.form.get("target_amount", 0))
+        except (TypeError, ValueError):
+            target_amount = 0
+        deadline = request.form.get("deadline", "").strip()
 
     if not title or target_amount <= 0 or not deadline:
+        if request.headers.get('Accept') == 'application/json' or request.is_json:
+            return jsonify({"error": "Please provide valid goal details."}), 400
         flash("Please provide valid goal details.", "danger")
         return redirect(url_for("goals.get_goals"))
 
     db = get_db()
-    Goal.create(db, user_id, title, target_amount, deadline)
+    goal_id = Goal.create(db, user_id, title, target_amount, deadline)
+    
+    if request.headers.get('Accept') == 'application/json' or request.is_json:
+        try:
+            deadline_obj = datetime.strptime(deadline, "%Y-%m-%d")
+            today = datetime.now()
+            deadline_obj = deadline_obj.replace(hour=0, minute=0, second=0, microsecond=0)
+            today = today.replace(hour=0, minute=0, second=0, microsecond=0)
+            days_left = (deadline_obj - today).days
+        except Exception:
+            days_left = 0
+            
+        remaining = target_amount
+        daily_rate = remaining / max(days_left, 1)
+        
+        goal_data = {
+            "id": goal_id,
+            "title": title,
+            "target_amount": target_amount,
+            "current_amount": 0.0,
+            "remaining": remaining,
+            "deadline": deadline,
+            "progress_pct": 0,
+            "days_left": max(days_left, 0),
+            "daily_rate": round(daily_rate, 2),
+        }
+        return jsonify({"success": True, "goal": goal_data})
+
     flash("Savings goal created successfully!", "success")
     return redirect(url_for("goals.get_goals"))
 
@@ -105,12 +152,38 @@ def update_goal(goal_id):
         return jsonify({"error": "Amount must be greater than zero"}), 400
 
     db = get_db()
+    row = db.execute("SELECT * FROM goals WHERE id = ? AND user_id = ?", (goal_id, session["user_id"])).fetchone()
+    if not row:
+        return jsonify({"error": "Goal not found"}), 404
+        
     new_amount = Goal.update_progress(db, goal_id, session["user_id"], amount)
-    
     if new_amount is None:
         return jsonify({"error": "Goal not found"}), 404
 
-    return jsonify({"success": True, "new_amount": new_amount})
+    target_amount = row["target_amount"]
+    progress_pct = round((new_amount / target_amount * 100)) if target_amount > 0 else 0
+    remaining = max(target_amount - new_amount, 0)
+    
+    try:
+        deadline_obj = datetime.strptime(row["deadline"], "%Y-%m-%d")
+        today = datetime.now()
+        deadline_obj = deadline_obj.replace(hour=0, minute=0, second=0, microsecond=0)
+        today = today.replace(hour=0, minute=0, second=0, microsecond=0)
+        days_left = (deadline_obj - today).days
+    except Exception:
+        days_left = 0
+        
+    daily_rate = remaining / max(days_left, 1)
+    
+    return jsonify({
+        "success": True,
+        "new_amount": new_amount,
+        "progress_pct": min(progress_pct, 100),
+        "remaining": remaining,
+        "daily_rate": round(daily_rate, 2),
+        "target_amount": target_amount,
+        "days_left": max(days_left, 0)
+    })
 
 
 @goals_bp.route("/goals/<int:goal_id>", methods=["DELETE"])

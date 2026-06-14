@@ -28,7 +28,7 @@ const trendChart = new Chart(trendCtx, {
     labels: window.trendLabels || [],
     datasets: [
       {
-        label: "Net Cash Flow",
+        label: "Monthly Expenses",
         data: window.trendValues || [],
         borderColor: "#4f9dff",
         backgroundColor: "rgba(79, 157, 255, 0.2)",

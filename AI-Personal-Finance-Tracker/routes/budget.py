@@ -1,5 +1,6 @@
 import sqlite3
-from flask import Blueprint, render_template, request, redirect, url_for, session, current_app, g, flash
+from flask import Blueprint, render_template, request, redirect, url_for, session, current_app, g, flash, jsonify
+from services.analytics import AnalyticsService
 
 budget_bp = Blueprint("budget", __name__)
 
@@ -22,6 +23,8 @@ def close_connection(exception):
 @budget_bp.route("/budgets", methods=["GET", "POST"])
 def manage_budgets():
     if not session.get("user_id"):
+        if request.headers.get('Accept') == 'application/json' or request.is_json:
+            return jsonify({"error": "Unauthorized"}), 401
         return redirect(url_for("auth.login"))
 
     user_id = session["user_id"]
@@ -33,6 +36,8 @@ def manage_budgets():
         month = request.form.get("month", "").strip()
 
         if not category or budget_amount <= 0 or not month:
+            if request.headers.get('Accept') == 'application/json' or request.is_json:
+                return jsonify({"error": "Invalid budget details"}), 400
             flash("Please provide valid budget details.", "danger")
             return redirect(url_for("budget.manage_budgets"))
 
@@ -41,10 +46,36 @@ def manage_budgets():
             (user_id, category, budget_amount, month),
         )
         db.commit()
-        flash("Budget updated successfully.", "success")
+
+        if request.headers.get('Accept') == 'application/json' or request.is_json:
+            return jsonify({"success": True, "message": "Budget created successfully."})
+        
+        flash("Budget created successfully.", "success")
         return redirect(url_for("budget.manage_budgets"))
 
-    budgets = db.execute(
-        "SELECT * FROM budgets WHERE user_id = ? ORDER BY month DESC, category ASC", (user_id,)
-    ).fetchall()
-    return render_template("budgets.html", budgets=budgets)
+    if request.headers.get('Accept') == 'application/json' or request.args.get('json') == '1':
+        analytics = AnalyticsService(db, user_id)
+        budget_status = analytics.budget_status_summary()
+        return jsonify({"budgets": budget_status})
+
+    analytics = AnalyticsService(db, user_id)
+    budget_status = analytics.budget_status_summary()
+    return render_template("budgets.html", budgets=budget_status)
+
+
+@budget_bp.route("/budgets/<int:budget_id>", methods=["DELETE"])
+def delete_budget(budget_id):
+    if not session.get("user_id"):
+        return jsonify({"error": "Unauthorized"}), 401
+
+    db = get_db()
+    cursor = db.execute(
+        "DELETE FROM budgets WHERE id = ? AND user_id = ?",
+        (budget_id, session["user_id"]),
+    )
+    db.commit()
+
+    if cursor.rowcount == 0:
+        return jsonify({"error": "Budget not found"}), 404
+
+    return jsonify({"success": True})

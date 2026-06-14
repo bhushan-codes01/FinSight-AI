@@ -102,6 +102,11 @@ def manage_transactions():
                 except Exception as e:
                     print(f"Error checking budget alerts: {e}")
 
+        if request.headers.get('Accept') == 'application/json' or request.is_json:
+            return jsonify({
+                "success": True,
+                "message": "Transaction added successfully." + (" (Recurring)" if is_recurring else "")
+            })
         flash("Transaction added successfully." + (" (Recurring)" if is_recurring else ""), "success")
         return redirect(url_for("transactions.manage_transactions"))
 
@@ -132,6 +137,11 @@ def manage_transactions():
 
     query += " ORDER BY transaction_date DESC"
     transactions = db.execute(query, tuple(args)).fetchall()
+
+    if request.headers.get('Accept') == 'application/json' or request.args.get('json') == '1':
+        return jsonify({
+            "transactions": [dict(t) for t in transactions]
+        })
 
     # Get upcoming recurring transactions
     recurring = db.execute(
