@@ -1,4 +1,9 @@
 import os
+from dotenv import load_dotenv
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(BASE_DIR, ".env"))
+
 import sqlite3
 from functools import wraps
 from flask import Flask, g, render_template, request, redirect, url_for, session, flash, jsonify
@@ -11,11 +16,7 @@ from routes.reports import reports_bp
 from routes.billing import billing_bp
 from services.analytics import AnalyticsService
 from services.email_service import EmailAlertsService
-from dotenv import load_dotenv
 
-load_dotenv()
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATABASE_PATH = os.path.join(BASE_DIR, "database", "finance.db")
 
 app = Flask(__name__)
