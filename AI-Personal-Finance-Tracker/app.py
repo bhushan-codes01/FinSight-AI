@@ -331,6 +331,18 @@ def toggle_notifications():
     return redirect(url_for("dashboard"))
 
 
+@app.errorhandler(Exception)
+def handle_exception(e):
+    import traceback
+    tb = traceback.format_exc()
+    return f"""
+    <div style="font-family: monospace; padding: 20px; background: #111; color: #ff5555;">
+        <h2>Internal Server Error (500)</h2>
+        <pre>{tb}</pre>
+    </div>
+    """, 500
+
+
 ensure_database()
 
 if __name__ == "__main__":
