@@ -211,6 +211,12 @@ def verify_email(token):
     if user_id:
         db.execute("UPDATE users SET email_verified = 1 WHERE id = ?", (user_id,))
         db.commit()
+        
+        # If user is already logged in, redirect them directly to dashboard
+        if session.get("user_id") and session["user_id"] == user_id:
+            flash("Email verified successfully!", "success")
+            return redirect(url_for("dashboard"))
+            
         flash("Email verified successfully! You can now log in.", "success")
         return redirect(url_for("auth.login"))
     else:
