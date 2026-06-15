@@ -20,6 +20,7 @@
         <li><a href="/budgets"><i class="fas fa-wallet"></i> Budgets</a></li>
         <li><a href="/goals"><i class="fas fa-bullseye"></i> Savings Goals</a></li>
         <li><a href="/chatbot"><i class="fas fa-robot"></i> AI Assistant</a></li>
+        <li><a href="/settings"><i class="fas fa-cog"></i> Settings</a></li>
       </ul>
       <div class="navbar-right d-flex align-items-center gap-2">
         {% if user_plan == 'pro' %}
@@ -71,19 +72,19 @@
         <div class="col-md-3">
           <div class="card metric-card border-0 shadow-sm p-4">
             <h6 class="text-muted">Total Income</h6>
-            <h2 class="fw-bold">${{ summary.income }}</h2>
+            <h2 class="fw-bold">{{ currency_symbol }}{{ summary.income }}</h2>
           </div>
         </div>
         <div class="col-md-3">
           <div class="card metric-card border-0 shadow-sm p-4">
             <h6 class="text-muted">Total Expenses</h6>
-            <h2 class="fw-bold">${{ summary.expenses }}</h2>
+            <h2 class="fw-bold">{{ currency_symbol }}{{ summary.expenses }}</h2>
           </div>
         </div>
         <div class="col-md-3">
           <div class="card metric-card border-0 shadow-sm p-4">
             <h6 class="text-muted">Balance</h6>
-            <h2 class="fw-bold">${{ summary.balance }}</h2>
+            <h2 class="fw-bold">{{ currency_symbol }}{{ summary.balance }}</h2>
           </div>
         </div>
         <div class="col-md-3">
@@ -143,7 +144,7 @@
                     <td>{{ txn.description }}</td>
                     <td>{{ txn.category }}</td>
                     <td>{{ txn.transaction_type }}</td>
-                    <td>${{ txn.amount }}</td>
+                    <td>{{ currency_symbol }}{{ txn.amount }}</td>
                   </tr>
                   {% else %}
                   <tr><td colspan="5" class="text-center text-muted">No transactions available.</td></tr>
@@ -163,7 +164,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                   <div>
                     <h6 class="mb-1">{{ budget.category }} — {{ budget.month }}</h6>
-                    <small class="text-muted">Budgeted ${{ budget.budget_amount }} • Spent ${{ budget.spent }}</small>
+                    <small class="text-muted">Budgeted {{ currency_symbol }}{{ budget.budget_amount }} • Spent {{ currency_symbol }}{{ budget.spent }}</small>
                   </div>
                   <span class="badge bg-{{ 'danger' if budget.status == 'over-budget' else 'warning' if budget.status == 'warning' else 'success' }} rounded-pill">{{ budget.status.replace('-', ' ').title() }}</span>
                 </div>
@@ -196,7 +197,7 @@
                   <tr style="{% if txn.days_until <= 2 %}background: rgba(245, 158, 11, 0.08); border-left: 4px solid #f59e0b;{% endif %}">
                     <td>{{ txn.description }}</td>
                     <td>{{ txn.category }}</td>
-                    <td class="fw-bold">${{ txn.amount }}</td>
+                    <td class="fw-bold">{{ currency_symbol }}{{ txn.amount }}</td>
                     <td>
                       {{ txn.due_date }}
                       {% if txn.days_until <= 2 %}

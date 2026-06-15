@@ -87,8 +87,9 @@ def check_budget_alerts():
     user_id = session["user_id"]
     db = get_db()
 
-    user = db.execute("SELECT email, name FROM users WHERE id = ?", (user_id,)).fetchone()
+    user = db.execute("SELECT email, name, currency_symbol FROM users WHERE id = ?", (user_id,)).fetchone()
     email_service = EmailAlertsService(current_app)
+    currency_symbol = user["currency_symbol"] if (user and user["currency_symbol"]) else "₹"
 
     budgets = db.execute(
         "SELECT b.*, COALESCE(SUM(t.amount), 0) as spent FROM budgets b LEFT JOIN transactions t ON b.user_id = t.user_id AND b.category = t.category AND t.transaction_type = 'expense' AND strftime('%Y-%m', t.transaction_date) = b.month WHERE b.user_id = ? GROUP BY b.id",
@@ -103,10 +104,10 @@ def check_budget_alerts():
         percentage = (spent / budget_amount * 100) if budget_amount > 0 else 0
 
         if percentage >= 100:
-            email_service.send_budget_exceeded(user["email"], user["name"], budget["category"], spent, budget_amount)
+            email_service.send_budget_exceeded(user["email"], user["name"], budget["category"], spent, budget_amount, currency_symbol)
             alerts_sent += 1
         elif percentage >= 80:
-            email_service.send_budget_warning(user["email"], user["name"], budget["category"], spent, budget_amount)
+            email_service.send_budget_warning(user["email"], user["name"], budget["category"], spent, budget_amount, currency_symbol)
             alerts_sent += 1
 
     return jsonify({"success": True, "alerts_sent": alerts_sent})
@@ -121,8 +122,9 @@ def recurring_reminder():
     user_id = session["user_id"]
     db = get_db()
 
-    user = db.execute("SELECT email, name FROM users WHERE id = ?", (user_id,)).fetchone()
+    user = db.execute("SELECT email, name, currency_symbol FROM users WHERE id = ?", (user_id,)).fetchone()
     email_service = EmailAlertsService(current_app)
+    currency_symbol = user["currency_symbol"] if (user and user["currency_symbol"]) else "₹"
 
     from datetime import datetime, timedelta
     today = datetime.now().date()
@@ -135,7 +137,7 @@ def recurring_reminder():
 
     for txn in recurring:
         email_service.send_upcoming_recurring_reminder(
-            user["email"], user["name"], txn["description"], txn["amount"], txn["next_due_date"]
+            user["email"], user["name"], txn["description"], txn["amount"], txn["next_due_date"], currency_symbol
         )
 
     return jsonify({"success": True, "reminders_sent": len(recurring)})

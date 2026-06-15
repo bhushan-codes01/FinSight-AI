@@ -27,8 +27,9 @@ class PDFReportService:
             month_year = datetime.now().strftime("%Y-%m")
 
         user = self.db.execute(
-            "SELECT name, email FROM users WHERE id = ?", (self.user_id,)
+            "SELECT name, email, currency_symbol FROM users WHERE id = ?", (self.user_id,)
         ).fetchone()
+        currency_symbol = user["currency_symbol"] if (user and user["currency_symbol"]) else "₹"
 
         transactions = self.db.execute(
             "SELECT amount, category, description, transaction_type, transaction_date FROM transactions WHERE user_id = ? AND strftime('%Y-%m', transaction_date) = ? ORDER BY transaction_date DESC",
@@ -47,10 +48,10 @@ class PDFReportService:
                 categories[cat] = categories.get(cat, 0) + t["amount"]
 
         # AI Summary
-        summary_text = self._generate_summary(income, expenses, net, categories)
+        summary_text = self._generate_summary(income, expenses, net, categories, currency_symbol)
 
         # Create HTML
-        html_content = self._create_html(user, month_year, income, expenses, net, transactions, categories, summary_text)
+        html_content = self._create_html(user, month_year, income, expenses, net, transactions, categories, summary_text, currency_symbol)
 
         # Generate PDF
         pdf_bytes = None
@@ -77,7 +78,7 @@ class PDFReportService:
         else:
             return html_content.encode("utf-8"), f"FinanceAI_Report_{month_year}.html"
 
-    def _generate_summary(self, income, expenses, net, categories):
+    def _generate_summary(self, income, expenses, net, categories, currency_symbol="₹"):
         if expenses == 0:
             return "No expenses recorded this month."
 
@@ -86,23 +87,23 @@ class PDFReportService:
 
         return f"""
         Your financial summary for this period:
-        - Total Income: ₹{income:,.0f}
-        - Total Expenses: ₹{expenses:,.0f}
-        - Net Balance: ₹{net:,.0f}
-        - Top Spending Category: {top_category} (₹{top_amount:,.0f})
+        - Total Income: {currency_symbol}{income:,.0f}
+        - Total Expenses: {currency_symbol}{expenses:,.0f}
+        - Net Balance: {currency_symbol}{net:,.0f}
+        - Top Spending Category: {top_category} ({currency_symbol}{top_amount:,.0f})
         - Expense Ratio: {(expenses/income*100) if income > 0 else 0:.1f}% of income
 
         Recommendation: Review your {top_category} spending to identify savings opportunities.
         """
 
-    def _create_html(self, user, month_year, income, expenses, net, transactions, categories, summary):
+    def _create_html(self, user, month_year, income, expenses, net, transactions, categories, summary, currency_symbol="₹"):
         category_rows = "".join(
-            f"<tr><td>{cat}</td><td>₹{amount:,.0f}</td><td>{(amount/expenses*100):.1f}%</td></tr>"
+            f"<tr><td>{cat}</td><td>{currency_symbol}{amount:,.0f}</td><td>{(amount/expenses*100):.1f}%</td></tr>"
             for cat, amount in sorted(categories.items(), key=lambda x: x[1], reverse=True)
         )
 
         transaction_rows = "".join(
-            f"<tr><td>{t['transaction_date']}</td><td>{t['description']}</td><td>{t['category']}</td><td style='color: {'#10b981' if t['transaction_type'] == 'income' else '#ef4444'}'>{t['transaction_type'].upper()}</td><td>₹{t['amount']:,.0f}</td></tr>"
+            f"<tr><td>{t['transaction_date']}</td><td>{t['description']}</td><td>{t['category']}</td><td style='color: {'#10b981' if t['transaction_type'] == 'income' else '#ef4444'}'>{t['transaction_type'].upper()}</td><td>{currency_symbol}{t['amount']:,.0f}</td></tr>"
             for t in transactions
         )
 
@@ -142,15 +143,15 @@ class PDFReportService:
                 <div class="summary-cards">
                     <div class="card">
                         <div class="card-label">TOTAL INCOME</div>
-                        <div class="card-value">₹{income:,.0f}</div>
+                        <div class="card-value">{currency_symbol}{income:,.0f}</div>
                     </div>
                     <div class="card">
                         <div class="card-label">TOTAL EXPENSES</div>
-                        <div class="card-value">₹{expenses:,.0f}</div>
+                        <div class="card-value">{currency_symbol}{expenses:,.0f}</div>
                     </div>
                     <div class="card">
                         <div class="card-label">NET BALANCE</div>
-                        <div class="card-value" style="color: {'#10b981' if net >= 0 else '#ef4444'};">₹{net:,.0f}</div>
+                        <div class="card-value" style="color: {'#10b981' if net >= 0 else '#ef4444'};">{currency_symbol}{net:,.0f}</div>
                     </div>
                     <div class="card">
                         <div class="card-label">SAVINGS RATE</div>

@@ -51,7 +51,7 @@ def manage_transactions():
 
         # Check budget alerts for expenses
         if transaction_type == "expense":
-            user = db.execute("SELECT email, name, email_notifications FROM users WHERE id = ?", (user_id,)).fetchone()
+            user = db.execute("SELECT email, name, email_notifications, currency_symbol FROM users WHERE id = ?", (user_id,)).fetchone()
             if user and user["email_notifications"]:
                 try:
                     month_str = transaction_date[:7] # YYYY-MM
@@ -75,13 +75,15 @@ def manage_transactions():
                         from services.email_service import EmailAlertsService
                         email_service = EmailAlertsService(current_app)
                         
+                        currency_sym = user["currency_symbol"] if user["currency_symbol"] else "₹"
+                        
                         if pct >= 100:
                             alert_sent = db.execute(
                                 "SELECT 1 FROM sent_alerts WHERE user_id = ? AND category = ? AND month = ? AND alert_type = 'exceeded'",
                                 (user_id, category, month_str)
                             ).fetchone()
                             if not alert_sent:
-                                email_service.send_budget_exceeded(user["email"], user["name"], category, total_spent, budget_amount)
+                                email_service.send_budget_exceeded(user["email"], user["name"], category, total_spent, budget_amount, currency_sym)
                                 db.execute(
                                     "INSERT INTO sent_alerts (user_id, category, month, alert_type) VALUES (?, ?, ?, 'exceeded')",
                                     (user_id, category, month_str)
@@ -93,7 +95,7 @@ def manage_transactions():
                                 (user_id, category, month_str)
                             ).fetchone()
                             if not alert_sent:
-                                email_service.send_budget_warning(user["email"], user["name"], category, total_spent, budget_amount)
+                                email_service.send_budget_warning(user["email"], user["name"], category, total_spent, budget_amount, currency_sym)
                                 db.execute(
                                     "INSERT INTO sent_alerts (user_id, category, month, alert_type) VALUES (?, ?, ?, 'warning')",
                                     (user_id, category, month_str)

@@ -241,6 +241,9 @@ def get_goal_advice():
 
     # Query recent transactions for context if available
     db = get_db()
+    user = db.execute("SELECT currency_symbol FROM users WHERE id = ?", (session["user_id"],)).fetchone()
+    currency_symbol = user["currency_symbol"] if (user and user["currency_symbol"]) else "₹"
+
     transactions = db.execute(
         "SELECT amount, category, transaction_type FROM transactions WHERE user_id = ? AND transaction_type = 'expense' ORDER BY transaction_date DESC LIMIT 30",
         (session["user_id"],),
@@ -249,11 +252,12 @@ def get_goal_advice():
     expense_avg = sum(t["amount"] for t in transactions) / max(len(transactions), 1)
 
     prompt = (
-        f"I have a savings goal: '{title}' to save ₹{target_amount:,.0f}. "
-        f"I've already saved ₹{current_amount:,.0f} and have {days_left} days left. "
-        f"I need to save ₹{daily_needed:.0f} per day. My average daily expense is ₹{expense_avg:.0f}. "
+        f"I have a savings goal: '{title}' to save {currency_symbol}{target_amount:,.0f}. "
+        f"I've already saved {currency_symbol}{current_amount:,.0f} and have {days_left} days left. "
+        f"I need to save {currency_symbol}{daily_needed:.0f} per day. My average daily expense is {currency_symbol}{expense_avg:.0f}. "
         f"Provide 3 specific, actionable tips to help me reach this goal faster. "
-        f"Be encouraging and realistic about my timeline."
+        f"Be encouraging and realistic about my timeline. "
+        f"Provide your response using {currency_symbol} as the currency symbol for all monetary amounts."
     )
 
     gemini = GeminiService()

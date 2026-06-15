@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS users (
     email_verified BOOLEAN DEFAULT 0,
     plan TEXT DEFAULT 'free',
     plan_expiry DATE,
+    currency TEXT DEFAULT 'INR',
+    currency_symbol TEXT DEFAULT '₹',
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 

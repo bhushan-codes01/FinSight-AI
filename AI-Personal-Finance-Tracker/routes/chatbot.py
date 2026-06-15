@@ -30,7 +30,7 @@ def chatbot_page():
     return render_template("chatbot.html")
 
 
-def handle_create_budget(user_id, db, args):
+def handle_create_budget(user_id, db, args, currency_symbol="₹"):
     category = args.get("category", "Other").strip()
     try:
         budget_amount = float(args.get("budget_amount", 0))
@@ -48,11 +48,11 @@ def handle_create_budget(user_id, db, args):
     db.commit()
     return {
         "success": True, 
-        "message": f"Successfully created a budget limit of ₹{budget_amount:,.2f} for '{category}' for the month of {month}."
+        "message": f"Successfully created a budget limit of {currency_symbol}{budget_amount:,.2f} for '{category}' for the month of {month}."
     }
 
 
-def handle_log_transaction(user_id, db, args):
+def handle_log_transaction(user_id, db, args, currency_symbol="₹"):
     try:
         amount = float(args.get("amount", 0))
     except (TypeError, ValueError):
@@ -77,7 +77,7 @@ def handle_log_transaction(user_id, db, args):
     
     return {
         "success": True,
-        "message": f"Successfully logged {transaction_type} of ₹{amount:,.2f} under category '{category}' on {transaction_date}."
+        "message": f"Successfully logged {transaction_type} of {currency_symbol}{amount:,.2f} under category '{category}' on {transaction_date}."
     }
 
 
@@ -87,6 +87,11 @@ def chat():
         return jsonify({"error": "Unauthorized"}), 401
 
     user_id = session["user_id"]
+    db = get_db()
+    
+    # Fetch user currency settings
+    user = db.execute("SELECT currency_symbol FROM users WHERE id = ?", (user_id,)).fetchone()
+    currency_symbol = user["currency_symbol"] if (user and user["currency_symbol"]) else "₹"
     
     # 1. Check AI Quota for Free Plan
     from services.plan_gate import check_ai_quota, increment_ai_usage, get_user_plan
@@ -109,8 +114,6 @@ def chat():
 
     # If quota ok, increment usage count
     increment_ai_usage(user_id)
-
-    db = get_db()
 
     # 1. Fetch current user financial context snapshot (RAG)
     budgets_rows = db.execute(
@@ -136,9 +139,9 @@ def chat():
         (user_id, start_date)
     ).fetchall()
 
-    budgets_text = "\n".join([f"- {r['category']} ({r['month']}): Limit ₹{r['budget_amount']:,.2f}" for r in budgets_rows]) or "None set"
-    goals_text = "\n".join([f"- {r['title']}: Saved ₹{r['current_amount']:,.2f} of ₹{r['target_amount']:,.2f} (Deadline: {r['deadline']})" for r in goals_rows]) or "None set"
-    recurring_text = "\n".join([f"- {r['category']} ({r['recurrence_type']}): ₹{r['amount']:,.2f} (Next Due: {r['next_due_date']})" for r in recurring_rows]) or "None set"
+    budgets_text = "\n".join([f"- {r['category']} ({r['month']}): Limit {currency_symbol}{r['budget_amount']:,.2f}" for r in budgets_rows]) or "None set"
+    goals_text = "\n".join([f"- {r['title']}: Saved {currency_symbol}{r['current_amount']:,.2f} of {currency_symbol}{r['target_amount']:,.2f} (Deadline: {r['deadline']})" for r in goals_rows]) or "None set"
+    recurring_text = "\n".join([f"- {r['category']} ({r['recurrence_type']}): {currency_symbol}{r['amount']:,.2f} (Next Due: {r['next_due_date']})" for r in recurring_rows]) or "None set"
     trans_df = pd.DataFrame([dict(r) for r in trans_rows]) if trans_rows else pd.DataFrame()
 
     context_summary = (
@@ -164,13 +167,13 @@ def chat():
         context_summary += (
             "=== LAST 30 DAYS DATABASE SUMMARY ===\n"
             f"- Total Transactions: {len(trans_df)}\n"
-            f"- Total Income: ₹{total_income:,.2f}\n"
-            f"- Total Expenses: ₹{total_expense:,.2f}\n"
-            f"- Net Cash Flow: ₹{net_flow:,.2f}\n"
+            f"- Total Income: {currency_symbol}{total_income:,.2f}\n"
+            f"- Total Expenses: {currency_symbol}{total_expense:,.2f}\n"
+            f"- Net Cash Flow: {currency_symbol}{net_flow:,.2f}\n"
             f"- Top Expense Categories:\n"
         )
         for cat, amt in top_cats.items():
-            context_summary += f"  * {cat}: ₹{amt:,.2f}\n"
+            context_summary += f"  * {cat}: {currency_symbol}{amt:,.2f}\n"
     else:
         context_summary += "=== LAST 30 DAYS DATABASE SUMMARY ===\nNo recent transactions found.\n"
 
@@ -197,8 +200,8 @@ def chat():
                 "\n=== UPLOADED STATEMENT STATS ===\n"
                 f"- Statement File: {csv_file.filename}\n"
                 f"- Total Records: {len(df)}\n"
-                f"- Total Inflow: ₹{csv_income:,.2f}\n"
-                f"- Total Outflow: ₹{csv_expense:,.2f}\n"
+                f"- Total Inflow: {currency_symbol}{csv_income:,.2f}\n"
+                f"- Total Outflow: {currency_symbol}{csv_expense:,.2f}\n"
             )
         except Exception as e:
             current_app.logger.error(f"Error parsing uploaded CSV in chatbot context: {e}")
@@ -210,6 +213,7 @@ def chat():
         "PERSONALITY & STYLE:\n"
         "- Tone: Professional, encouraging, realistic, and highly mathematical.\n"
         "- Math-Focused: Always cite exact figures (totals, averages, progress percentages, days remaining) in your advice.\n"
+        f"- Currency formatting: Use {currency_symbol} as the currency symbol for all monetary amounts in your replies.\n"
         "- Restrictive scope: Only answer questions related to personal finance, budgeting, saving, or financial analysis. "
         "If the user asks an unrelated question (like coding, history, or science), politely decline to answer and redirect them back to their finances.\n\n"
         "CURRENT USER PROFILE SUMMARY CONTEXT:\n"
@@ -237,7 +241,7 @@ def chat():
                             },
                             "budget_amount": {
                                 "type": "NUMBER",
-                                "description": "The budget limit amount in Rupees"
+                                "description": "The budget limit amount"
                             },
                             "month": {
                                 "type": "STRING",
@@ -255,7 +259,7 @@ def chat():
                         "properties": {
                             "amount": {
                                 "type": "NUMBER",
-                                "description": "The transaction amount in Rupees"
+                                "description": "The transaction amount"
                             },
                             "category": {
                                 "type": "STRING",
@@ -312,9 +316,9 @@ def chat():
         func_args = func_call["args"]
 
         if func_name == "create_budget":
-            result = handle_create_budget(user_id, db, func_args)
+            result = handle_create_budget(user_id, db, func_args, currency_symbol)
         elif func_name == "log_transaction":
-            result = handle_log_transaction(user_id, db, func_args)
+            result = handle_log_transaction(user_id, db, func_args, currency_symbol)
         else:
             result = {"success": False, "error": f"Unknown tool: {func_name}"}
 

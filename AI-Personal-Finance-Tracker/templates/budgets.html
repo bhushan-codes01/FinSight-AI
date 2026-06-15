@@ -24,6 +24,7 @@
         <li><a href="/budgets" class="active"><i class="fas fa-wallet"></i> Budgets</a></li>
         <li><a href="/goals"><i class="fas fa-bullseye"></i> Savings Goals</a></li>
         <li><a href="/chatbot"><i class="fas fa-robot"></i> AI Assistant</a></li>
+        <li><a href="/settings"><i class="fas fa-cog"></i> Settings</a></li>
       </ul>
       <div class="navbar-right d-flex align-items-center gap-2">
         {% if user_plan == 'pro' %}
@@ -68,7 +69,7 @@
                 <input name="category" type="text" class="form-control form-control-dark" required placeholder="e.g. Food, Rent, Entertainment" />
               </div>
               <div class="col-md-4">
-                <label class="form-label text-white">Budget Limit (₹)</label>
+                <label class="form-label text-white">Budget Limit ({{ currency_symbol }})</label>
                 <input name="budget_amount" type="number" step="0.01" class="form-control form-control-dark" required placeholder="e.g. 5000" />
               </div>
               <div class="col-md-4">
@@ -97,7 +98,7 @@
                   </div>
                   
                   <div class="d-flex justify-content-between align-items-center mb-3">
-                    <p class="mb-0 text-muted small">Budget: ₹{{ budget.budget_amount }} • Spent: ₹{{ budget.spent }}</p>
+                    <p class="mb-0 text-muted small">Budget: {{ currency_symbol }}{{ budget.budget_amount }} • Spent: {{ currency_symbol }}{{ budget.spent }}</p>
                     {% if budget.status == 'over-budget' %}
                       <span class="badge bg-danger">Over Budget</span>
                     {% elif budget.status == 'warning' %}
@@ -116,9 +117,9 @@
                   <div class="d-flex justify-content-between align-items-center">
                     <span class="text-muted small">
                       {% if budget.remaining >= 0 %}
-                        ₹{{ budget.remaining }} remaining
+                        {{ currency_symbol }}{{ budget.remaining }} remaining
                       {% else %}
-                        ₹{{ -budget.remaining }} over limit
+                        {{ currency_symbol }}{{ -budget.remaining }} over limit
                       {% endif %}
                     </span>
                     <button class="btn btn-sm btn-outline-danger" onclick="deleteBudget({{ budget.id }})">
@@ -139,6 +140,7 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+      const CURRENCY_SYMBOL = "{{ currency_symbol }}";
       // Set current month in form
       const now = new Date();
       const currentMonth = now.toISOString().slice(0, 7); // YYYY-MM
@@ -267,8 +269,8 @@
           }
 
           const remainingText = budget.remaining >= 0
-            ? `₹${budget.remaining} remaining`
-            : `₹${-budget.remaining} over limit`;
+            ? `${CURRENCY_SYMBOL}${budget.remaining} remaining`
+            : `${CURRENCY_SYMBOL}${-budget.remaining} over limit`;
 
           cardCol.innerHTML = `
             <div class="card budget-card bg-secondary bg-opacity-10 border-0 p-4">
@@ -278,7 +280,7 @@
               </div>
               
               <div class="d-flex justify-content-between align-items-center mb-3">
-                <p class="mb-0 text-muted small">Budget: ₹${budget.budget_amount} • Spent: ₹${budget.spent}</p>
+                <p class="mb-0 text-muted small">Budget: ${CURRENCY_SYMBOL}${budget.budget_amount} • Spent: ${CURRENCY_SYMBOL}${budget.spent}</p>
                 ${badgeHtml}
               </div>
 

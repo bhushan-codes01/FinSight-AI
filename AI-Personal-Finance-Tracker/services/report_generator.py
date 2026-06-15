@@ -25,8 +25,9 @@ class ReportGeneratorService:
         month_year = f"{year_str}-{month_str}"
 
         # Fetch user
-        user = db.execute("SELECT name, email FROM users WHERE id = ?", (user_id,)).fetchone()
+        user = db.execute("SELECT name, email, currency_symbol FROM users WHERE id = ?", (user_id,)).fetchone()
         user_name = user["name"] if user else "Valued Client"
+        currency_symbol = user["currency_symbol"] if (user and user["currency_symbol"]) else "₹"
 
         # Fetch transactions
         transactions = db.execute(
@@ -62,10 +63,10 @@ class ReportGeneratorService:
         prompt = (
             f"Please write a professional, concise financial report summary paragraph (2-3 sentences) "
             f"for {user_name} for {month_year}. "
-            f"They had an income of ₹{income:,.2f}, expenses of ₹{expenses:,.2f}, a net balance of ₹{net:,.2f}, "
+            f"They had an income of {currency_symbol}{income:,.2f}, expenses of {currency_symbol}{expenses:,.2f}, a net balance of {currency_symbol}{net:,.2f}, "
             f"and a savings rate of {savings_rate:.1f}%. "
-            f"Their top spending categories were: {', '.join([c['category'] + ' (₹' + f'{c['amount']:,.0f}' + ')' for c in category_breakdown[:3]])}. "
-            f"Offer brief financial coaching advice."
+            f"Their top spending categories were: {', '.join([c['category'] + ' (' + currency_symbol + f'{c['amount']:,.0f}' + ')' for c in category_breakdown[:3]])}. "
+            f"Offer brief financial coaching advice. Provide your response using {currency_symbol} as the currency symbol for all monetary amounts."
         )
 
         try:
@@ -86,7 +87,8 @@ class ReportGeneratorService:
             savings_rate=round(savings_rate, 1),
             category_breakdown=category_breakdown,
             transactions=transactions,
-            ai_summary=ai_summary
+            ai_summary=ai_summary,
+            currency_symbol=currency_symbol
         )
 
     @staticmethod

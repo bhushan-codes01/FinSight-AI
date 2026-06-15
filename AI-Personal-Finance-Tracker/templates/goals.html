@@ -565,6 +565,7 @@
         <li><a href="/budgets"><i class="fas fa-wallet"></i> Budgets</a></li>
         <li><a href="/goals" class="active"><i class="fas fa-bullseye"></i> Savings Goals</a></li>
         <li><a href="/chatbot"><i class="fas fa-robot"></i> AI Assistant</a></li>
+        <li><a href="/settings"><i class="fas fa-cog"></i> Settings</a></li>
       </ul>
       <div class="navbar-right d-flex align-items-center gap-2">
         {% if user_plan == 'pro' %}
@@ -659,11 +660,11 @@
                     <div class="goal-stats">
                         <div class="stat">
                             <span class="stat-label">Saved</span>
-                            <span class="stat-value highlight">₹{{ "{:,.0f}".format(goal.current_amount) }}</span>
+                            <span class="stat-value highlight">{{ currency_symbol }}{{ "{:,.0f}".format(goal.current_amount) }}</span>
                         </div>
                         <div class="stat">
                             <span class="stat-label">Target</span>
-                            <span class="stat-value">₹{{ "{:,.0f}".format(goal.target_amount) }}</span>
+                            <span class="stat-value">{{ currency_symbol }}{{ "{:,.0f}".format(goal.target_amount) }}</span>
                         </div>
                     </div>
                 </div>
@@ -722,7 +723,7 @@
                     <input type="text" id="createGoalTitle" class="form-input" placeholder="e.g., Vacation Fund, New Laptop" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Target Amount (₹)</label>
+                    <label class="form-label">Target Amount ({{ currency_symbol }})</label>
                     <input type="number" id="createGoalTargetAmount" class="form-input" placeholder="e.g., 50000" min="100" step="any" required>
                 </div>
                 <div class="form-group">
@@ -747,7 +748,7 @@
             <form id="addMoneyForm" onsubmit="submitAddMoney(event)">
                 <input type="hidden" id="addMoneyGoalId">
                 <div class="form-group">
-                    <label class="form-label">Amount (₹)</label>
+                    <label class="form-label">Amount ({{ currency_symbol }})</label>
                     <input type="number" id="addMoneyAmount" class="form-input" placeholder="e.g., 5000" min="1" step="any" required>
                 </div>
                 <div class="form-buttons">
@@ -759,6 +760,7 @@
     </div>
 
     <script>
+        const CURRENCY_SYMBOL = "{{ currency_symbol }}";
         // Modal controls
         function openCreateGoalModal() {
             document.getElementById('createGoalModal').classList.add('active');
@@ -878,11 +880,11 @@
                     <div class="goal-stats">
                         <div class="stat">
                             <span class="stat-label">Saved</span>
-                            <span class="stat-value highlight">₹${formattedCurrent}</span>
+                            <span class="stat-value highlight">${CURRENCY_SYMBOL}${formattedCurrent}</span>
                         </div>
                         <div class="stat">
                             <span class="stat-label">Target</span>
-                            <span class="stat-value">₹${formattedTarget}</span>
+                            <span class="stat-value">${CURRENCY_SYMBOL}${formattedTarget}</span>
                         </div>
                     </div>
                 </div>
@@ -1003,7 +1005,7 @@
                     if (card) {
                         const savedVal = card.querySelector('.stat-value.highlight');
                         if (savedVal) {
-                            savedVal.innerText = '₹' + Number(data.new_amount).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+                            savedVal.innerText = CURRENCY_SYMBOL + Number(data.new_amount).toLocaleString('en-IN', { maximumFractionDigits: 0 });
                         }
                         const percentageText = card.querySelector('.progress-percentage');
                         if (percentageText) {

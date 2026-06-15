@@ -4,9 +4,13 @@ from dotenv import load_dotenv
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 
+# Configure email password string
+email_pass = os.getenv('EMAIL_PASS') or os.getenv('EMAIL_PASSWORD') or ''
+
 import sqlite3
 from functools import wraps
 from flask import Flask, g, render_template, request, redirect, url_for, session, flash, jsonify
+from flask_mail import Mail, Message
 from routes.auth import auth_bp, oauth
 from routes.transactions import transactions_bp, get_upcoming_recurring
 from routes.budget import budget_bp
@@ -26,6 +30,20 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 app.secret_key = os.getenv("SECRET_KEY", "your-secret-key")
 app.config["SECRET_KEY"] = app.secret_key
 app.config["DATABASE"] = DATABASE_PATH
+
+# Step 1 & 5: Flask-Mail Configuration and Space-Stripping for App Password
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+mail_port_env = os.getenv('MAIL_PORT', '587')
+app.config['MAIL_PORT'] = int(mail_port_env) if str(mail_port_env).isdigit() else 587
+tls_env = os.getenv('MAIL_USE_TLS', 'True')
+app.config['MAIL_USE_TLS'] = tls_env.strip().lower() in ('true', '1', 'yes')
+app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_USERNAME'] = os.getenv('EMAIL_USER')
+app.config['MAIL_PASSWORD'] = email_pass.replace(' ', '')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('EMAIL_USER')
+
+mail = Mail(app)
+app.mail = mail
 
 # Initialize Flask-Mail
 email_service = EmailAlertsService(app)
@@ -190,6 +208,12 @@ def ensure_database():
         if "plan_expiry" not in user_cols:
             cursor.execute("ALTER TABLE users ADD COLUMN plan_expiry DATE")
             modified = True
+        if "currency" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN currency TEXT DEFAULT 'INR'")
+            modified = True
+        if "currency_symbol" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN currency_symbol TEXT DEFAULT '₹'")
+            modified = True
 
         # Check if auth_tokens table exists
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='auth_tokens'")
@@ -262,20 +286,22 @@ def ensure_database():
 
 
 @app.context_processor
-def inject_user_plan():
+def inject_global_user_data():
     if not session.get("user_id"):
-        return {}
+        return {"user_plan": "free", "email_verified": 0, "currency": "INR", "currency_symbol": "₹"}
     try:
         db = get_db()
-        user = db.execute("SELECT plan, email_verified FROM users WHERE id = ?", (session["user_id"],)).fetchone()
+        user = db.execute("SELECT plan, email_verified, currency, currency_symbol FROM users WHERE id = ?", (session["user_id"],)).fetchone()
         if user:
             return {
                 "user_plan": user["plan"] or "free",
-                "email_verified": user["email_verified"]
+                "email_verified": user["email_verified"],
+                "currency": user["currency"] or "INR",
+                "currency_symbol": user["currency_symbol"] or "₹"
             }
     except Exception:
         pass
-    return {"user_plan": "free", "email_verified": 0}
+    return {"user_plan": "free", "email_verified": 0, "currency": "INR", "currency_symbol": "₹"}
 
 
 @app.route("/")
@@ -317,6 +343,23 @@ def dashboard():
     )
 
 
+@app.route("/settings", methods=["GET"])
+@login_required
+def settings_page():
+    db = get_db()
+    user = db.execute("SELECT email_notifications, currency FROM users WHERE id = ?", (session["user_id"],)).fetchone()
+    email_notifications = user["email_notifications"] if user else 1
+    selected_currency = user["currency"] if user else "INR"
+    
+    from services.currency import CURRENCIES
+    return render_template(
+        "settings.html",
+        email_notifications=email_notifications,
+        selected_currency=selected_currency,
+        currencies=CURRENCIES
+    )
+
+
 @app.route("/settings/notifications", methods=["POST"])
 @login_required
 def toggle_notifications():
@@ -328,7 +371,28 @@ def toggle_notifications():
     db.commit()
     
     flash("Notification preferences updated.", "success")
-    return redirect(url_for("dashboard"))
+    return redirect(url_for("settings_page"))
+
+
+@app.route("/settings/currency", methods=["POST"])
+@login_required
+def update_currency():
+    user_id = session["user_id"]
+    currency_code = request.form.get("currency", "INR").upper()
+    
+    from services.currency import CURRENCIES
+    if currency_code not in CURRENCIES:
+        flash("Invalid currency selection.", "danger")
+        return redirect(url_for("settings_page"))
+        
+    symbol = CURRENCIES[currency_code]["symbol"]
+    
+    db = get_db()
+    db.execute("UPDATE users SET currency = ?, currency_symbol = ? WHERE id = ?", (currency_code, symbol, user_id))
+    db.commit()
+    
+    flash(f"Currency updated to {currency_code} ({symbol}).", "success")
+    return redirect(url_for("settings_page"))
 
 
 @app.route("/debug-env")

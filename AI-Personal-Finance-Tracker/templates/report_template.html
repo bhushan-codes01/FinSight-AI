@@ -126,15 +126,15 @@
     <div class="summary-grid">
         <div class="summary-card">
             <div class="card-label">Total Income</div>
-            <div class="card-value income">₹{{ "{:,.2f}".format(income) }}</div>
+            <div class="card-value income">{{ currency_symbol }}{{ "{:,.2f}".format(income) }}</div>
         </div>
         <div class="summary-card">
             <div class="card-label">Total Expenses</div>
-            <div class="card-value expense">₹{{ "{:,.2f}".format(expenses) }}</div>
+            <div class="card-value expense">{{ currency_symbol }}{{ "{:,.2f}".format(expenses) }}</div>
         </div>
         <div class="summary-card">
             <div class="card-label">Net Savings</div>
-            <div class="card-value">₹{{ "{:,.2f}".format(net) }}</div>
+            <div class="card-value">{{ currency_symbol }}{{ "{:,.2f}".format(net) }}</div>
         </div>
         <div class="summary-card">
             <div class="card-label">Savings Rate</div>
@@ -160,7 +160,7 @@
             {% for cat in category_breakdown %}
             <tr>
                 <td>{{ cat.category }}</td>
-                <td class="text-right">₹{{ "{:,.2f}".format(cat.amount) }}</td>
+                <td class="text-right">{{ currency_symbol }}{{ "{:,.2f}".format(cat.amount) }}</td>
                 <td class="text-right">{{ cat.percentage }}%</td>
             </tr>
             {% else %}
@@ -191,7 +191,7 @@
                 <td style="text-transform: capitalize; color: {% if txn.transaction_type == 'income' %}#198754{% else %}#dc3545{% endif %};">
                     {{ txn.transaction_type }}
                 </td>
-                <td class="text-right">₹{{ "{:,.2f}".format(txn.amount) }}</td>
+                <td class="text-right">{{ currency_symbol }}{{ "{:,.2f}".format(txn.amount) }}</td>
             </tr>
             {% else %}
             <tr>
