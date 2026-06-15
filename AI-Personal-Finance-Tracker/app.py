@@ -19,7 +19,10 @@ from services.email_service import EmailAlertsService
 
 DATABASE_PATH = os.path.join(BASE_DIR, "database", "finance.db")
 
+from werkzeug.middleware.proxy_fix import ProxyFix
+
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 app.secret_key = os.getenv("SECRET_KEY", "your-secret-key")
 app.config["SECRET_KEY"] = app.secret_key
 app.config["DATABASE"] = DATABASE_PATH
