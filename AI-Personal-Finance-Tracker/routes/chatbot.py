@@ -86,9 +86,30 @@ def chat():
     if not session.get("user_id"):
         return jsonify({"error": "Unauthorized"}), 401
 
+    user_id = session["user_id"]
+    
+    # 1. Check AI Quota for Free Plan
+    from services.plan_gate import check_ai_quota, increment_ai_usage, get_user_plan
+    if not check_ai_quota(user_id):
+        return jsonify({
+            "error": "quota_exceeded", 
+            "message": "Daily limit reached. Upgrade to Pro for unlimited AI chat."
+        }), 403
+
     user_question = request.form.get("user_question", "").strip()
     csv_file = request.files.get("statement_file")
-    user_id = session["user_id"]
+
+    # 2. Check CSV Gating (Pro only)
+    if csv_file and csv_file.filename:
+        if get_user_plan(user_id) != 'pro':
+            return jsonify({
+                "error": "pro_required", 
+                "message": "CSV upload and analysis is a Pro feature. Please upgrade to Pro to upload statements."
+            }), 403
+
+    # If quota ok, increment usage count
+    increment_ai_usage(user_id)
+
     db = get_db()
 
     # 1. Fetch current user financial context snapshot (RAG)
@@ -275,7 +296,9 @@ def chat():
         }
     ]
 
-    gemini = GeminiService()
+    user_plan = get_user_plan(user_id)
+    model_name = "gemini-2.5-pro" if user_plan == "pro" else "gemini-2.5-flash"
+    gemini = GeminiService(model_name=model_name)
     response_data = gemini.analyze_with_history(
         contents=contents,
         system_instruction=system_instruction,

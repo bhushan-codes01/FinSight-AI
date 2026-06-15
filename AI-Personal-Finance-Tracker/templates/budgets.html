@@ -25,12 +25,30 @@
         <li><a href="/goals"><i class="fas fa-bullseye"></i> Savings Goals</a></li>
         <li><a href="/chatbot"><i class="fas fa-robot"></i> AI Assistant</a></li>
       </ul>
-      <div class="navbar-right">
+      <div class="navbar-right d-flex align-items-center gap-2">
+        {% if user_plan == 'pro' %}
+          <span class="badge bg-success px-3 py-2 small" style="background: var(--gradient-1) !important; box-shadow: var(--gradient-glow); text-transform: uppercase; font-weight: 700; border-radius: 20px;">Pro ⭐</span>
+        {% else %}
+          <a href="/upgrade" class="badge bg-secondary px-3 py-2 text-decoration-none text-white small" style="background: rgba(255, 255, 255, 0.1) !important; border: 1px solid rgba(255, 255, 255, 0.1); text-transform: uppercase; font-weight: 700; border-radius: 20px; transition: all 0.25s;" onmouseover="this.style.background='var(--accent-purple)';" onmouseout="this.style.background='rgba(255, 255, 255, 0.1) !important';">Free</a>
+        {% endif %}
         <form method="POST" action="/logout" style="margin: 0;">
-          <button class="btn btn-outline-danger"><i class="fas fa-sign-out-alt"></i> Logout</button>
+          <button class="btn btn-outline-danger btn-sm px-3"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </form>
       </div>
     </nav>
+
+    <!-- Email Verification Warning Banner -->
+    {% if not email_verified %}
+    <div class="alert alert-warning border-0 rounded-0 mb-0 d-flex justify-content-between align-items-center px-4 py-3" role="alert" style="background: rgba(245, 158, 11, 0.12); border-bottom: 1px solid rgba(245, 158, 11, 0.2) !important; color: #f59e0b;">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span><strong>Verify your email:</strong> Please verify your email to secure your account.</span>
+      </div>
+      <form method="POST" action="/resend-verification" style="margin: 0;">
+        <button type="submit" class="btn btn-warning btn-sm py-1 px-3 text-dark fw-bold" style="border-radius: 6px !important; font-size: 0.8rem !important; min-height: unset; padding: 0.25rem 0.75rem !important;">Resend Email</button>
+      </form>
+    </div>
+    {% endif %}
 
     <main class="container py-5">
       <div class="row g-4">

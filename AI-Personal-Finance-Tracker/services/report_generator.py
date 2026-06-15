@@ -9,6 +9,12 @@ try:
 except Exception:
     WEASYPRINT_AVAILABLE = False
 
+try:
+    from xhtml2pdf import pisa
+    XHTML2PDF_AVAILABLE = True
+except Exception:
+    XHTML2PDF_AVAILABLE = False
+
 
 class ReportGeneratorService:
     @staticmethod
@@ -85,7 +91,25 @@ class ReportGeneratorService:
 
     @staticmethod
     def html_to_pdf(html_content):
+        # Try WeasyPrint first
         if WEASYPRINT_AVAILABLE:
-            return HTML(string=html_content).write_pdf()
-        else:
-            return None
+            try:
+                return HTML(string=html_content).write_pdf()
+            except Exception as e:
+                # Log error or print to stderr
+                print(f"WeasyPrint PDF generation failed: {e}")
+
+        # Try xhtml2pdf as fallback
+        if XHTML2PDF_AVAILABLE:
+            try:
+                from io import BytesIO
+                result = BytesIO()
+                pdf = pisa.pisaDocument(BytesIO(html_content.encode("utf-8")), result)
+                if not pdf.err:
+                    return result.getvalue()
+                else:
+                    print(f"xhtml2pdf PDF generation failed with error code: {pdf.err}")
+            except Exception as e:
+                print(f"xhtml2pdf PDF generation raised exception: {e}")
+
+        return None

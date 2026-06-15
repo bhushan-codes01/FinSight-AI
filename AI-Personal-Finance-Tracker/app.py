@@ -2,12 +2,13 @@ import os
 import sqlite3
 from functools import wraps
 from flask import Flask, g, render_template, request, redirect, url_for, session, flash, jsonify
-from routes.auth import auth_bp
+from routes.auth import auth_bp, oauth
 from routes.transactions import transactions_bp, get_upcoming_recurring
 from routes.budget import budget_bp
 from routes.chatbot import chatbot_bp
 from routes.goals import goals_bp
 from routes.reports import reports_bp
+from routes.billing import billing_bp
 from services.analytics import AnalyticsService
 from services.email_service import EmailAlertsService
 from dotenv import load_dotenv
@@ -24,6 +25,10 @@ app.config["DATABASE"] = DATABASE_PATH
 
 # Initialize Flask-Mail
 email_service = EmailAlertsService(app)
+app.email_service = email_service
+
+# Initialize OAuth
+oauth.init_app(app)
 
 # Register blueprints
 app.register_blueprint(auth_bp)
@@ -32,6 +37,7 @@ app.register_blueprint(budget_bp)
 app.register_blueprint(chatbot_bp)
 app.register_blueprint(goals_bp)
 app.register_blueprint(reports_bp)
+app.register_blueprint(billing_bp)
 
 
 def login_required(view_func):
@@ -161,6 +167,79 @@ def ensure_database():
         if "email_notifications" not in user_cols:
             cursor.execute("ALTER TABLE users ADD COLUMN email_notifications INTEGER DEFAULT 1")
             modified = True
+        if "google_id" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN google_id TEXT")
+            cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id)")
+            modified = True
+        if "auth_provider" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN auth_provider TEXT DEFAULT 'local'")
+            modified = True
+        if "profile_picture" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN profile_picture TEXT")
+            modified = True
+        if "email_verified" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN email_verified BOOLEAN DEFAULT 0")
+            modified = True
+        if "plan" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN plan TEXT DEFAULT 'free'")
+            modified = True
+        if "plan_expiry" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN plan_expiry DATE")
+            modified = True
+
+        # Check if auth_tokens table exists
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='auth_tokens'")
+        auth_tokens_exists = cursor.fetchone()
+        if not auth_tokens_exists:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS auth_tokens (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER,
+                    token TEXT UNIQUE NOT NULL,
+                    token_type TEXT NOT NULL,
+                    expires_at TIMESTAMP NOT NULL,
+                    used BOOLEAN DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY(user_id) REFERENCES users(id)
+                )
+            """)
+            modified = True
+
+        # Check if subscriptions table exists
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='subscriptions'")
+        subscriptions_exists = cursor.fetchone()
+        if not subscriptions_exists:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS subscriptions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER,
+                    plan TEXT NOT NULL,
+                    billing_cycle TEXT,
+                    razorpay_subscription_id TEXT,
+                    razorpay_payment_id TEXT,
+                    status TEXT DEFAULT 'active',
+                    started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    expires_at TIMESTAMP,
+                    FOREIGN KEY(user_id) REFERENCES users(id)
+                )
+            """)
+            modified = True
+
+        # Check if ai_usage table exists
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='ai_usage'")
+        ai_usage_exists = cursor.fetchone()
+        if not ai_usage_exists:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS ai_usage (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER,
+                    usage_date DATE,
+                    message_count INTEGER DEFAULT 0,
+                    FOREIGN KEY(user_id) REFERENCES users(id),
+                    UNIQUE(user_id, usage_date)
+                )
+            """)
+            modified = True
 
         cursor.execute("PRAGMA table_info(transactions)")
         columns = [row[1] for row in cursor.fetchall()]
@@ -176,6 +255,23 @@ def ensure_database():
         if modified:
             conn.commit()
         conn.close()
+
+
+@app.context_processor
+def inject_user_plan():
+    if not session.get("user_id"):
+        return {}
+    try:
+        db = get_db()
+        user = db.execute("SELECT plan, email_verified FROM users WHERE id = ?", (session["user_id"],)).fetchone()
+        if user:
+            return {
+                "user_plan": user["plan"] or "free",
+                "email_verified": user["email_verified"]
+            }
+    except Exception:
+        pass
+    return {"user_plan": "free", "email_verified": 0}
 
 
 @app.route("/")
@@ -198,8 +294,10 @@ def dashboard():
     )
     upcoming_recurring = get_upcoming_recurring(user_id)
 
-    user_pref = query_db("SELECT email_notifications FROM users WHERE id = ?", (user_id,), one=True)
-    email_notifications = user_pref["email_notifications"] if user_pref else 1
+    user_data = query_db("SELECT email_notifications, email_verified, plan FROM users WHERE id = ?", (user_id,), one=True)
+    email_notifications = user_data["email_notifications"] if user_data else 1
+    email_verified = user_data["email_verified"] if user_data else 0
+    user_plan = user_data["plan"] if user_data else "free"
 
     return render_template(
         "dashboard.html",
@@ -210,6 +308,8 @@ def dashboard():
         recent_transactions=recent_transactions,
         upcoming_recurring=upcoming_recurring,
         email_notifications=email_notifications,
+        email_verified=email_verified,
+        user_plan=user_plan,
     )
 
 

@@ -6,6 +6,13 @@ try:
     WEASYPRINT_AVAILABLE = True
 except Exception:
     WEASYPRINT_AVAILABLE = False
+
+try:
+    from xhtml2pdf import pisa
+    XHTML2PDF_AVAILABLE = True
+except Exception:
+    XHTML2PDF_AVAILABLE = False
+
 import sqlite3
 
 
@@ -46,8 +53,26 @@ class PDFReportService:
         html_content = self._create_html(user, month_year, income, expenses, net, transactions, categories, summary_text)
 
         # Generate PDF
+        pdf_bytes = None
         if WEASYPRINT_AVAILABLE:
-            pdf_bytes = HTML(string=html_content).write_pdf()
+            try:
+                pdf_bytes = HTML(string=html_content).write_pdf()
+            except Exception as e:
+                print(f"WeasyPrint PDF generation failed in PDFReportService: {e}")
+
+        if pdf_bytes is None and XHTML2PDF_AVAILABLE:
+            try:
+                from io import BytesIO
+                result = BytesIO()
+                pdf = pisa.pisaDocument(BytesIO(html_content.encode("utf-8")), result)
+                if not pdf.err:
+                    pdf_bytes = result.getvalue()
+                else:
+                    print(f"xhtml2pdf PDF generation failed in PDFReportService with error code: {pdf.err}")
+            except Exception as e:
+                print(f"xhtml2pdf PDF generation raised exception in PDFReportService: {e}")
+
+        if pdf_bytes:
             return pdf_bytes, f"FinanceAI_Report_{month_year}.pdf"
         else:
             return html_content.encode("utf-8"), f"FinanceAI_Report_{month_year}.html"

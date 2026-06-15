@@ -6,6 +6,12 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
     email_notifications INTEGER DEFAULT 1,
+    google_id TEXT UNIQUE,
+    auth_provider TEXT DEFAULT 'local',
+    profile_picture TEXT,
+    email_verified BOOLEAN DEFAULT 0,
+    plan TEXT DEFAULT 'free',
+    plan_expiry DATE,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -74,3 +80,37 @@ CREATE TABLE IF NOT EXISTS sent_alerts (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS auth_tokens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    token TEXT UNIQUE NOT NULL,
+    token_type TEXT NOT NULL, -- 'password_reset' or 'email_verify'
+    expires_at TIMESTAMP NOT NULL,
+    used BOOLEAN DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS subscriptions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    plan TEXT NOT NULL, -- 'free' or 'pro'
+    billing_cycle TEXT, -- 'monthly' or 'yearly'
+    razorpay_subscription_id TEXT,
+    razorpay_payment_id TEXT,
+    status TEXT DEFAULT 'active', -- active, cancelled, expired
+    started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS ai_usage (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    usage_date DATE,
+    message_count INTEGER DEFAULT 0,
+    FOREIGN KEY(user_id) REFERENCES users(id),
+    UNIQUE(user_id, usage_date)
+);
+

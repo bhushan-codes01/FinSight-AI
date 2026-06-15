@@ -3,6 +3,7 @@ from flask import Blueprint, request, redirect, url_for, session, current_app, g
 from services.pdf_service import PDFReportService
 from services.report_generator import ReportGeneratorService
 from services.email_service import EmailAlertsService
+from services.plan_gate import require_pro
 from datetime import datetime
 
 reports_bp = Blueprint("reports", __name__)
@@ -24,6 +25,7 @@ def close_connection(exception):
 
 
 @reports_bp.route("/reports/pdf", methods=["GET"])
+@require_pro
 def download_report():
     if not session.get("user_id"):
         return redirect(url_for("auth.login"))
@@ -59,7 +61,8 @@ def send_report_email():
         return jsonify({"error": "Unauthorized"}), 401
 
     user_id = session["user_id"]
-    month_year = request.json.get("month", datetime.now().strftime("%Y-%m"))
+    json_data = request.get_json(silent=True) or {}
+    month_year = json_data.get("month", datetime.now().strftime("%Y-%m"))
 
     db = get_db()
     user = db.execute("SELECT email, name FROM users WHERE id = ?", (user_id,)).fetchone()

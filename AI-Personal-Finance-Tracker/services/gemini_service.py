@@ -5,12 +5,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class GeminiService:
-    def __init__(self):
+    def __init__(self, model_name=None):
         self.api_key = os.getenv("GEMINI_API_KEY")
-        self.endpoint = os.getenv(
-            "GEMINI_ENDPOINT",
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
-        )
+        if not model_name:
+            model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+        self.endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
 
     def analyze(self, prompt):
         if not self.api_key or self.api_key.strip() == "" or "your_" in self.api_key.lower():
