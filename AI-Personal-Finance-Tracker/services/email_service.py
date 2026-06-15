@@ -102,6 +102,8 @@ class EmailAlertsService:
         except Exception:
             pass
 
+        print(f"\n[EMAIL VERIFICATION URL for {user_email}]: {verify_url}\n", flush=True)
+
         html = f"""
         <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #ffffff;">
             <div style="text-align: center; border-bottom: 2px solid #7c3aed; padding-bottom: 20px; margin-bottom: 20px;">
@@ -127,6 +129,8 @@ class EmailAlertsService:
             reset_url = f"{request.url_root.rstrip('/')}/reset-password/{token}"
         except Exception:
             pass
+
+        print(f"\n[PASSWORD RESET URL for {user_email}]: {reset_url}\n", flush=True)
 
         html = f"""
         <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #ffffff;">

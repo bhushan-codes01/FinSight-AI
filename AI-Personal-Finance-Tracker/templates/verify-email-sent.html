@@ -15,6 +15,11 @@
             <span style="font-size: 3rem;">✉️</span>
           </div>
           <h2 class="text-white mb-3">Check Your Email</h2>
+          {% if email_sent == False %}
+          <div class="alert alert-warning border-0 text-start mb-4 small" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b; border-radius: 8px;">
+            <strong>Warning:</strong> SMTP email sending failed. If you are local or running on Render, check your server/dashboard logs to retrieve the printed verification link directly.
+          </div>
+          {% endif %}
           <p class="text-muted mb-4">
             We've sent a verification link to <strong class="text-white">{{ email }}</strong>. 
             Please click on the link in the email to activate your account.

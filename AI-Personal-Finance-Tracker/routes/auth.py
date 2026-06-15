@@ -108,10 +108,11 @@ def register():
             token = generate_and_save_token(db, user_id, 'email_verify', hours=24)
             
             # Send verification email using current_app.email_service
+            email_sent = False
             if hasattr(current_app, 'email_service') and current_app.email_service:
-                current_app.email_service.send_verification_email(email, token)
+                email_sent = current_app.email_service.send_verification_email(email, token)
             
-            return render_template("verify-email-sent.html", email=email)
+            return render_template("verify-email-sent.html", email=email, email_sent=email_sent)
         except sqlite3.IntegrityError:
             flash("This email is already registered.", "danger")
             return render_template("register.html")
@@ -232,10 +233,14 @@ def resend_verification():
         token = generate_and_save_token(db, user_id, 'email_verify', hours=24)
         
         # Send verification email
+        sent = False
         if hasattr(current_app, 'email_service') and current_app.email_service:
-            current_app.email_service.send_verification_email(user["email"], token)
+            sent = current_app.email_service.send_verification_email(user["email"], token)
             
-        flash("Verification email resent. Please check your inbox.", "info")
+        if sent:
+            flash("Verification email resent. Please check your inbox.", "info")
+        else:
+            flash("Failed to send email via SMTP. If you are on Render/local and haven't configured SMTP, check your server/Render logs for the printed verification link!", "warning")
     else:
         flash("Your email is already verified.", "warning")
         
