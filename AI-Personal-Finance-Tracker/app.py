@@ -331,6 +331,16 @@ def toggle_notifications():
     return redirect(url_for("dashboard"))
 
 
+@app.route("/debug-env")
+def debug_env():
+    return {
+        "GOOGLE_CLIENT_ID_present": os.getenv("GOOGLE_CLIENT_ID") is not None,
+        "GOOGLE_CLIENT_ID_val": os.getenv("GOOGLE_CLIENT_ID"),
+        "GOOGLE_CLIENT_SECRET_present": os.getenv("GOOGLE_CLIENT_SECRET") is not None,
+        "GOOGLE_CLIENT_SECRET_len": len(os.getenv("GOOGLE_CLIENT_SECRET") or ""),
+    }
+
+
 @app.errorhandler(Exception)
 def handle_exception(e):
     import traceback
