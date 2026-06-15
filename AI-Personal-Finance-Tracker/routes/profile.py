@@ -30,9 +30,9 @@ def view_profile():
     user_id = session["user_id"]
     db = get_db()
 
-    # Get user details
+    # Get user details including new fields
     user = db.execute(
-        "SELECT name, email, plan, plan_expiry, email_verified, currency, currency_symbol, profile_picture, auth_provider, created_at FROM users WHERE id = ?",
+        "SELECT name, email, plan, plan_expiry, email_verified, currency, currency_symbol, profile_picture, auth_provider, created_at, occupation, monthly_income, savings_goal, budget_style, risk_appetite, advice_level FROM users WHERE id = ?",
         (user_id,),
     ).fetchone()
 
@@ -70,6 +70,7 @@ def view_profile():
             "total_transactions": total_tx,
             "total_income": round(total_income, 2),
             "total_expense": round(total_expense, 2),
+            "total_savings": round(total_income - total_expense, 2),
             "total_goals": total_goals,
             "total_chats": total_chats,
         },
@@ -84,7 +85,22 @@ def update_profile():
 
     user_id = session["user_id"]
     name = request.form.get("name", "").strip()
+    occupation = request.form.get("occupation", "").strip()
     avatar_choice = request.form.get("avatar_choice", "").strip()
+
+    try:
+        monthly_income = float(request.form.get("monthly_income", 0.0) or 0.0)
+    except ValueError:
+        monthly_income = 0.0
+
+    try:
+        savings_goal = float(request.form.get("savings_goal", 0.0) or 0.0)
+    except ValueError:
+        savings_goal = 0.0
+
+    budget_style = request.form.get("budget_style", "50/30/20").strip()
+    risk_appetite = request.form.get("risk_appetite", "Moderate").strip()
+    advice_level = request.form.get("advice_level", "Balanced").strip()
 
     if not name:
         flash("Name cannot be empty.", "danger")
@@ -92,8 +108,11 @@ def update_profile():
 
     db = get_db()
 
-    # Update Name
-    db.execute("UPDATE users SET name = ? WHERE id = ?", (name, user_id))
+    # Update Name and all new fields
+    db.execute(
+        "UPDATE users SET name = ?, occupation = ?, monthly_income = ?, savings_goal = ?, budget_style = ?, risk_appetite = ?, advice_level = ? WHERE id = ?",
+        (name, occupation, monthly_income, savings_goal, budget_style, risk_appetite, advice_level, user_id),
+    )
     session["user_name"] = name
 
     # Handle predefined avatar selection

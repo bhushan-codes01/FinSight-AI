@@ -14,6 +14,12 @@ CREATE TABLE IF NOT EXISTS users (
     plan_expiry DATE,
     currency TEXT DEFAULT 'INR',
     currency_symbol TEXT DEFAULT '₹',
+    occupation TEXT DEFAULT '',
+    monthly_income REAL DEFAULT 0.0,
+    savings_goal REAL DEFAULT 0.0,
+    budget_style TEXT DEFAULT '50/30/20',
+    risk_appetite TEXT DEFAULT 'Moderate',
+    advice_level TEXT DEFAULT 'Balanced',
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 

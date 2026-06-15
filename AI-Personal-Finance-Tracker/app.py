@@ -216,6 +216,24 @@ def ensure_database():
         if "currency_symbol" not in user_cols:
             cursor.execute("ALTER TABLE users ADD COLUMN currency_symbol TEXT DEFAULT '₹'")
             modified = True
+        if "occupation" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN occupation TEXT DEFAULT ''")
+            modified = True
+        if "monthly_income" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN monthly_income REAL DEFAULT 0.0")
+            modified = True
+        if "savings_goal" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN savings_goal REAL DEFAULT 0.0")
+            modified = True
+        if "budget_style" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN budget_style TEXT DEFAULT '50/30/20'")
+            modified = True
+        if "risk_appetite" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN risk_appetite TEXT DEFAULT 'Moderate'")
+            modified = True
+        if "advice_level" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN advice_level TEXT DEFAULT 'Balanced'")
+            modified = True
 
         # Check if auth_tokens table exists
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='auth_tokens'")
