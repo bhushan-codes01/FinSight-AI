@@ -3,116 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Savings Goals - FinanceAI</title>
+    <title>Savings Goals - FinSight AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/css/style.css">
+    <script>
+      // Apply theme preference instantly before loading DOM
+      if (localStorage.getItem('theme-pref') === 'dark') {
+        document.body.classList.add('theme-dark');
+      }
+    </script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --bg-primary: #0a0a0f;
-            --bg-secondary: #111118;
-            --bg-card: rgba(22, 22, 31, 0.6);
-            --bg-hover: rgba(30, 30, 42, 0.8);
-            --accent-purple: #7c3aed;
-            --accent-blue: #2563eb;
-            --accent-cyan: #06b6d4;
-            --accent-green: #10b981;
-            --accent-red: #ef4444;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --border: rgba(255, 255, 255, 0.08);
-            --gradient-1: linear-gradient(135deg, #7c3aed, #2563eb);
-            --gradient-glow: 0 8px 32px 0 rgba(124, 58, 237, 0.2);
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(124, 58, 237, 0.1) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(37, 99, 235, 0.1) 0px, transparent 50%);
-            background-attachment: fixed;
-        }
-
-
-        .btn {
-            padding: 0.65rem 1.25rem;
-            border-radius: 12px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
-        }
-
-        .btn-ghost {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: var(--text-primary);
-        }
-
-        .btn-ghost:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: var(--accent-purple);
-        }
-
-        .btn-gradient {
-            background: var(--gradient-1);
-            color: white;
-            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);
-        }
-
-        .btn-gradient:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.35);
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2.5rem 2rem;
-        }
-
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2.5rem;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-        }
-
-        .header-title-area {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-        }
-
-        .page-title {
-            font-size: 2.25rem;
-            font-weight: 800;
-            letter-spacing: -0.025em;
-        }
-
-        .page-subtitle {
-            color: var(--text-secondary);
-            font-size: 1rem;
-        }
-
         /* Modal Dialogs */
         .modal {
             display: none;
@@ -134,7 +36,7 @@
         }
 
         .modal-content {
-            background: rgba(18, 18, 29, 0.95);
+            background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 20px;
             padding: 2.25rem;
@@ -154,12 +56,15 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1.75rem;
+            border-bottom: none !important;
+            padding: 0 !important;
         }
 
         .modal-title {
             font-size: 1.4rem;
             font-weight: 700;
             letter-spacing: -0.01em;
+            color: var(--text-primary) !important;
         }
 
         .close-btn {
@@ -192,12 +97,16 @@
             width: 100%;
             padding: 0.8rem 1rem;
             background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border);
             border-radius: 12px;
             color: var(--text-primary);
             font-family: inherit;
             font-size: 0.95rem;
             transition: all 0.25s;
+        }
+
+        body.theme-dark .form-input {
+            background: rgba(255, 255, 255, 0.04);
         }
 
         .form-input:focus {
@@ -220,13 +129,13 @@
         /* Goals Grid Layout */
         .goals-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 2rem;
         }
 
         .goal-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
+            background: var(--bg-card) !important;
+            border: 1px solid var(--border) !important;
             border-radius: 20px;
             padding: 2rem;
             backdrop-filter: blur(20px);
@@ -240,8 +149,8 @@
 
         .goal-card:hover {
             transform: translateY(-5px);
-            border-color: rgba(124, 58, 237, 0.3);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 20px rgba(124, 58, 237, 0.15);
+            border-color: rgba(124, 58, 237, 0.3) !important;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2), var(--gradient-glow);
         }
 
         .goal-header {
@@ -293,7 +202,7 @@
         .progress-ring-circle {
             transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
             transform-origin: center;
-            stroke-dasharray: 377; /* 2 * PI * r = 2 * 3.14159 * 60 = 376.99 */
+            stroke-dasharray: 377;
             stroke-dashoffset: 377;
         }
 
@@ -331,9 +240,13 @@
             gap: 1rem;
             margin-bottom: 1.5rem;
             padding: 1rem;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.04);
+            background: rgba(15, 23, 42, 0.02);
+            border: 1px solid var(--border);
             border-radius: 14px;
+        }
+
+        body.theme-dark .goal-stats {
+            background: rgba(255, 255, 255, 0.02);
         }
 
         .stat {
@@ -388,24 +301,24 @@
         }
 
         .btn-add-money {
-            background: rgba(16, 185, 129, 0.15);
-            color: #10b981;
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            background: rgba(34, 197, 94, 0.12);
+            color: var(--accent-green);
+            border: 1px solid rgba(34, 197, 94, 0.3);
         }
 
         .btn-add-money:hover {
-            background: rgba(16, 185, 129, 0.25);
+            background: rgba(34, 197, 94, 0.2);
             transform: translateY(-1px);
         }
 
         .btn-advice {
-            background: rgba(6, 182, 212, 0.15);
-            color: #06b6d4;
-            border: 1px solid rgba(6, 182, 212, 0.3);
+            background: rgba(139, 92, 246, 0.12);
+            color: var(--accent-purple);
+            border: 1px solid rgba(139, 92, 246, 0.3);
         }
 
         .btn-advice:hover {
-            background: rgba(6, 182, 212, 0.25);
+            background: rgba(139, 92, 246, 0.2);
             transform: translateY(-1px);
         }
 
@@ -425,12 +338,12 @@
         .advice-box {
             margin-top: 1.25rem;
             padding: 1.15rem;
-            background: rgba(6, 182, 212, 0.03);
-            border: 1px dashed rgba(6, 182, 212, 0.25);
+            background: rgba(139, 92, 246, 0.03);
+            border: 1px dashed rgba(139, 92, 246, 0.25);
             border-radius: 14px;
             animation: adviceFadeIn 0.4s ease-out;
             font-size: 0.85rem;
-            color: #d1d5db;
+            color: var(--text-secondary);
             line-height: 1.6;
         }
 
@@ -444,7 +357,7 @@
             align-items: center;
             justify-content: space-between;
             margin-bottom: 0.6rem;
-            color: #06b6d4;
+            color: var(--accent-purple);
             font-weight: 700;
         }
 
@@ -500,6 +413,7 @@
             font-size: 1.5rem;
             font-weight: 700;
             margin-bottom: 0.75rem;
+            color: var(--text-primary);
         }
 
         .empty-state-desc {
@@ -536,182 +450,235 @@
             border-color: rgba(239, 68, 68, 0.2);
             color: #fca5a5;
         }
-
-        @media (max-width: 768px) {
-            .navbar-nav {
-                display: none;
-            }
-
-            .page-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .btn-new-goal {
-                width: 100%;
-            }
-        }
     </style>
 </head>
-<body>
-    <!-- Navbar -->
-    <nav class="navbar-custom">
-      <a class="navbar-brand-custom" href="/dashboard">
-        <span>🏺</span> FinanceAI
-      </a>
-      <ul class="navbar-nav-custom">
-        <li><a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-        <li><a href="/transactions"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
-        <li><a href="/budgets"><i class="fas fa-wallet"></i> Budgets</a></li>
-        <li><a href="/goals" class="active"><i class="fas fa-bullseye"></i> Savings Goals</a></li>
-        <li><a href="/chatbot"><i class="fas fa-robot"></i> AI Assistant</a></li>
-        <li><a href="/settings"><i class="fas fa-cog"></i> Settings</a></li>
-        <li><a href="/profile"><i class="fas fa-user"></i> Profile</a></li>
-      </ul>
-      <div class="navbar-right d-flex align-items-center gap-2">
-        {% if user_plan == 'pro' %}
-          <span class="badge bg-success px-3 py-2 small" style="background: var(--gradient-1) !important; box-shadow: var(--gradient-glow); text-transform: uppercase; font-weight: 700; border-radius: 20px;">Pro ⭐</span>
-        {% else %}
-          <a href="/upgrade" class="badge bg-secondary px-3 py-2 text-decoration-none text-white small" style="background: rgba(255, 255, 255, 0.1) !important; border: 1px solid rgba(255, 255, 255, 0.1); text-transform: uppercase; font-weight: 700; border-radius: 20px; transition: all 0.25s;" onmouseover="this.style.background='var(--accent-purple)';" onmouseout="this.style.background='rgba(255, 255, 255, 0.1) !important';">Free</a>
-        {% endif %}
-        <a href="/profile" class="d-inline-flex align-items-center" title="View Profile">
-          <img src="{{ profile_picture or '/static/images/avatars/avatar_1.png' }}" class="navbar-avatar-badge" alt="Avatar">
-        </a>
-        <form method="POST" action="/logout" style="margin: 0;">
-          <button class="btn btn-outline-danger btn-sm px-3"><i class="fas fa-sign-out-alt"></i> Logout</button>
-        </form>
-      </div>
-    </nav>
-
-    <!-- Email Verification Warning Banner -->
-    {% if not email_verified %}
-    <div class="alert alert-warning border-0 rounded-0 mb-0 d-flex justify-content-between align-items-center px-4 py-3" role="alert" style="background: rgba(245, 158, 11, 0.12); border-bottom: 1px solid rgba(245, 158, 11, 0.2) !important; color: #f59e0b;">
-      <div class="d-flex align-items-center gap-2">
-        <i class="fas fa-exclamation-triangle"></i>
-        <span><strong>Verify your email:</strong> Please verify your email to secure your account.</span>
-      </div>
-      <form method="POST" action="/resend-verification" style="margin: 0;">
-        <button type="submit" class="btn btn-warning btn-sm py-1 px-3 text-dark fw-bold" style="border-radius: 6px !important; font-size: 0.8rem !important; min-height: unset; padding: 0.25rem 0.75rem !important;">Resend Email</button>
-      </form>
-    </div>
-    {% endif %}
-
-    <!-- Main Content -->
-    <div class="container">
-        <!-- Flash messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="flash-messages">
-                    {% for category, message in messages %}
-                        <div class="flash-message {{ category }}">
-                            {% if category == 'success' %}
-                                <i class="fas fa-check-circle"></i>
-                            {% else %}
-                                <i class="fas fa-exclamation-circle"></i>
-                            {% endif %}
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        <div class="page-header">
-            <div class="header-title-area">
-                <h1 class="page-title">Savings Goals</h1>
-                <p class="page-subtitle">Track your long-term milestones and harness AI advice to hit targets faster</p>
-            </div>
-            <button class="btn btn-gradient btn-new-goal" onclick="openCreateGoalModal()">
-                <i class="fas fa-plus"></i> Create New Goal
-            </button>
+<body class="{% if theme == 'dark' %}theme-dark{% endif %}">
+    
+    <div class="dashboard-layout-wrapper">
+      
+      <!-- Modern Sidebar (Left) -->
+      <aside class="sidebar-wrapper-custom" id="sidebarWrapper">
+        <div class="sidebar-logo-custom">
+          <span>🏺</span> FinSight AI
         </div>
+        <ul class="sidebar-menu-custom">
+          <li><a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+          <li><a href="/transactions"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
+          <li><a href="/budgets"><i class="fas fa-wallet"></i> Budgets</a></li>
+          <li><a href="/goals" class="active"><i class="fas fa-bullseye"></i> Savings Goals</a></li>
+          <li><a href="/analytics"><i class="fas fa-chart-pie"></i> Analytics</a></li>
+          <li><a href="/chatbot"><i class="fas fa-robot"></i> AI Assistant</a></li>
+          <li><a href="/profile"><i class="fas fa-user"></i> Profile</a></li>
+          <li><a href="/settings"><i class="fas fa-cog"></i> Settings</a></li>
+        </ul>
+        <div class="sidebar-footer-custom">
+          <form method="POST" action="/logout" style="margin: 0;">
+            <button class="btn btn-outline-danger w-100 btn-sm"><i class="fas fa-sign-out-alt"></i> Logout</button>
+          </form>
+        </div>
+      </aside>
 
-        <div class="goals-container" style="{% if not goals %}display: none;{% endif %}">
-            {% if goals %}
-            {% for goal in goals %}
-            <div class="goal-card" id="goal-card-{{ goal.id }}">
-                <div class="goal-card-main-info">
-                    <div class="goal-header">
-                        <h3 class="goal-title">{{ goal.title }}</h3>
-                        <p class="goal-deadline" data-deadline="{{ goal.deadline }}">
-                            <i class="fas fa-hourglass-half"></i>
-                            <span class="countdown-text">Calculating time left...</span>
-                        </p>
+      <!-- Main Layout (Right) -->
+      <div class="main-content-layout-custom">
+        
+        <!-- Top Navbar -->
+        <header class="top-navbar-custom-new">
+          <div class="d-flex align-items-center">
+            <button class="sidebar-hamburger-btn" onclick="toggleSidebarMobile()"><i class="fas fa-bars"></i></button>
+            <div class="search-bar-custom-wrapper d-none d-sm-block">
+              <i class="fas fa-search"></i>
+              <input type="text" placeholder="Search savings goals..." class="search-input-custom-new" oninput="filterGoalsLocally(this.value)">
+            </div>
+          </div>
+          
+          <div class="navbar-right-controls">
+            <!-- Pro Badge or Free Upgrade Link -->
+            {% if user_plan == 'pro' %}
+              <span class="badge bg-success px-3 py-2 small" style="background: var(--gradient-1) !important; box-shadow: var(--gradient-glow); text-transform: uppercase; font-weight: 700; border-radius: 20px;">Pro ⭐</span>
+            {% else %}
+              <a href="/upgrade" class="btn btn-outline-light btn-sm py-1 px-3" style="font-size: 0.8rem !important; border-radius: 20px !important;">Upgrade to Pro</a>
+            {% endif %}
+
+            <!-- Theme Toggle Button -->
+            <button class="navbar-control-btn" onclick="toggleTheme()" title="Toggle Visual Theme">
+              <i class="{% if theme == 'dark' %}fas fa-sun{% else %}fas fa-moon{% endif %} theme-toggle-icon"></i>
+            </button>
+            
+            <!-- Notification Icon -->
+            <button class="navbar-control-btn" title="Notifications">
+              <i class="fas fa-bell"></i>
+            </button>
+            
+            <!-- User Avatar Link -->
+            <a href="/profile" title="View Profile">
+              <img src="{{ profile_picture or '/static/images/avatars/avatar_1.png' }}" class="navbar-user-avatar-custom" alt="Avatar">
+            </a>
+          </div>
+        </header>
+
+        <!-- Email Verification Warning Banner -->
+        {% if not email_verified %}
+        <div class="alert alert-warning border-0 rounded-0 mb-0 d-flex justify-content-between align-items-center px-4 py-3" role="alert" style="background: rgba(245, 158, 11, 0.12); border-bottom: 1px solid rgba(245, 158, 11, 0.2) !important; color: #f59e0b;">
+          <div class="d-flex align-items-center gap-2">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span><strong>Verify your email:</strong> Please verify your email to secure your account.</span>
+          </div>
+          <form method="POST" action="/resend-verification" style="margin: 0;">
+            <button type="submit" class="btn btn-warning btn-sm py-1 px-3 text-dark fw-bold" style="border-radius: 6px !important; font-size: 0.8rem !important; min-height: unset; padding: 0.25rem 0.75rem !important;">Resend Email</button>
+          </form>
+        </div>
+        {% endif %}
+
+        <!-- Main Content -->
+        <main class="container-fluid px-4 py-4">
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash-message {{ category }}">
+                                {% if category == 'success' %}
+                                    <i class="fas fa-check-circle"></i>
+                                {% else %}
+                                    <i class="fas fa-exclamation-circle"></i>
+                                {% endif %}
+                                {{ message }}
+                            </div>
+                        {% endfor %}
                     </div>
+                {% endif %}
+            {% endwith %}
 
-                    <div class="progress-ring-container">
-                        <div class="progress-ring-wrapper">
-                            <svg class="progress-ring" width="150" height="150">
-                                <circle cx="75" cy="75" r="60" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="8"></circle>
-                                <circle class="progress-ring-circle" cx="75" cy="75" r="60" fill="none" 
-                                        stroke="url(#grad{{ goal.id }})" stroke-width="8"
-                                        data-pct="{{ goal.progress_pct }}">
-                                </circle>
-                                <defs>
-                                    <linearGradient id="grad{{ goal.id }}" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" style="stop-color:#7c3aed" />
-                                        <stop offset="100%" style="stop-color:#2563eb" />
-                                    </linearGradient>
-                                </defs>
-                            </svg>
-                            <div class="progress-ring-text">
-                                <div class="progress-percentage">{{ goal.progress_pct }}%</div>
-                                <div class="progress-label">Saved</div>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+                <div class="header-title-area">
+                    <h1 class="display-6 text-white mb-1" style="font-weight: 700; color: var(--text-primary) !important;">Savings Goals</h1>
+                    <p class="text-muted mb-0">Track your long-term milestones and harness AI advice to hit targets faster</p>
+                </div>
+                <button class="btn btn-gradient btn-new-goal" onclick="openCreateGoalModal()">
+                    <i class="fas fa-plus"></i> Create New Goal
+                </button>
+            </div>
+
+            <div class="goals-container" style="{% if not goals %}display: none;{% endif %}">
+                {% if goals %}
+                {% for goal in goals %}
+                <div class="goal-card" id="goal-card-{{ goal.id }}" data-title="{{ goal.title | lower }}">
+                    <div class="goal-card-main-info">
+                        <div class="goal-header">
+                            <h3 class="goal-title">{{ goal.title }}</h3>
+                            <p class="goal-deadline" data-deadline="{{ goal.deadline }}">
+                                <i class="fas fa-hourglass-half"></i>
+                                <span class="countdown-text">Calculating time left...</span>
+                            </p>
+                        </div>
+
+                        <div class="progress-ring-container">
+                            <div class="progress-ring-wrapper">
+                                <svg class="progress-ring" width="150" height="150">
+                                    <circle cx="75" cy="75" r="60" fill="none" stroke="rgba(0,0,0,0.05)" stroke-width="8"></circle>
+                                    <circle class="progress-ring-circle" cx="75" cy="75" r="60" fill="none" 
+                                            stroke="url(#grad{{ goal.id }})" stroke-width="8"
+                                            stroke-linecap="round"
+                                            data-pct="{{ goal.progress_pct }}">
+                                    </circle>
+                                    <defs>
+                                        <linearGradient id="grad{{ goal.id }}" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:var(--accent-purple)" />
+                                            <stop offset="100%" style="stop-color:var(--accent-blue)" />
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                                <div class="progress-ring-text">
+                                    <div class="progress-percentage">{{ goal.progress_pct }}%</div>
+                                    <div class="progress-label">Saved</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="goal-stats">
+                            <div class="stat">
+                                <span class="stat-label">Saved</span>
+                                <span class="stat-value highlight">{{ currency_symbol }}{{ "{:,.0f}".format(goal.current_amount) }}</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Target</span>
+                                <span class="stat-value">{{ currency_symbol }}{{ "{:,.0f}".format(goal.target_amount) }}</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="goal-stats">
-                        <div class="stat">
-                            <span class="stat-label">Saved</span>
-                            <span class="stat-value highlight">{{ currency_symbol }}{{ "{:,.0f}".format(goal.current_amount) }}</span>
+                    <div class="goal-card-actions-area">
+                        <div class="goal-actions">
+                            <div class="actions-row">
+                                <button class="btn-small btn-add-money" onclick="openAddMoneyModal({{ goal.id }}, '{{ goal.title|escape }}')">
+                                    <i class="fas fa-plus"></i> Add Money
+                                </button>
+                                <button class="btn-small btn-advice" onclick="fetchAIAdvice({{ goal.id }}, '{{ goal.title|escape }}', {{ goal.target_amount }}, {{ goal.current_amount }}, '{{ goal.deadline }}')">
+                                    <i class="fas fa-brain"></i> AI Advice
+                                </button>
+                            </div>
+                            <button class="btn-small btn-delete-card" onclick="deleteGoal({{ goal.id }})">
+                                <i class="fas fa-trash-alt"></i> Delete Goal
+                            </button>
                         </div>
-                        <div class="stat">
-                            <span class="stat-label">Target</span>
-                            <span class="stat-value">{{ currency_symbol }}{{ "{:,.0f}".format(goal.target_amount) }}</span>
+
+                        <!-- AI Advice Section (Hidden by default, loaded via Ajax) -->
+                        <div class="advice-box" id="advice-box-{{ goal.id }}" style="display: none;">
+                            <div class="advice-box-header">
+                                <span><i class="fas fa-sparkles"></i> AI Recommendation</span>
+                                <button class="advice-box-close" onclick="closeAdviceBox({{ goal.id }})">×</button>
+                            </div>
+                            <div class="advice-box-content" id="advice-content-{{ goal.id }}">
+                                Loading recommendations...
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="goal-card-actions-area">
-                    <div class="goal-actions">
-                        <div class="actions-row">
-                            <button class="btn-small btn-add-money" onclick="openAddMoneyModal({{ goal.id }}, '{{ goal.title|escape }}')">
-                                <i class="fas fa-plus"></i> Add Money
-                            </button>
-                            <button class="btn-small btn-advice" onclick="fetchAIAdvice({{ goal.id }}, '{{ goal.title|escape }}', {{ goal.target_amount }}, {{ goal.current_amount }}, '{{ goal.deadline }}')">
-                                <i class="fas fa-brain"></i> AI Advice
-                            </button>
-                        </div>
-                        <button class="btn-small btn-delete-card" onclick="deleteGoal({{ goal.id }})">
-                            <i class="fas fa-trash-alt"></i> Delete Goal
-                        </button>
-                    </div>
-
-                    <!-- AI Advice Section (Hidden by default, loaded via Ajax) -->
-                    <div class="advice-box" id="advice-box-{{ goal.id }}" style="display: none;">
-                        <div class="advice-box-header">
-                            <span><i class="fas fa-sparkles"></i> AI Recommendation</span>
-                            <button class="advice-box-close" onclick="closeAdviceBox({{ goal.id }})">×</button>
-                        </div>
-                        <div class="advice-box-content" id="advice-content-{{ goal.id }}">
-                            Loading recommendations...
-                        </div>
-                    </div>
-                </div>
+                {% endfor %}
+                {% endif %}
             </div>
-            {% endfor %}
-            {% endif %}
+
+            <div class="empty-state" style="{% if goals %}display: none;{% endif %}">
+                <span class="empty-state-icon">🎯</span>
+                <h2 class="empty-state-title" style="color: var(--text-primary) !important;">No Savings Goals Set</h2>
+                <p class="empty-state-desc">Set specific targets for purchases, emergency funds, or vacations, and get immediate AI savings metrics.</p>
+                <button class="btn btn-gradient" onclick="openCreateGoalModal()">
+                    <i class="fas fa-plus"></i> Set Your First Goal
+                </button>
+            </div>
+        </main>
+      </div>
+
+      <!-- Floating AI Chatbot Panel & bubble -->
+      <div class="floating-chat-bubble-custom" onclick="toggleFloatingChat()" title="Ask FinSight AI">
+        <i class="fas fa-robot"></i>
+      </div>
+
+      <div class="floating-chat-panel-custom" id="floatingChatPanel">
+        <div class="floating-chat-header-custom">
+          <span><i class="fas fa-robot"></i> FinSight AI Advisor</span>
+          <button class="floating-chat-close-btn" onclick="toggleFloatingChat()"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="floating-chat-messages-custom" id="floatingChatMessages">
+          <div class="floating-chat-message-bubble ai">
+            Hello! I am your FinSight AI coach. Ask me any question about your dashboard metrics, budgets, or savings goals!
+          </div>
+        </div>
+        
+        <!-- Suggested prompts bubbles -->
+        <div class="floating-chat-suggested-prompts">
+          <button class="suggested-prompt-btn-custom" onclick="sendFloatingChatMessage('Give me budget advice')">Give budget advice</button>
+          <button class="suggested-prompt-btn-custom" onclick="sendFloatingChatMessage('Analyze my monthly expenses')">Analyze my expenses</button>
+          <button class="suggested-prompt-btn-custom" onclick="sendFloatingChatMessage('How to hit my savings goal?')">Hit savings goal</button>
         </div>
 
-        <div class="empty-state" style="{% if goals %}display: none;{% endif %}">
-            <span class="empty-state-icon">🎯</span>
-            <h2 class="empty-state-title">No Savings Goals Set</h2>
-            <p class="empty-state-desc">Set specific targets for purchases, emergency funds, or vacations, and get immediate AI savings metrics.</p>
-            <button class="btn btn-gradient" onclick="openCreateGoalModal()">
-                <i class="fas fa-plus"></i> Set Your First Goal
-            </button>
+        <div class="floating-chat-input-wrapper">
+          <input type="text" id="floatingChatInputField" class="floating-chat-input-field" placeholder="Ask AI Coach...">
+          <button class="floating-chat-send-btn" onclick="sendFloatingChatMessage()"><i class="fas fa-paper-plane"></i></button>
         </div>
+      </div>
+
     </div>
 
     <!-- Create Goal Modal -->
@@ -763,6 +730,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const CURRENCY_SYMBOL = "{{ currency_symbol }}";
         // Modal controls
@@ -849,7 +817,7 @@
             const formattedCurrent = Number(goal.current_amount).toLocaleString('en-IN', { maximumFractionDigits: 0 });
             
             return `
-            <div class="goal-card" id="goal-card-${goal.id}" style="opacity: 0; transform: translateY(10px); transition: all 0.3s ease;">
+            <div class="goal-card" id="goal-card-${goal.id}" data-title="${escapeHtml(goal.title.toLowerCase())}" style="opacity: 0; transform: translateY(10px); transition: all 0.3s ease;">
                 <div class="goal-card-main-info">
                     <div class="goal-header">
                         <h3 class="goal-title">${escapeHtml(goal.title)}</h3>
@@ -862,15 +830,16 @@
                     <div class="progress-ring-container">
                         <div class="progress-ring-wrapper">
                             <svg class="progress-ring" width="150" height="150">
-                                <circle cx="75" cy="75" r="60" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="8"></circle>
+                                <circle cx="75" cy="75" r="60" fill="none" stroke="rgba(0,0,0,0.05)" stroke-width="8"></circle>
                                 <circle class="progress-ring-circle" cx="75" cy="75" r="60" fill="none" 
                                         stroke="url(#grad${goal.id})" stroke-width="8"
+                                        stroke-linecap="round"
                                         data-pct="${goal.progress_pct}">
                                 </circle>
                                 <defs>
                                     <linearGradient id="grad${goal.id}" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" style="stop-color:#7c3aed" />
-                                        <stop offset="100%" style="stop-color:#2563eb" />
+                                        <stop offset="0%" style="stop-color:var(--accent-purple)" />
+                                        <stop offset="100%" style="stop-color:var(--accent-blue)" />
                                     </linearGradient>
                                 </defs>
                             </svg>
@@ -1078,7 +1047,7 @@
             const adviceContent = document.getElementById(`advice-content-${goalId}`);
             
             adviceBox.style.display = 'block';
-            adviceContent.innerHTML = '<span style="display:flex; align-items:center; gap:0.5rem;"><i class="fas fa-spinner fa-spin"></i> Consulting Gemini AI for recommendations...</span>';
+            adviceContent.innerHTML = '<span style="display:flex; align-items:center; gap:0.5rem; color: var(--text-primary);"><i class="fas fa-spinner fa-spin"></i> Consulting Gemini AI for recommendations...</span>';
             
             try {
                 const response = await fetch('/goals/advice', {
@@ -1109,6 +1078,19 @@
 
         function closeAdviceBox(goalId) {
             document.getElementById(`advice-box-${goalId}`).style.display = 'none';
+        }
+
+        function filterGoalsLocally(query) {
+            const cleanQuery = query.toLowerCase().trim();
+            const cards = document.querySelectorAll('.goal-card');
+            cards.forEach(card => {
+                const title = card.getAttribute('data-title') || '';
+                if (title.includes(cleanQuery)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
         }
 
         // Animated circular rings and countdowns calculation on load
@@ -1154,5 +1136,6 @@
             });
         });
     </script>
+    <script src="/static/js/floating-chat.js"></script>
 </body>
 </html>

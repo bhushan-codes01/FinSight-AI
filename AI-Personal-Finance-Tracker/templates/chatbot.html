@@ -3,123 +3,188 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Assistant - FinanceAI</title>
+    <title>AI Assistant - FinSight AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="/static/css/style.css" />
+    <script>
+      // Apply theme preference instantly before loading DOM
+      if (localStorage.getItem('theme-pref') === 'dark') {
+        document.body.classList.add('theme-dark');
+      }
+    </script>
   </head>
-  <body>
-    <!-- Navbar -->
-    <nav class="navbar-custom">
-      <a class="navbar-brand-custom" href="/dashboard">
-        <span>🏺</span> FinanceAI
-      </a>
-      <ul class="navbar-nav-custom">
-        <li><a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-        <li><a href="/transactions"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
-        <li><a href="/budgets"><i class="fas fa-wallet"></i> Budgets</a></li>
-        <li><a href="/goals"><i class="fas fa-bullseye"></i> Savings Goals</a></li>
-        <li><a href="/chatbot" class="active"><i class="fas fa-robot"></i> AI Assistant</a></li>
-        <li><a href="/settings"><i class="fas fa-cog"></i> Settings</a></li>
-        <li><a href="/profile"><i class="fas fa-user"></i> Profile</a></li>
-      </ul>
-      <div class="navbar-right d-flex align-items-center gap-2">
-        {% if user_plan == 'pro' %}
-          <span class="badge bg-success px-3 py-2 small" style="background: var(--gradient-1) !important; box-shadow: var(--gradient-glow); text-transform: uppercase; font-weight: 700; border-radius: 20px;">Pro ⭐</span>
-        {% else %}
-          <a href="/upgrade" class="badge bg-secondary px-3 py-2 text-decoration-none text-white small" style="background: rgba(255, 255, 255, 0.1) !important; border: 1px solid rgba(255, 255, 255, 0.1); text-transform: uppercase; font-weight: 700; border-radius: 20px; transition: all 0.25s;" onmouseover="this.style.background='var(--accent-purple)';" onmouseout="this.style.background='rgba(255, 255, 255, 0.1) !important';">Free</a>
-        {% endif %}
-        <a href="/profile" class="d-inline-flex align-items-center" title="View Profile">
-          <img src="{{ profile_picture or '/static/images/avatars/avatar_1.png' }}" class="navbar-avatar-badge" alt="Avatar">
-        </a>
-        <form method="POST" action="/logout" style="margin: 0;">
-          <button class="btn btn-outline-danger btn-sm px-3"><i class="fas fa-sign-out-alt"></i> Logout</button>
-        </form>
-      </div>
-    </nav>
-
-    <!-- Email Verification Warning Banner -->
-    {% if not email_verified %}
-    <div class="alert alert-warning border-0 rounded-0 mb-0 d-flex justify-content-between align-items-center px-4 py-3" role="alert" style="background: rgba(245, 158, 11, 0.12); border-bottom: 1px solid rgba(245, 158, 11, 0.2) !important; color: #f59e0b;">
-      <div class="d-flex align-items-center gap-2">
-        <i class="fas fa-exclamation-triangle"></i>
-        <span><strong>Verify your email:</strong> Please verify your email to secure your account.</span>
-      </div>
-      <form method="POST" action="/resend-verification" style="margin: 0;">
-        <button type="submit" class="btn btn-warning btn-sm py-1 px-3 text-dark fw-bold" style="border-radius: 6px !important; font-size: 0.8rem !important; min-height: unset; padding: 0.25rem 0.75rem !important;">Resend Email</button>
-      </form>
-    </div>
-    {% endif %}
-
-    <main class="chat-page-container">
-      <div class="chat-card-premium">
-        <!-- Chat Header -->
-        <div class="chat-header-premium">
-          <div class="chat-header-icon">
-            <i class="fas fa-robot"></i>
-          </div>
-          <div class="chat-header-text">
-            <h2>Financial AI Assistant</h2>
-            <p>Ask me anything about your finances, analyze statements, or request budgeting advice</p>
-          </div>
+  <body class="{% if theme == 'dark' %}theme-dark{% endif %}">
+    
+    <div class="dashboard-layout-wrapper">
+      
+      <!-- Modern Sidebar (Left) -->
+      <aside class="sidebar-wrapper-custom" id="sidebarWrapper">
+        <div class="sidebar-logo-custom">
+          <span>🏺</span> FinSight AI
         </div>
-
-        <!-- Chat Viewport -->
-        <div class="chat-messages-premium" id="chatWindow">
-          <!-- Empty State -->
-          <div class="chat-empty-state" id="chatEmptyState">
-            <div class="chat-empty-icon">
-              <i class="fas fa-robot"></i>
-            </div>
-            <h3>How can I help with your finances today?</h3>
-            <div class="suggestion-chips">
-              <button type="button" class="suggestion-chip" data-question="Analyze my spending">
-                <span>📊</span> Analyze my spending
-              </button>
-              <button type="button" class="suggestion-chip" data-question="Create a budget plan">
-                <span>💰</span> Create a budget plan
-              </button>
-              <button type="button" class="suggestion-chip" data-question="How can I save more?">
-                <span>💡</span> How can I save more?
-              </button>
-              <button type="button" class="suggestion-chip" data-question="Summarize this month">
-                <span>📅</span> Summarize this month
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Sticky Input Area -->
-        <div class="chat-input-outer-premium">
-          <!-- File Chip Container -->
-          <div class="chat-chip-wrapper" id="fileChipContainer" style="display: none;">
-            <div class="file-chip-premium" id="fileChip">
-              <span>📄</span> <span id="fileNameDisplay">statement.csv</span>
-              <span class="close-chip" id="removeFileBtn" title="Remove attachment">✕</span>
-            </div>
-          </div>
-
-          <form id="chatForm">
-            <div class="chat-input-bar-premium">
-              <!-- Upload CSV button -->
-              <button type="button" class="chat-icon-btn-premium" id="uploadTriggerBtn" title="Upload CSV statement">
-                <i class="fas fa-paperclip"></i>
-              </button>
-              <input type="file" id="statementFile" accept=".csv" style="display: none;" />
-
-              <!-- Input text area -->
-              <textarea id="userQuestion" placeholder="Ask about your finances..." rows="1"></textarea>
-
-              <!-- Submit button -->
-              <button type="submit" class="chat-send-btn-premium" id="sendBtn" disabled>
-                <i class="fas fa-arrow-up"></i>
-              </button>
-            </div>
+        <ul class="sidebar-menu-custom">
+          <li><a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+          <li><a href="/transactions"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
+          <li><a href="/budgets"><i class="fas fa-wallet"></i> Budgets</a></li>
+          <li><a href="/goals"><i class="fas fa-bullseye"></i> Savings Goals</a></li>
+          <li><a href="/analytics"><i class="fas fa-chart-pie"></i> Analytics</a></li>
+          <li><a href="/chatbot" class="active"><i class="fas fa-robot"></i> AI Assistant</a></li>
+          <li><a href="/profile"><i class="fas fa-user"></i> Profile</a></li>
+          <li><a href="/settings"><i class="fas fa-cog"></i> Settings</a></li>
+        </ul>
+        <div class="sidebar-footer-custom">
+          <form method="POST" action="/logout" style="margin: 0;">
+            <button class="btn btn-outline-danger w-100 btn-sm"><i class="fas fa-sign-out-alt"></i> Logout</button>
           </form>
         </div>
-      </div>
-    </main>
+      </aside>
 
+      <!-- Main Layout (Right) -->
+      <div class="main-content-layout-custom">
+        
+        <!-- Top Navbar -->
+        <header class="top-navbar-custom-new">
+          <div class="d-flex align-items-center">
+            <button class="sidebar-hamburger-btn" onclick="toggleSidebarMobile()"><i class="fas fa-bars"></i></button>
+            <div class="search-bar-custom-wrapper d-none d-sm-block">
+              <i class="fas fa-search"></i>
+              <input type="text" placeholder="Ask AI Assistant..." class="search-input-custom-new" id="navbarSearchPrompt">
+            </div>
+          </div>
+          
+          <div class="navbar-right-controls">
+            <!-- Pro Badge or Free Upgrade Link -->
+            {% if user_plan == 'pro' %}
+              <span class="badge bg-success px-3 py-2 small" style="background: var(--gradient-1) !important; box-shadow: var(--gradient-glow); text-transform: uppercase; font-weight: 700; border-radius: 20px;">Pro ⭐</span>
+            {% else %}
+              <a href="/upgrade" class="btn btn-outline-light btn-sm py-1 px-3" style="font-size: 0.8rem !important; border-radius: 20px !important;">Upgrade to Pro</a>
+            {% endif %}
+
+            <!-- Theme Toggle Button -->
+            <button class="navbar-control-btn" onclick="toggleTheme()" title="Toggle Visual Theme">
+              <i class="{% if theme == 'dark' %}fas fa-sun{% else %}fas fa-moon{% endif %} theme-toggle-icon"></i>
+            </button>
+            
+            <!-- Notification Icon -->
+            <button class="navbar-control-btn" title="Notifications">
+              <i class="fas fa-bell"></i>
+            </button>
+            
+            <!-- User Avatar Link -->
+            <a href="/profile" title="View Profile">
+              <img src="{{ profile_picture or '/static/images/avatars/avatar_1.png' }}" class="navbar-user-avatar-custom" alt="Avatar">
+            </a>
+          </div>
+        </header>
+
+        <!-- Email Verification Warning Banner -->
+        {% if not email_verified %}
+        <div class="alert alert-warning border-0 rounded-0 mb-0 d-flex justify-content-between align-items-center px-4 py-3" role="alert" style="background: rgba(245, 158, 11, 0.12); border-bottom: 1px solid rgba(245, 158, 11, 0.2) !important; color: #f59e0b;">
+          <div class="d-flex align-items-center gap-2">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span><strong>Verify your email:</strong> Please verify your email to secure your account.</span>
+          </div>
+          <form method="POST" action="/resend-verification" style="margin: 0;">
+            <button type="submit" class="btn btn-warning btn-sm py-1 px-3 text-dark fw-bold" style="border-radius: 6px !important; font-size: 0.8rem !important; min-height: unset; padding: 0.25rem 0.75rem !important;">Resend Email</button>
+          </form>
+        </div>
+        {% endif %}
+
+        <!-- Main Content (Full height chat layout) -->
+        <main class="chat-page-container" style="height: calc(100vh - 70px);">
+          <div class="chat-card-premium">
+            <!-- Chat Header -->
+            <div class="chat-header-premium">
+              <div class="chat-header-icon">
+                <i class="fas fa-robot"></i>
+              </div>
+              <div class="chat-header-text">
+                <h2 style="color: var(--text-primary) !important;">Financial AI Assistant</h2>
+                <p>Ask me anything about your finances, analyze statements, or request budgeting advice</p>
+              </div>
+            </div>
+
+            <!-- Chat Viewport -->
+            <div class="chat-messages-premium" id="chatWindow">
+              <!-- Empty State -->
+              <div class="chat-empty-state" id="chatEmptyState">
+                <div class="chat-empty-icon">
+                  <i class="fas fa-robot"></i>
+                </div>
+                <h3 style="color: var(--text-primary) !important;">How can I help with your finances today?</h3>
+                <div class="suggestion-chips">
+                  <button type="button" class="suggestion-chip" data-question="Analyze my spending">
+                    <span>📊</span> Analyze my spending
+                  </button>
+                  <button type="button" class="suggestion-chip" data-question="Create a budget plan">
+                    <span>💰</span> Create a budget plan
+                  </button>
+                  <button type="button" class="suggestion-chip" data-question="How can I save more?">
+                    <span>💡</span> How can I save more?
+                  </button>
+                  <button type="button" class="suggestion-chip" data-question="Summarize this month">
+                    <span>📅</span> Summarize this month
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sticky Input Area -->
+            <div class="chat-input-outer-premium">
+              <!-- File Chip Container -->
+              <div class="chat-chip-wrapper" id="fileChipContainer" style="display: none;">
+                <div class="file-chip-premium" id="fileChip">
+                  <span>📄</span> <span id="fileNameDisplay">statement.csv</span>
+                  <span class="close-chip" id="removeFileBtn" title="Remove attachment">✕</span>
+                </div>
+              </div>
+
+              <form id="chatForm">
+                <div class="chat-input-bar-premium">
+                  <!-- Upload CSV button -->
+                  <button type="button" class="chat-icon-btn-premium" id="uploadTriggerBtn" title="Upload CSV statement">
+                    <i class="fas fa-paperclip"></i>
+                  </button>
+                  <input type="file" id="statementFile" accept=".csv" style="display: none;" />
+
+                  <!-- Input text area -->
+                  <textarea id="userQuestion" placeholder="Ask about your finances..." rows="1"></textarea>
+
+                  <!-- Submit button -->
+                  <button type="submit" class="chat-send-btn-premium" id="sendBtn" disabled>
+                    <i class="fas fa-arrow-up"></i>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </main>
+      </div>
+
+    </div>
+
+    <!-- Bootstrap & Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/floating-chat.js"></script>
     <script src="/static/js/chat.js"></script>
+    <script>
+      // Sync navbar search with chat input if typing there
+      const navPrompt = document.getElementById('navbarSearchPrompt');
+      const userQ = document.getElementById('userQuestion');
+      if (navPrompt && userQ) {
+        navPrompt.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            const val = navPrompt.value.trim();
+            if (val) {
+              userQ.value = val;
+              navPrompt.value = '';
+              document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+            }
+          }
+        });
+      }
+    </script>
   </body>
 </html>

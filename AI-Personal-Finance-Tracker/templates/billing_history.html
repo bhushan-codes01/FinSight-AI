@@ -7,124 +7,215 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="/static/css/style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script>
+      // Apply theme preference instantly before loading DOM
+      if (localStorage.getItem('theme-pref') === 'dark') {
+        document.body.classList.add('theme-dark');
+      }
+    </script>
   </head>
-  <body class="dashboard-body">
-    <!-- Navbar -->
-    <nav class="navbar-custom">
-      <a class="navbar-brand-custom" href="/dashboard">
-        <span>🏺</span> FinanceAI
-      </a>
-      <ul class="navbar-nav-custom">
-        <li><a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-        <li><a href="/transactions"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
-        <li><a href="/budgets"><i class="fas fa-wallet"></i> Budgets</a></li>
-        <li><a href="/goals"><i class="fas fa-bullseye"></i> Savings Goals</a></li>
-        <li><a href="/chatbot"><i class="fas fa-robot"></i> AI Assistant</a></li>
-        <li><a href="/settings"><i class="fas fa-cog"></i> Settings</a></li>
-        <li><a href="/profile"><i class="fas fa-user"></i> Profile</a></li>
-      </ul>
-      <div class="navbar-right d-flex align-items-center gap-3">
-        <a href="/upgrade" class="btn btn-outline-light btn-sm px-3"><i class="fas fa-arrow-up"></i> Pricing</a>
-        <a href="/profile" class="d-inline-flex align-items-center" title="View Profile">
-          <img src="{{ profile_picture or '/static/images/avatars/avatar_1.png' }}" class="navbar-avatar-badge" alt="Avatar">
-        </a>
-        <form method="POST" action="/logout" style="margin: 0;">
-          <button class="btn btn-outline-danger btn-sm"><i class="fas fa-sign-out-alt"></i> Logout</button>
-        </form>
-      </div>
-    </nav>
-
-    <div class="container py-5" style="max-width: 800px;">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2 class="text-white fw-bold mb-1">Billing & Subscriptions</h2>
-          <p class="text-muted">Manage your plans and review past transactions.</p>
+  <body class="{% if theme == 'dark' %}theme-dark{% endif %}">
+    
+    <div class="dashboard-layout-wrapper">
+      
+      <!-- Modern Sidebar (Left) -->
+      <aside class="sidebar-wrapper-custom" id="sidebarWrapper">
+        <div class="sidebar-logo-custom">
+          <span>🏺</span> FinSight AI
         </div>
-        <a href="/upgrade" class="btn btn-primary btn-sm px-4">Upgrade Plan</a>
-      </div>
-
-      <!-- Flash messages -->
-      {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-      <div class="mb-4">
-        {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <ul class="sidebar-menu-custom">
+          <li><a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+          <li><a href="/transactions"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
+          <li><a href="/budgets"><i class="fas fa-wallet"></i> Budgets</a></li>
+          <li><a href="/goals"><i class="fas fa-bullseye"></i> Savings Goals</a></li>
+          <li><a href="/analytics"><i class="fas fa-chart-pie"></i> Analytics</a></li>
+          <li><a href="/chatbot"><i class="fas fa-robot"></i> AI Assistant</a></li>
+          <li><a href="/profile"><i class="fas fa-user"></i> Profile</a></li>
+          <li><a href="/settings"><i class="fas fa-cog"></i> Settings</a></li>
+        </ul>
+        <div class="sidebar-footer-custom">
+          <form method="POST" action="/logout" style="margin: 0;">
+            <button class="btn btn-outline-danger w-100 btn-sm"><i class="fas fa-sign-out-alt"></i> Logout</button>
+          </form>
         </div>
-        {% endfor %}
-      </div>
-      {% endif %}
-      {% endwith %}
+      </aside>
 
-      <!-- Active Subscription Status Card -->
-      <div class="card border-0 mb-4 p-4">
-        <h5 class="text-white mb-3"><i class="fas fa-receipt text-purple"></i> Active Plan</h5>
-        {% set active_sub = false %}
-        {% for sub in subscriptions if sub.status == 'active' %}
-          {% set active_sub = true %}
-          <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-            <div>
-              <h4 class="text-white fw-bold mb-0">FinSight AI Pro — <span style="text-transform: capitalize;">{{ sub.billing_cycle }}</span></h4>
-              <p class="text-muted mb-0 small mt-1">
-                Started on {{ sub.started_at.split(' ')[0] }} • Expires/Renews on {{ sub.expires_at.split(' ')[0] }}
-              </p>
-            </div>
-            <div>
-              <form method="POST" action="/billing/cancel" style="margin: 0;" onsubmit="return confirm('Are you sure you want to cancel your subscription? You will retain Pro features until your expiry date.');">
-                <button type="submit" class="btn btn-outline-danger">Cancel Subscription</button>
-              </form>
-            </div>
-          </div>
-        {% endfor %}
+      <!-- Main Layout (Right) -->
+      <div class="main-content-layout-custom">
         
-        {% if not active_sub %}
-          <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-            <div>
-              <h4 class="text-white fw-bold mb-0">Free Plan</h4>
-              <p class="text-muted mb-0 small mt-1">Upgrade to Pro to unlock advanced charts, unlimited AI chatbot coaching, and PDF exports.</p>
+        <!-- Top Navbar -->
+        <header class="top-navbar-custom-new">
+          <div class="d-flex align-items-center">
+            <button class="sidebar-hamburger-btn" onclick="toggleSidebarMobile()"><i class="fas fa-bars"></i></button>
+            <div class="search-bar-custom-wrapper d-none d-sm-block">
+              <i class="fas fa-search"></i>
+              <input type="text" placeholder="Search billing..." class="search-input-custom-new">
             </div>
-            <a href="/upgrade" class="btn btn-primary">Upgrade Now</a>
           </div>
+          
+          <div class="navbar-right-controls">
+            <!-- Upgrade button -->
+            <a href="/upgrade" class="btn btn-outline-light btn-sm px-3" style="font-size: 0.8rem !important; border-radius: 20px !important;"><i class="fas fa-arrow-up"></i> Pricing Plans</a>
+
+            <!-- Theme Toggle Button -->
+            <button class="navbar-control-btn" onclick="toggleTheme()" title="Toggle Visual Theme">
+              <i class="{% if theme == 'dark' %}fas fa-sun{% else %}fas fa-moon{% endif %} theme-toggle-icon"></i>
+            </button>
+            
+            <!-- Notification Icon -->
+            <button class="navbar-control-btn" title="Notifications">
+              <i class="fas fa-bell"></i>
+            </button>
+            
+            <!-- User Avatar Link -->
+            <a href="/profile" title="View Profile">
+              <img src="{{ profile_picture or '/static/images/avatars/avatar_1.png' }}" class="navbar-user-avatar-custom" alt="Avatar">
+            </a>
+          </div>
+        </header>
+
+        <!-- Email Verification Warning Banner -->
+        {% if not email_verified %}
+        <div class="alert alert-warning border-0 rounded-0 mb-0 d-flex justify-content-between align-items-center px-4 py-3" role="alert" style="background: rgba(245, 158, 11, 0.12); border-bottom: 1px solid rgba(245, 158, 11, 0.2) !important; color: #f59e0b;">
+          <div class="d-flex align-items-center gap-2">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span><strong>Verify your email:</strong> Please verify your email to secure your account.</span>
+          </div>
+          <form method="POST" action="/resend-verification" style="margin: 0;">
+            <button type="submit" class="btn btn-warning btn-sm py-1 px-3 text-dark fw-bold" style="border-radius: 6px !important; font-size: 0.8rem !important; min-height: unset; padding: 0.25rem 0.75rem !important;">Resend Email</button>
+          </form>
+        </div>
         {% endif %}
+
+        <!-- Main Content -->
+        <main class="container-fluid px-4 py-4" style="max-width: 800px; margin: 0 auto;">
+          <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div>
+              <h1 class="display-6 text-white mb-1" style="font-weight: 700; color: var(--text-primary) !important;">Billing & Subscriptions</h1>
+              <p class="text-muted mb-0">Manage your plans and review past transactions.</p>
+            </div>
+            <a href="/upgrade" class="btn btn-primary btn-sm px-4">Upgrade Plan</a>
+          </div>
+
+          <!-- Flash messages -->
+          {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+          <div class="mb-4">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+          {% endwith %}
+
+          <!-- Active Subscription Status Card -->
+          <div class="card border-0 mb-4 p-4">
+            <h5 class="mb-3" style="color: var(--text-primary) !important; font-weight: 700;"><i class="fas fa-receipt text-purple me-2"></i> Active Plan</h5>
+            {% set active_sub = false %}
+            {% for sub in subscriptions if sub.status == 'active' %}
+              {% set active_sub = true %}
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                  <h4 class="fw-bold mb-0" style="color: var(--text-primary) !important;">FinSight AI Pro — <span style="text-transform: capitalize;">{{ sub.billing_cycle }}</span></h4>
+                  <p class="text-muted mb-0 small mt-1">
+                    Started on {{ sub.started_at.split(' ')[0] }} • Expires/Renews on {{ sub.expires_at.split(' ')[0] }}
+                  </p>
+                </div>
+                <div>
+                  <form method="POST" action="/billing/cancel" style="margin: 0;" onsubmit="return confirm('Are you sure you want to cancel your subscription? You will retain Pro features until your expiry date.');">
+                    <button type="submit" class="btn btn-outline-danger">Cancel Subscription</button>
+                  </form>
+                </div>
+              </div>
+            {% endfor %}
+            
+            {% if not active_sub %}
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                  <h4 class="fw-bold mb-0" style="color: var(--text-primary) !important;">Free Plan</h4>
+                  <p class="text-muted mb-0 small mt-1">Upgrade to Pro to unlock advanced charts, unlimited AI chatbot coaching, and PDF exports.</p>
+                </div>
+                <a href="/upgrade" class="btn btn-primary">Upgrade Now</a>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Billing Logs -->
+          <div class="card border-0 p-4">
+            <h5 class="mb-3" style="color: var(--text-primary) !important; font-weight: 700;"><i class="fas fa-history text-purple me-2"></i> Invoice & Payment Logs</h5>
+            <div class="table-responsive">
+              <table class="table align-middle" style="color: var(--text-primary);">
+                <thead>
+                  <tr style="border-bottom: 2px solid var(--border);">
+                    <th style="color: var(--text-secondary);">Date</th>
+                    <th style="color: var(--text-secondary);">Plan</th>
+                    <th style="color: var(--text-secondary);">Cycle</th>
+                    <th style="color: var(--text-secondary);">Transaction Reference</th>
+                    <th style="color: var(--text-secondary);">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for sub in subscriptions %}
+                  <tr style="border-bottom: 1px solid var(--border);">
+                    <td>{{ sub.started_at.split(' ')[0] }}</td>
+                    <td><span class="badge bg-purple px-3 py-1" style="background: var(--gradient-1) !important;">PRO</span></td>
+                    <td style="text-transform: capitalize;">{{ sub.billing_cycle }}</td>
+                    <td class="text-muted small">{{ sub.razorpay_payment_id or 'N/A' }}</td>
+                    <td>
+                      <span class="badge bg-{{ 'success' if sub.status == 'active' else 'warning text-dark' if sub.status == 'cancelled' else 'danger' }} px-3 py-1">
+                        {{ sub.status.upper() }}
+                      </span>
+                    </td>
+                  </tr>
+                  {% else %}
+                  <tr>
+                    <td colspan="5" class="text-center text-muted py-4">No billing history found. Upgrade to Pro to start your subscription record!</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </main>
       </div>
 
-      <!-- Billing Logs -->
-      <div class="card border-0 p-4">
-        <h5 class="text-white mb-3"><i class="fas fa-history text-purple"></i> Invoice & Payment Logs</h5>
-        <div class="table-responsive">
-          <table class="table table-dark table-borderless align-middle mb-0">
-            <thead>
-              <tr class="text-muted">
-                <th>Date</th>
-                <th>Plan</th>
-                <th>Cycle</th>
-                <th>Transaction Reference</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for sub in subscriptions %}
-              <tr>
-                <td>{{ sub.started_at.split(' ')[0] }}</td>
-                <td><span class="badge bg-purple px-3 py-1">PRO</span></td>
-                <td style="text-transform: capitalize;">{{ sub.billing_cycle }}</td>
-                <td class="text-muted small">{{ sub.razorpay_payment_id or 'N/A' }}</td>
-                <td>
-                  <span class="badge bg-{{ 'success' if sub.status == 'active' else 'warning' if sub.status == 'cancelled' else 'danger' }} px-3 py-1">
-                    {{ sub.status.upper() }}
-                  </span>
-                </td>
-              </tr>
-              {% else %}
-              <tr>
-                <td colspan="5" class="text-center text-muted py-4">No billing history found. Upgrade to Pro to start your subscription record!</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+      <!-- Floating AI Chatbot Panel & bubble -->
+      <div class="floating-chat-bubble-custom" onclick="toggleFloatingChat()" title="Ask FinSight AI">
+        <i class="fas fa-robot"></i>
+      </div>
+
+      <div class="floating-chat-panel-custom" id="floatingChatPanel">
+        <div class="floating-chat-header-custom">
+          <span><i class="fas fa-robot"></i> FinSight AI Advisor</span>
+          <button class="floating-chat-close-btn" onclick="toggleFloatingChat()"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="floating-chat-messages-custom" id="floatingChatMessages">
+          <div class="floating-chat-message-bubble ai">
+            Hello! I am your FinSight AI coach. Ask me any question about your dashboard metrics, budgets, or savings goals!
+          </div>
+        </div>
+        
+        <!-- Suggested prompts bubbles -->
+        <div class="floating-chat-suggested-prompts">
+          <button class="suggested-prompt-btn-custom" onclick="sendFloatingChatMessage('Give me budget advice')">Give budget advice</button>
+          <button class="suggested-prompt-btn-custom" onclick="sendFloatingChatMessage('Analyze my monthly expenses')">Analyze my expenses</button>
+          <button class="suggested-prompt-btn-custom" onclick="sendFloatingChatMessage('How to hit my savings goal?')">Hit savings goal</button>
+        </div>
+
+        <div class="floating-chat-input-wrapper">
+          <input type="text" id="floatingChatInputField" class="floating-chat-input-field" placeholder="Ask AI Coach...">
+          <button class="floating-chat-send-btn" onclick="sendFloatingChatMessage()"><i class="fas fa-paper-plane"></i></button>
         </div>
       </div>
+
     </div>
+
+    <!-- Bootstrap & Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/floating-chat.js"></script>
   </body>
 </html>

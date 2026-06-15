@@ -9,7 +9,7 @@ email_pass = os.getenv('EMAIL_PASS') or os.getenv('EMAIL_PASSWORD') or ''
 
 import sqlite3
 from functools import wraps
-from flask import Flask, g, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Flask, g, render_template, request, redirect, url_for, session, flash, jsonify, has_request_context
 from flask_mail import Mail, Message
 from routes.auth import auth_bp, oauth
 from routes.transactions import transactions_bp, get_upcoming_recurring
@@ -234,6 +234,9 @@ def ensure_database():
         if "advice_level" not in user_cols:
             cursor.execute("ALTER TABLE users ADD COLUMN advice_level TEXT DEFAULT 'Balanced'")
             modified = True
+        if "theme" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN theme TEXT DEFAULT 'light'")
+            modified = True
 
         # Check if auth_tokens table exists
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='auth_tokens'")
@@ -307,11 +310,11 @@ def ensure_database():
 
 @app.context_processor
 def inject_global_user_data():
-    if not session.get("user_id"):
-        return {"user_plan": "free", "email_verified": 0, "currency": "INR", "currency_symbol": "₹"}
+    if not has_request_context() or not session.get("user_id"):
+        return {"user_plan": "free", "email_verified": 0, "currency": "INR", "currency_symbol": "₹", "theme": "light"}
     try:
         db = get_db()
-        user = db.execute("SELECT name, email, plan, email_verified, currency, currency_symbol, profile_picture, auth_provider FROM users WHERE id = ?", (session["user_id"],)).fetchone()
+        user = db.execute("SELECT name, email, plan, email_verified, currency, currency_symbol, profile_picture, auth_provider, theme FROM users WHERE id = ?", (session["user_id"],)).fetchone()
         if user:
             return {
                 "user_name": user["name"],
@@ -321,11 +324,12 @@ def inject_global_user_data():
                 "currency": user["currency"] or "INR",
                 "currency_symbol": user["currency_symbol"] or "₹",
                 "profile_picture": user["profile_picture"],
-                "auth_provider": user["auth_provider"] or "local"
+                "auth_provider": user["auth_provider"] or "local",
+                "theme": user["theme"] or "light"
             }
     except Exception:
         pass
-    return {"user_plan": "free", "email_verified": 0, "currency": "INR", "currency_symbol": "₹"}
+    return {"user_plan": "free", "email_verified": 0, "currency": "INR", "currency_symbol": "₹", "theme": "light"}
 
 
 @app.route("/")
@@ -439,6 +443,43 @@ def handle_exception(e):
         <pre>{tb}</pre>
     </div>
     """, 500
+
+
+@app.route("/analytics")
+@login_required
+def analytics_page():
+    user_id = session["user_id"]
+    db = get_db()
+    
+    analytics = AnalyticsService(db, user_id)
+    summary = analytics.generate_dashboard_summary()
+    expense_breakdown = analytics.expense_breakdown_by_category()
+    monthly_trend = analytics.monthly_trend_data()
+    budget_status = analytics.budget_status_summary()
+    
+    return render_template(
+        "analytics.html",
+        summary=summary,
+        expense_breakdown=expense_breakdown,
+        monthly_trend=monthly_trend,
+        budget_status=budget_status
+    )
+
+@app.route("/settings/toggle-theme", methods=["POST"])
+@login_required
+def toggle_theme():
+    user_id = session["user_id"]
+    data = request.get_json() or {}
+    theme = data.get("theme", "light").strip()
+    
+    if theme not in ["light", "dark"]:
+        theme = "light"
+        
+    db = get_db()
+    db.execute("UPDATE users SET theme = ? WHERE id = ?", (theme, user_id))
+    db.commit()
+    
+    return jsonify({"success": True, "theme": theme})
 
 
 ensure_database()

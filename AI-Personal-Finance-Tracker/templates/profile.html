@@ -7,16 +7,25 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="/static/css/style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script>
+      // Apply theme preference instantly before loading DOM
+      if (localStorage.getItem('theme-pref') === 'dark') {
+        document.body.classList.add('theme-dark');
+      }
+    </script>
     <style>
       .form-select-custom {
         width: 100%;
         background: rgba(255, 255, 255, 0.04) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid var(--border) !important;
         color: var(--text-primary) !important;
         border-radius: 8px !important;
         padding: 0.65rem 1rem;
         transition: all 0.2s;
         outline: none;
+      }
+      body.theme-dark .form-select-custom {
+        background: rgba(255, 255, 255, 0.04) !important;
       }
       .form-select-custom:focus {
         background: rgba(255, 255, 255, 0.08) !important;
@@ -70,314 +79,374 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom: 1px solid var(--border);
         padding-bottom: 0.75rem;
       }
     </style>
   </head>
-  <body class="dashboard-body">
-    <!-- Navbar -->
-    <nav class="navbar-custom">
-      <a class="navbar-brand-custom" href="/dashboard">
-        <span>🏺</span> FinanceAI
-      </a>
-      <ul class="navbar-nav-custom">
-        <li><a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-        <li><a href="/transactions"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
-        <li><a href="/budgets"><i class="fas fa-wallet"></i> Budgets</a></li>
-        <li><a href="/goals"><i class="fas fa-bullseye"></i> Savings Goals</a></li>
-        <li><a href="/chatbot"><i class="fas fa-robot"></i> AI Assistant</a></li>
-        <li><a href="/settings"><i class="fas fa-cog"></i> Settings</a></li>
-        <li><a href="/profile" class="active"><i class="fas fa-user"></i> Profile</a></li>
-      </ul>
-      <div class="navbar-right d-flex align-items-center gap-2">
-        {% if user_plan == 'pro' %}
-          <span class="badge bg-success px-3 py-2 small" style="background: var(--gradient-1) !important; box-shadow: var(--gradient-glow); text-transform: uppercase; font-weight: 700; border-radius: 20px;">Pro ⭐</span>
-        {% else %}
-          <a href="/upgrade" class="badge bg-secondary px-3 py-2 text-decoration-none text-white small" style="background: rgba(255, 255, 255, 0.1) !important; border: 1px solid rgba(255, 255, 255, 0.1); text-transform: uppercase; font-weight: 700; border-radius: 20px; transition: all 0.25s;" onmouseover="this.style.background='var(--accent-purple)';" onmouseout="this.style.background='rgba(255, 255, 255, 0.1) !important';">Free</a>
-        {% endif %}
+  <body class="{% if theme == 'dark' %}theme-dark{% endif %}">
+    
+    <div class="dashboard-layout-wrapper">
+      
+      <!-- Modern Sidebar (Left) -->
+      <aside class="sidebar-wrapper-custom" id="sidebarWrapper">
+        <div class="sidebar-logo-custom">
+          <span>🏺</span> FinSight AI
+        </div>
+        <ul class="sidebar-menu-custom">
+          <li><a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+          <li><a href="/transactions"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
+          <li><a href="/budgets"><i class="fas fa-wallet"></i> Budgets</a></li>
+          <li><a href="/goals"><i class="fas fa-bullseye"></i> Savings Goals</a></li>
+          <li><a href="/analytics"><i class="fas fa-chart-pie"></i> Analytics</a></li>
+          <li><a href="/chatbot"><i class="fas fa-robot"></i> AI Assistant</a></li>
+          <li><a href="/profile" class="active"><i class="fas fa-user"></i> Profile</a></li>
+          <li><a href="/settings"><i class="fas fa-cog"></i> Settings</a></li>
+        </ul>
+        <div class="sidebar-footer-custom">
+          <form method="POST" action="/logout" style="margin: 0;">
+            <button class="btn btn-outline-danger w-100 btn-sm"><i class="fas fa-sign-out-alt"></i> Logout</button>
+          </form>
+        </div>
+      </aside>
+
+      <!-- Main Layout (Right) -->
+      <div class="main-content-layout-custom">
         
-        <a href="/profile" class="d-inline-flex align-items-center" title="View Profile">
-          <img src="{{ profile_picture or '/static/images/avatars/avatar_1.png' }}" class="navbar-avatar-badge" alt="Avatar">
-        </a>
-
-        <form method="POST" action="/logout" style="margin: 0;">
-          <button class="btn btn-outline-danger btn-sm px-3"><i class="fas fa-sign-out-alt"></i> Logout</button>
-        </form>
-      </div>
-    </nav>
-
-    <!-- Email Verification Warning Banner -->
-    {% if not email_verified %}
-    <div class="alert alert-warning border-0 rounded-0 mb-0 d-flex justify-content-between align-items-center px-4 py-3" role="alert" style="background: rgba(245, 158, 11, 0.12); border-bottom: 1px solid rgba(245, 158, 11, 0.2) !important; color: #f59e0b;">
-      <div class="d-flex align-items-center gap-2">
-        <i class="fas fa-exclamation-triangle"></i>
-        <span><strong>Verify your email:</strong> Please verify your email to secure your account.</span>
-      </div>
-      <form method="POST" action="/resend-verification" style="margin: 0;">
-        <button type="submit" class="btn btn-warning btn-sm py-1 px-3 text-dark fw-bold" style="border-radius: 6px !important; font-size: 0.8rem !important; min-height: unset; padding: 0.25rem 0.75rem !important;">Resend Email</button>
-      </form>
-    </div>
-    {% endif %}
-
-    <main class="container py-5 profile-container" style="max-width: 900px;">
-      <div class="page-header mb-5 text-center text-md-start">
-        <h1 class="page-title text-white">Profile Configurations</h1>
-        <p class="page-subtitle text-muted">Complete your financial persona details and configure AI advisory preferences</p>
-      </div>
-
-      <!-- Flash Messages -->
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-          <div class="flash-messages mb-4">
-            {% for category, message in messages %}
-              <div class="flash-message {{ category }} d-flex align-items-center gap-2" style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 12px; border: 1px solid {% if category == 'success' %}var(--accent-green){% else %}var(--accent-red){% endif %}; color: var(--text-primary);">
-                {% if category == 'success' %}
-                  <i class="fas fa-check-circle text-success" style="font-size: 1.2rem;"></i>
-                {% else %}
-                  <i class="fas fa-exclamation-circle text-danger" style="font-size: 1.2rem;"></i>
-                {% endif %}
-                <span>{{ message }}</span>
-              </div>
-            {% endfor %}
-          </div>
-        {% endif %}
-      {% endwith %}
-
-      <!-- Unified Form to Edit Profile Details (Header, Financial Goals, AI Preferences) -->
-      <form action="/profile/update" method="POST" enctype="multipart/form-data">
-        
-        <!-- SECTION 1: Profile Header (Picture, Name, Email, Occupation) -->
-        <div class="section-card">
-          <div class="section-title-custom">
-            <i class="fas fa-user-circle text-primary"></i> Personal Information
+        <!-- Top Navbar -->
+        <header class="top-navbar-custom-new">
+          <div class="d-flex align-items-center">
+            <button class="sidebar-hamburger-btn" onclick="toggleSidebarMobile()"><i class="fas fa-bars"></i></button>
+            <div class="search-bar-custom-wrapper d-none d-sm-block">
+              <i class="fas fa-search"></i>
+              <input type="text" placeholder="Search configs..." class="search-input-custom-new">
+            </div>
           </div>
           
-          <div class="row align-items-center g-4 mb-4">
-            <div class="col-md-auto text-center">
-              <div class="profile-avatar-wrapper mb-2">
-                <img src="{{ user.profile_picture or '/static/images/avatars/avatar_1.png' }}" class="profile-avatar" id="avatarPreview" alt="Avatar">
+          <div class="navbar-right-controls">
+            <!-- Pro Badge or Free Upgrade Link -->
+            {% if user_plan == 'pro' %}
+              <span class="badge bg-success px-3 py-2 small" style="background: var(--gradient-1) !important; box-shadow: var(--gradient-glow); text-transform: uppercase; font-weight: 700; border-radius: 20px;">Pro ⭐</span>
+            {% else %}
+              <a href="/upgrade" class="btn btn-outline-light btn-sm py-1 px-3" style="font-size: 0.8rem !important; border-radius: 20px !important;">Upgrade to Pro</a>
+            {% endif %}
+
+            <!-- Theme Toggle Button -->
+            <button class="navbar-control-btn" onclick="toggleTheme()" title="Toggle Visual Theme">
+              <i class="{% if theme == 'dark' %}fas fa-sun{% else %}fas fa-moon{% endif %} theme-toggle-icon"></i>
+            </button>
+            
+            <!-- Notification Icon -->
+            <button class="navbar-control-btn" title="Notifications">
+              <i class="fas fa-bell"></i>
+            </button>
+            
+            <!-- User Avatar Link -->
+            <a href="/profile" title="View Profile">
+              <img src="{{ profile_picture or '/static/images/avatars/avatar_1.png' }}" class="navbar-user-avatar-custom" alt="Avatar">
+            </a>
+          </div>
+        </header>
+
+        <!-- Email Verification Warning Banner -->
+        {% if not email_verified %}
+        <div class="alert alert-warning border-0 rounded-0 mb-0 d-flex justify-content-between align-items-center px-4 py-3" role="alert" style="background: rgba(245, 158, 11, 0.12); border-bottom: 1px solid rgba(245, 158, 11, 0.2) !important; color: #f59e0b;">
+          <div class="d-flex align-items-center gap-2">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span><strong>Verify your email:</strong> Please verify your email to secure your account.</span>
+          </div>
+          <form method="POST" action="/resend-verification" style="margin: 0;">
+            <button type="submit" class="btn btn-warning btn-sm py-1 px-3 text-dark fw-bold" style="border-radius: 6px !important; font-size: 0.8rem !important; min-height: unset; padding: 0.25rem 0.75rem !important;">Resend Email</button>
+          </form>
+        </div>
+        {% endif %}
+
+        <!-- Main Content -->
+        <main class="container-fluid px-4 py-4" style="max-width: 960px; margin: 0 auto;">
+          <div class="mb-4">
+            <h1 class="display-6 text-white mb-1" style="font-weight: 700; color: var(--text-primary) !important;">Profile Configurations</h1>
+            <p class="text-muted mb-0">Complete your financial persona details and configure AI advisory preferences</p>
+          </div>
+
+          <!-- Flash Messages -->
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              <div class="flash-messages mb-4">
+                {% for category, message in messages %}
+                  <div class="flash-message {{ category }} d-flex align-items-center gap-2" style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 12px; border: 1px solid {% if category == 'success' %}var(--accent-green){% else %}var(--accent-red){% endif %}; color: var(--text-primary);">
+                    {% if category == 'success' %}
+                      <i class="fas fa-check-circle text-success" style="font-size: 1.2rem;"></i>
+                    {% else %}
+                      <i class="fas fa-exclamation-circle text-danger" style="font-size: 1.2rem;"></i>
+                    {% endif %}
+                    <span>{{ message }}</span>
+                  </div>
+                {% endfor %}
+              </div>
+            {% endif %}
+          {% endwith %}
+
+          <!-- Unified Form to Edit Profile Details -->
+          <form action="/profile/update" method="POST" enctype="multipart/form-data">
+            
+            <!-- SECTION 1: Profile Header -->
+            <div class="section-card">
+              <div class="section-title-custom">
+                <i class="fas fa-user-circle text-primary"></i> Personal Information
               </div>
               
-              <div class="d-flex flex-column align-items-center gap-1">
-                <label for="avatarFile" class="btn btn-sm btn-outline-light py-1 px-3 mt-1" style="font-size: 0.75rem;">
-                  <i class="fas fa-upload me-1"></i> Upload Image
-                </label>
-                <input type="file" name="profile_picture_file" id="avatarFile" class="d-none" accept=".png, .jpg, .jpeg, .gif" onchange="previewUploadImage(this)">
+              <div class="row align-items-center g-4 mb-4">
+                <div class="col-md-auto text-center">
+                  <div class="profile-avatar-wrapper mb-2">
+                    <img src="{{ user.profile_picture or '/static/images/avatars/avatar_1.png' }}" class="profile-avatar" id="avatarPreview" alt="Avatar">
+                  </div>
+                  
+                  <div class="d-flex flex-column align-items-center gap-1">
+                    <label for="avatarFile" class="btn btn-sm btn-outline-light py-1 px-3 mt-1" style="font-size: 0.75rem;">
+                      <i class="fas fa-upload me-1"></i> Upload Image
+                    </label>
+                    <input type="file" name="profile_picture_file" id="avatarFile" class="d-none" accept=".png, .jpg, .jpeg, .gif" onchange="previewUploadImage(this)">
+                    
+                    {% if user.profile_picture %}
+                      <button type="submit" form="removeAvatarForm" class="btn btn-link btn-sm text-danger text-decoration-none p-0 mt-1" style="font-size: 0.75rem;">
+                        <i class="fas fa-trash-alt me-1"></i> Reset Avatar
+                      </button>
+                    {% endif %}
+                  </div>
+                </div>
                 
-                {% if user.profile_picture %}
-                  <button type="submit" form="removeAvatarForm" class="btn btn-link btn-sm text-danger text-decoration-none p-0 mt-1" style="font-size: 0.75rem;">
-                    <i class="fas fa-trash-alt me-1"></i> Reset Avatar
-                  </button>
-                {% endif %}
-              </div>
-            </div>
-            
-            <div class="col-md">
-              <div class="row g-3">
-                <div class="col-sm-6">
-                  <label for="profileName" class="form-label text-secondary small fw-bold uppercase">Display Name</label>
-                  <input type="text" name="name" id="profileName" class="form-control" value="{{ user.name }}" required>
-                </div>
-                <div class="col-sm-6">
-                  <label for="occupation" class="form-label text-secondary small fw-bold uppercase">Occupation</label>
-                  <input type="text" name="occupation" id="occupation" class="form-control" value="{{ user.occupation or '' }}" placeholder="e.g. Software Engineer, Doctor">
-                </div>
-                <div class="col-12">
-                  <label class="form-label text-secondary small fw-bold uppercase d-block">Email Address</label>
-                  <div class="d-flex align-items-center justify-content-between form-control border-0 px-0" style="background: transparent !important;">
-                    <span class="text-white">{{ user.email }}</span>
-                    <div>
-                      {% if user.auth_provider == 'google' %}
-                        <span class="badge-google"><i class="fab fa-google me-1"></i> Google</span>
-                      {% elif user.email_verified %}
-                        <span class="badge-verified"><i class="fas fa-check-circle me-1"></i> Verified</span>
-                      {% else %}
-                        <span class="badge-unverified"><i class="fas fa-times-circle me-1"></i> Unverified</span>
-                      {% endif %}
+                <div class="col-md">
+                  <div class="row g-3">
+                    <div class="col-sm-6">
+                      <label for="profileName" class="form-label text-secondary small fw-bold uppercase">Display Name</label>
+                      <input type="text" name="name" id="profileName" class="form-control" value="{{ user.name }}" required>
+                    </div>
+                    <div class="col-sm-6">
+                      <label for="occupation" class="form-label text-secondary small fw-bold uppercase">Occupation</label>
+                      <input type="text" name="occupation" id="occupation" class="form-control" value="{{ user.occupation or '' }}" placeholder="e.g. Software Engineer, Doctor">
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label text-secondary small fw-bold uppercase d-block">Email Address</label>
+                      <div class="d-flex align-items-center justify-content-between form-control border-0 px-0" style="background: transparent !important;">
+                        <span class="fw-semibold text-white" style="color: var(--text-primary) !important;">{{ user.email }}</span>
+                        <div>
+                          {% if user.auth_provider == 'google' %}
+                            <span class="badge-google"><i class="fab fa-google me-1"></i> Google</span>
+                          {% elif user.email_verified %}
+                            <span class="badge-verified"><i class="fas fa-check-circle me-1"></i> Verified</span>
+                          {% else %}
+                            <span class="badge-unverified"><i class="fas fa-times-circle me-1"></i> Unverified</span>
+                          {% endif %}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <!-- Predefined Avatar Library Selection -->
-          <div class="mb-2">
-            <label class="form-label text-secondary small fw-bold uppercase mb-2">Or Choose from Premium Avatar Assets</label>
-            <div class="avatar-selection-grid">
-              {% for filename in predefined_avatars %}
-                {% set is_selected = (user.profile_picture == '/static/images/avatars/' ~ filename) %}
-                <div class="avatar-option-wrapper {% if is_selected %}selected{% endif %}" onclick="selectPredefinedAvatar('{{ filename }}')">
-                  <img src="/static/images/avatars/{{ filename }}" class="avatar-option" alt="Avatar option">
+              <!-- Predefined Avatar Library Selection -->
+              <div class="mb-2">
+                <label class="form-label text-secondary small fw-bold uppercase mb-2">Or Choose from Premium Avatar Assets</label>
+                <div class="avatar-selection-grid">
+                  {% for filename in predefined_avatars %}
+                    {% set is_selected = (user.profile_picture == '/static/images/avatars/' ~ filename) %}
+                    <div class="avatar-option-wrapper {% if is_selected %}selected{% endif %}" onclick="selectPredefinedAvatar('{{ filename }}')">
+                      <img src="/static/images/avatars/{{ filename }}" class="avatar-option" alt="Avatar option">
+                    </div>
+                  {% endfor %}
                 </div>
-              {% endfor %}
+                <input type="hidden" name="avatar_choice" id="avatarChoiceInput" value="">
+              </div>
             </div>
-            <input type="hidden" name="avatar_choice" id="avatarChoiceInput" value="">
-          </div>
-        </div>
 
-        <!-- SECTION 2: Financial Goals (Monthly Income, Savings Goal, Budget Style) -->
-        <div class="section-card">
-          <div class="section-title-custom">
-            <i class="fas fa-bullseye text-warning"></i> Financial Goals
-          </div>
-          
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label for="monthlyIncome" class="form-label text-secondary small fw-bold uppercase">Monthly Income ({{ currency_symbol }})</label>
-              <input type="number" step="0.01" name="monthly_income" id="monthlyIncome" class="form-control" value="{{ user.monthly_income or 0.0 }}" placeholder="e.g. 5000">
+            <!-- SECTION 2: Financial Goals -->
+            <div class="section-card">
+              <div class="section-title-custom">
+                <i class="fas fa-bullseye text-warning"></i> Financial Goals
+              </div>
+              
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="monthlyIncome" class="form-label text-secondary small fw-bold uppercase">Monthly Income ({{ currency_symbol }})</label>
+                  <input type="number" step="0.01" name="monthly_income" id="monthlyIncome" class="form-control" value="{{ user.monthly_income or 0.0 }}" placeholder="e.g. 5000">
+                </div>
+                
+                <div class="col-md-6">
+                  <label for="savingsGoal" class="form-label text-secondary small fw-bold uppercase">Monthly Savings Goal ({{ currency_symbol }})</label>
+                  <input type="number" step="0.01" name="savings_goal" id="savingsGoal" class="form-control" value="{{ user.savings_goal or 0.0 }}" placeholder="e.g. 1500">
+                </div>
+                
+                <div class="col-12">
+                  <label for="budgetStyle" class="form-label text-secondary small fw-bold uppercase">Budget Style</label>
+                  <select name="budget_style" id="budgetStyle" class="form-select-custom">
+                    <option value="50/30/20" {% if user.budget_style == '50/30/20' %}selected{% endif %}>50/30/20 Rule (Needs, Wants, Savings)</option>
+                    <option value="Zero-Based" {% if user.budget_style == 'Zero-Based' %}selected{% endif %}>Zero-Based Budgeting (Every dollar has a job)</option>
+                    <option value="Envelope" {% if user.budget_style == 'Envelope' %}selected{% endif %}>Envelope Method (Cash allocations)</option>
+                    <option value="Loose" {% if user.budget_style == 'Loose' %}selected{% endif %}>Loose/Flexible Tracking (High level limit)</option>
+                  </select>
+                  <div class="form-text text-muted small mt-1">This preference updates AI financial modeling templates.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 3: AI Preferences -->
+            <div class="section-card">
+              <div class="section-title-custom">
+                <i class="fas fa-robot text-info"></i> AI Preferences
+              </div>
+              
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="riskAppetite" class="form-label text-secondary small fw-bold uppercase">Investment Risk Appetite</label>
+                  <select name="risk_appetite" id="riskAppetite" class="form-select-custom">
+                    <option value="Conservative" {% if user.risk_appetite == 'Conservative' %}selected{% endif %}>Conservative (Low risk, capital protection)</option>
+                    <option value="Moderate" {% if user.risk_appetite == 'Moderate' or not user.risk_appetite %}selected{% endif %}>Moderate (Balanced risk, diversified)</option>
+                    <option value="Aggressive" {% if user.risk_appetite == 'Aggressive' %}selected{% endif %}>Aggressive (High risk, growth seeking)</option>
+                  </select>
+                </div>
+                
+                <div class="col-md-6">
+                  <label for="adviceLevel" class="form-label text-secondary small fw-bold uppercase">Advisory Advice Detail</label>
+                  <select name="advice_level" id="adviceLevel" class="form-select-custom">
+                    <option value="Minimalist" {% if user.advice_level == 'Minimalist' %}selected{% endif %}>Minimalist (Brief, bulleted key tips)</option>
+                    <option value="Balanced" {% if user.advice_level == 'Balanced' or not user.advice_level %}selected{% endif %}>Balanced (Core overview with stats)</option>
+                    <option value="Deep Analysis" {% if user.advice_level == 'Deep Analysis' %}selected{% endif %}>Deep Analysis (Full structural breakdown & calculations)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit Button for Profile Updates -->
+            <div class="d-flex justify-content-between align-items-center gap-3 mb-5 flex-wrap">
+              <a href="/dashboard" class="btn btn-outline-light px-4"><i class="fas fa-arrow-left me-2"></i> Back to Dashboard</a>
+              <button type="submit" class="btn btn-gradient px-5 py-2 fw-bold"><i class="fas fa-save me-2"></i> Save Profile Settings</button>
+            </div>
+          </form>
+
+          <!-- SECTION 4: Statistics -->
+          <div class="section-card">
+            <div class="section-title-custom">
+              <i class="fas fa-chart-bar text-success"></i> Account Financial Statistics
             </div>
             
-            <div class="col-md-6">
-              <label for="savingsGoal" class="form-label text-secondary small fw-bold uppercase">Monthly Savings Goal ({{ currency_symbol }})</label>
-              <input type="number" step="0.01" name="savings_goal" id="savingsGoal" class="form-control" value="{{ user.savings_goal or 0.0 }}" placeholder="e.g. 1500">
+            <div class="row g-4 text-center">
+              <div class="col-md-4">
+                <div class="stat-item-card profile-card-glow-blue py-4">
+                  <div class="stat-icon-wrapper" style="background: rgba(37, 99, 235, 0.15); color: #2563eb;">
+                    <i class="fas fa-arrow-circle-down"></i>
+                  </div>
+                  <h6 class="text-secondary small uppercase fw-bold mb-1">Total Income</h6>
+                  <h3 class="fw-bold mb-0" style="color: var(--text-primary) !important;">{{ currency_symbol }}{{ "{:,.2f}".format(stats.total_income) }}</h3>
+                </div>
+              </div>
+              
+              <div class="col-md-4">
+                <div class="stat-item-card profile-card-glow-cyan py-4">
+                  <div class="stat-icon-wrapper" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">
+                    <i class="fas fa-arrow-circle-up"></i>
+                  </div>
+                  <h6 class="text-secondary small uppercase fw-bold mb-1">Total Expenses</h6>
+                  <h3 class="fw-bold mb-0" style="color: #ef4444 !important;">{{ currency_symbol }}{{ "{:,.2f}".format(stats.total_expense) }}</h3>
+                </div>
+              </div>
+              
+              <div class="col-md-4">
+                <div class="stat-item-card profile-card-glow-purple py-4">
+                  <div class="stat-icon-wrapper" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+                    <i class="fas fa-piggy-bank"></i>
+                  </div>
+                  <h6 class="text-secondary small uppercase fw-bold mb-1">Net Savings</h6>
+                  <h3 class="fw-bold mb-0" style="color: #10b981 !important;">{{ currency_symbol }}{{ "{:,.2f}".format(stats.total_savings) }}</h3>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pre-existing Password Change Section -->
+          {% if user.auth_provider == 'local' %}
+          <div class="section-card">
+            <div class="section-title-custom">
+              <i class="fas fa-lock text-danger"></i> Update Password
             </div>
             
-            <div class="col-12">
-              <label for="budgetStyle" class="form-label text-secondary small fw-bold uppercase">Budget Style</label>
-              <select name="budget_style" id="budgetStyle" class="form-select-custom">
-                <option value="50/30/20" {% if user.budget_style == '50/30/20' %}selected{% endif %}>50/30/20 Rule (Needs, Wants, Savings)</option>
-                <option value="Zero-Based" {% if user.budget_style == 'Zero-Based' %}selected{% endif %}>Zero-Based Budgeting (Every dollar has a job)</option>
-                <option value="Envelope" {% if user.budget_style == 'Envelope' %}selected{% endif %}>Envelope Method (Cash allocations)</option>
-                <option value="Loose" {% if user.budget_style == 'Loose' %}selected{% endif %}>Loose/Flexible Tracking (High level limit)</option>
-              </select>
-              <div class="form-text text-muted small mt-1">This preference updates AI financial modeling templates.</div>
-            </div>
+            <form action="/profile/change-password" method="POST">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label for="oldPassword" class="form-label text-secondary small fw-bold uppercase">Current Password</label>
+                  <input type="password" name="old_password" id="oldPassword" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                  <label for="newPassword" class="form-label text-secondary small fw-bold uppercase">New Password</label>
+                  <input type="password" name="new_password" id="newPassword" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                  <label for="confirmNewPassword" class="form-label text-secondary small fw-bold uppercase">Confirm Password</label>
+                  <input type="password" name="confirm_new_password" id="confirmNewPassword" class="form-control" required>
+                </div>
+              </div>
+              <div class="mt-4 text-end">
+                <button type="submit" class="btn btn-outline-danger px-4"><i class="fas fa-key me-2"></i> Update Password Credentials</button>
+              </div>
+            </form>
           </div>
-        </div>
+          {% endif %}
 
-        <!-- SECTION 3: AI Preferences (Risk Appetite, Advice Level) -->
-        <div class="section-card">
-          <div class="section-title-custom">
-            <i class="fas fa-robot text-info"></i> AI Preferences
-          </div>
-          
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label for="riskAppetite" class="form-label text-secondary small fw-bold uppercase">Investment Risk Appetite</label>
-              <select name="risk_appetite" id="riskAppetite" class="form-select-custom">
-                <option value="Conservative" {% if user.risk_appetite == 'Conservative' %}selected{% endif %}>Conservative (Low risk, capital protection)</option>
-                <option value="Moderate" {% if user.risk_appetite == 'Moderate' or not user.risk_appetite %}selected{% endif %}>Moderate (Balanced risk, diversified)</option>
-                <option value="Aggressive" {% if user.risk_appetite == 'Aggressive' %}selected{% endif %}>Aggressive (High risk, growth seeking)</option>
-              </select>
-            </div>
-            
-            <div class="col-md-6">
-              <label for="adviceLevel" class="form-label text-secondary small fw-bold uppercase">Advisory Advice Detail</label>
-              <select name="advice_level" id="adviceLevel" class="form-select-custom">
-                <option value="Minimalist" {% if user.advice_level == 'Minimalist' %}selected{% endif %}>Minimalist (Brief, bulleted key tips)</option>
-                <option value="Balanced" {% if user.advice_level == 'Balanced' or not user.advice_level %}selected{% endif %}>Balanced (Core overview with stats)</option>
-                <option value="Deep Analysis" {% if user.advice_level == 'Deep Analysis' %}selected{% endif %}>Deep Analysis (Full structural breakdown & calculations)</option>
-              </select>
-            </div>
-          </div>
-        </div>
+        </main>
+      </div>
 
-        <!-- Submit Button for Profile Updates -->
-        <div class="d-flex justify-content-between align-items-center gap-3 mb-5 flex-wrap">
-          <a href="/dashboard" class="btn btn-outline-light px-4"><i class="fas fa-arrow-left me-2"></i> Back to Dashboard</a>
-          <button type="submit" class="btn btn-gradient px-5 py-2 fw-bold"><i class="fas fa-save me-2"></i> Save Profile Settings</button>
-        </div>
-      </form>
+      <!-- Floating AI Chatbot Panel & bubble -->
+      <div class="floating-chat-bubble-custom" onclick="toggleFloatingChat()" title="Ask FinSight AI">
+        <i class="fas fa-robot"></i>
+      </div>
 
-      <!-- SECTION 4: Statistics (Income | Expenses | Savings) -->
-      <div class="section-card">
-        <div class="section-title-custom">
-          <i class="fas fa-chart-bar text-success"></i> Account Financial Statistics
+      <div class="floating-chat-panel-custom" id="floatingChatPanel">
+        <div class="floating-chat-header-custom">
+          <span><i class="fas fa-robot"></i> FinSight AI Advisor</span>
+          <button class="floating-chat-close-btn" onclick="toggleFloatingChat()"><i class="fas fa-times"></i></button>
         </div>
         
-        <div class="row g-4 text-center">
-          <div class="col-md-4">
-            <div class="stat-item-card profile-card-glow-blue py-4">
-              <div class="stat-icon-wrapper" style="background: rgba(37, 99, 235, 0.15); color: #2563eb;">
-                <i class="fas fa-arrow-circle-down"></i>
-              </div>
-              <h6 class="text-secondary small uppercase fw-bold mb-1">Total Income</h6>
-              <h3 class="text-white fw-bold mb-0">{{ currency_symbol }}{{ "{:,.2f}".format(stats.total_income) }}</h3>
-            </div>
+        <div class="floating-chat-messages-custom" id="floatingChatMessages">
+          <div class="floating-chat-message-bubble ai">
+            Hello! I am your FinSight AI coach. Ask me any question about your dashboard metrics, budgets, or savings goals!
           </div>
-          
-          <div class="col-md-4">
-            <div class="stat-item-card profile-card-glow-cyan py-4">
-              <div class="stat-icon-wrapper" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">
-                <i class="fas fa-arrow-circle-up"></i>
-              </div>
-              <h6 class="text-secondary small uppercase fw-bold mb-1">Total Expenses</h6>
-              <h3 class="text-white fw-bold mb-0" style="color: #ef4444 !important;">{{ currency_symbol }}{{ "{:,.2f}".format(stats.total_expense) }}</h3>
-            </div>
-          </div>
-          
-          <div class="col-md-4">
-            <div class="stat-item-card profile-card-glow-purple py-4">
-              <div class="stat-icon-wrapper" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
-                <i class="fas fa-piggy-bank"></i>
-              </div>
-              <h6 class="text-secondary small uppercase fw-bold mb-1">Net Savings</h6>
-              <h3 class="text-white fw-bold mb-0" style="color: #10b981 !important;">{{ currency_symbol }}{{ "{:,.2f}".format(stats.total_savings) }}</h3>
-            </div>
-          </div>
+        </div>
+        
+        <!-- Suggested prompts bubbles -->
+        <div class="floating-chat-suggested-prompts">
+          <button class="suggested-prompt-btn-custom" onclick="sendFloatingChatMessage('Give me budget advice')">Give budget advice</button>
+          <button class="suggested-prompt-btn-custom" onclick="sendFloatingChatMessage('Analyze my monthly expenses')">Analyze my expenses</button>
+          <button class="suggested-prompt-btn-custom" onclick="sendFloatingChatMessage('How to hit my savings goal?')">Hit savings goal</button>
+        </div>
+
+        <div class="floating-chat-input-wrapper">
+          <input type="text" id="floatingChatInputField" class="floating-chat-input-field" placeholder="Ask AI Coach...">
+          <button class="floating-chat-send-btn" onclick="sendFloatingChatMessage()"><i class="fas fa-paper-plane"></i></button>
         </div>
       </div>
 
-      <!-- Pre-existing Password Change Section (only for local accounts) -->
-      {% if user.auth_provider == 'local' %}
-      <div class="section-card">
-        <div class="section-title-custom">
-          <i class="fas fa-lock text-danger"></i> Update Password
-        </div>
-        
-        <form action="/profile/change-password" method="POST">
-          <div class="row g-3">
-            <div class="col-md-4">
-              <label for="oldPassword" class="form-label text-secondary small fw-bold uppercase">Current Password</label>
-              <input type="password" name="old_password" id="oldPassword" class="form-control" required>
-            </div>
-            <div class="col-md-4">
-              <label for="newPassword" class="form-label text-secondary small fw-bold uppercase">New Password</label>
-              <input type="password" name="new_password" id="newPassword" class="form-control" required>
-            </div>
-            <div class="col-md-4">
-              <label for="confirmNewPassword" class="form-label text-secondary small fw-bold uppercase">Confirm Password</label>
-              <input type="password" name="confirm_new_password" id="confirmNewPassword" class="form-control" required>
-            </div>
-          </div>
-          <div class="mt-4 text-end">
-            <button type="submit" class="btn btn-outline-danger px-4"><i class="fas fa-key me-2"></i> Update Password Credentials</button>
-          </div>
-        </form>
-      </div>
-      {% endif %}
-
-    </main>
+    </div>
 
     <!-- Hidden Reset Avatar Form -->
     <form id="removeAvatarForm" action="/profile/remove-avatar" method="POST" style="display: none;"></form>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
       function selectPredefinedAvatar(filename) {
         document.getElementById('avatarChoiceInput').value = filename;
-        // Highlight selected
         document.querySelectorAll('.avatar-option-wrapper').forEach(el => {
           el.classList.remove('selected');
         });
         event.currentTarget.classList.add('selected');
-        
-        // Instantly preview selected predefined avatar
         document.getElementById('avatarPreview').src = '/static/images/avatars/' + filename;
-        
-        // Clear file input to avoid confusion
         document.getElementById('avatarFile').value = '';
       }
 
       function previewUploadImage(input) {
         if (input.files && input.files[0]) {
-          // Clear predefined selected class
           document.querySelectorAll('.avatar-option-wrapper').forEach(el => {
             el.classList.remove('selected');
           });
           document.getElementById('avatarChoiceInput').value = '';
-
           var reader = new FileReader();
           reader.onload = function(e) {
             document.getElementById('avatarPreview').src = e.target.result;
@@ -386,5 +455,6 @@
         }
       }
     </script>
+    <script src="/static/js/floating-chat.js"></script>
   </body>
 </html>

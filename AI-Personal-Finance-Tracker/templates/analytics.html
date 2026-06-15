@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Analytics - FinSight AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script>
+      // Apply theme preference instantly before loading DOM
+      if (localStorage.getItem('theme-pref') === 'dark') {
+        document.body.classList.add('theme-dark');
+      }
+    </script>
+  </head>
+  <body class="{% if theme == 'dark' %}theme-dark{% endif %}">
+    <div class="dashboard-layout-wrapper">
+      
+      <!-- Modern Sidebar (Left) -->
+      <aside class="sidebar-wrapper-custom" id="sidebarWrapper">
+        <div class="sidebar-logo-custom">
+          <span>🏺</span> FinSight AI
+        </div>
+        <ul class="sidebar-menu-custom">
+          <li><a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+          <li><a href="/transactions"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
+          <li><a href="/budgets"><i class="fas fa-wallet"></i> Budgets</a></li>
+          <li><a href="/analytics" class="active"><i class="fas fa-chart-pie"></i> Analytics</a></li>
+          <li><a href="/chatbot"><i class="fas fa-robot"></i> AI Assistant</a></li>
+          <li><a href="/profile"><i class="fas fa-user"></i> Profile</a></li>
+          <li><a href="/settings"><i class="fas fa-cog"></i> Settings</a></li>
+        </ul>
+        <div class="sidebar-footer-custom">
+          <form method="POST" action="/logout" style="margin: 0;">
+            <button class="btn btn-outline-danger w-100 btn-sm"><i class="fas fa-sign-out-alt"></i> Logout</button>
+          </form>
+        </div>
+      </aside>
+
+      <!-- Main Layout (Right) -->
+      <div class="main-content-layout-custom">
+        
+        <!-- Top Navbar -->
+        <header class="top-navbar-custom-new">
+          <div class="d-flex align-items-center">
+            <button class="sidebar-hamburger-btn" onclick="toggleSidebarMobile()"><i class="fas fa-bars"></i></button>
+            <div class="search-bar-custom-wrapper d-none d-sm-block">
+              <i class="fas fa-search"></i>
+              <input type="text" placeholder="Search analytics..." class="search-input-custom-new">
+            </div>
+          </div>
+          
+          <div class="navbar-right-controls">
+            <!-- Theme Toggle Button -->
+            <button class="navbar-control-btn" onclick="toggleTheme()" title="Toggle Visual Theme">
+              <i class="{% if theme == 'dark' %}fas fa-sun{% else %}fas fa-moon{% endif %} theme-toggle-icon"></i>
+            </button>
+            
+            <!-- Notification Icon -->
+            <button class="navbar-control-btn" title="Notifications">
+              <i class="fas fa-bell"></i>
+            </button>
+            
+            <!-- User Avatar Link -->
+            <a href="/profile" title="View Profile">
+              <img src="{{ profile_picture or '/static/images/avatars/avatar_1.png' }}" class="navbar-user-avatar-custom" alt="Avatar">
+            </a>
+          </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="container-fluid px-4 py-4">
+          <!-- Page Title -->
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+            <div>
+              <h1 class="display-6 text-white mb-1" style="font-weight: 700; color: var(--text-primary) !important;">Analytics Dashboard</h1>
+              <p class="text-muted mb-0">Detailed insights into your transaction categories, trends, and budget structures</p>
+            </div>
+            <div>
+              <a href="/reports/pdf" class="btn btn-gradient px-4"><i class="fas fa-file-pdf text-danger"></i> Export PDF Report</a>
+            </div>
+          </div>
+
+          <!-- Financial Overview Cards -->
+          <div class="row g-4 mb-4">
+            <div class="col-sm-6 col-lg-3">
+              <div class="card metric-card border-0 p-4">
+                <h6 class="text-muted small uppercase fw-bold mb-1">Total Balance</h6>
+                <h3 class="fw-bold mb-0 text-white" style="color: var(--text-primary) !important;">{{ currency_symbol }}{{ "{:,.2f}".format(summary.balance) }}</h3>
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div class="card metric-card border-0 p-4">
+                <h6 class="text-muted small uppercase fw-bold mb-1">Monthly Income</h6>
+                <h3 class="fw-bold mb-0 text-success">{{ currency_symbol }}{{ "{:,.2f}".format(summary.income) }}</h3>
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div class="card metric-card border-0 p-4">
+                <h6 class="text-muted small uppercase fw-bold mb-1">Monthly Expenses</h6>
+                <h3 class="fw-bold mb-0 text-danger">{{ currency_symbol }}{{ "{:,.2f}".format(summary.expenses) }}</h3>
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div class="card metric-card border-0 p-4">
+                <h6 class="text-muted small uppercase fw-bold mb-1">Savings Rate</h6>
+                <h3 class="fw-bold mb-0 text-info">{{ summary.savings_rate }}%</h3>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Layout Grid -->
+          {% if not expense_breakdown or not expense_breakdown.categories %}
+          <div class="card border-0 shadow-sm p-5 text-center my-4">
+            <div style="font-size: 3.5rem; margin-bottom: 1.5rem;">📊</div>
+            <h3 class="text-white mb-2" style="color: var(--text-primary) !important;">No Transaction Data Available Yet</h3>
+            <p class="text-muted mb-4">Start logging transactions to generate expense charts and trend graphs here.</p>
+            <div>
+              <a href="/transactions" class="btn btn-gradient px-4"><i class="fas fa-plus"></i> Add Transaction</a>
+            </div>
+          </div>
+          {% else %}
+          <div class="row g-4 mb-4">
+            <div class="col-lg-6">
+              <div class="card chart-card border-0 p-4" style="background: var(--bg-card); border: 1px solid var(--border);">
+                <h5 class="mb-4 text-white" style="color: var(--text-primary) !important; font-weight: 700;">Expense Category Distribution</h5>
+                <div style="position: relative; height:320px; width:100%">
+                  <canvas id="expenseChart"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <div class="card chart-card border-0 p-4" style="background: var(--bg-card); border: 1px solid var(--border);">
+                <h5 class="mb-4 text-white" style="color: var(--text-primary) !important; font-weight: 700;">Monthly Spending Trend</h5>
+                <div style="position: relative; height:320px; width:100%">
+                  <canvas id="trendChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Category Breakdown Table List -->
+          <div class="row g-4">
+            <div class="col-12">
+              <div class="card border-0 p-4" style="background: var(--bg-card); border: 1px solid var(--border);">
+                <h5 class="mb-3 text-white" style="color: var(--text-primary) !important; font-weight: 700;">Category Spending Breakdown</h5>
+                <div class="table-responsive">
+                  <table class="table align-middle" style="color: var(--text-primary);">
+                    <thead>
+                      <tr style="border-bottom: 2px solid var(--border);">
+                        <th style="color: var(--text-secondary);">Category</th>
+                        <th style="color: var(--text-secondary);" class="text-end">Amount ({{ currency_symbol }})</th>
+                        <th style="color: var(--text-secondary);" class="text-end">Percentage of Expenses</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% set total_exp = summary.expenses if summary.expenses > 0 else 1.0 %}
+                      {% for cat in expense_breakdown.categories %}
+                        {% set amt = expense_breakdown['values'][loop.index0] %}
+                        {% set pct = (amt / total_exp * 100) | round(1) %}
+                        <tr style="border-bottom: 1px solid var(--border);">
+                          <td><i class="fas fa-tag text-primary me-2"></i> {{ cat }}</td>
+                          <td class="text-end fw-bold">{{ "{:,.2f}".format(amt) }}</td>
+                          <td class="text-end">
+                            <div class="d-flex align-items-center justify-content-end gap-3">
+                              <div class="progress" style="width: 100px; height: 8px; background: rgba(0,0,0,0.05);">
+                                <div class="progress-bar" style="width: {{ pct }}%; background: var(--gradient-1) !important;"></div>
+                              </div>
+                              <span class="fw-bold">{{ pct }}%</span>
+                            </div>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        </main>
+      </div>
+
+      <!-- Floating AI Chatbot Panel & bubble -->
+      <div class="floating-chat-bubble-custom" onclick="toggleFloatingChat()" title="Ask FinSight AI">
+        <i class="fas fa-robot"></i>
+      </div>
+
+      <div class="floating-chat-panel-custom" id="floatingChatPanel">
+        <div class="floating-chat-header-custom">
+          <span><i class="fas fa-robot"></i> FinSight AI Advisor</span>
+          <button class="floating-chat-close-btn" onclick="toggleFloatingChat()"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="floating-chat-messages-custom" id="floatingChatMessages">
+          <div class="floating-chat-message-bubble ai">
+            Hello! I am your FinSight AI coach. Ask me any question about your dashboard metrics, budgets, or savings goals!
+          </div>
+        </div>
+        
+        <!-- Suggested prompts bubbles -->
+        <div class="floating-chat-suggested-prompts">
+          <button class="suggested-prompt-btn-custom" onclick="sendFloatingChatMessage('Give me budget advice')">Give budget advice</button>
+          <button class="suggested-prompt-btn-custom" onclick="sendFloatingChatMessage('Analyze my monthly expenses')">Analyze my expenses</button>
+          <button class="suggested-prompt-btn-custom" onclick="sendFloatingChatMessage('How to hit my savings goal?')">Hit savings goal</button>
+        </div>
+
+        <div class="floating-chat-input-wrapper">
+          <input type="text" id="floatingChatInputField" class="floating-chat-input-field" placeholder="Ask AI Coach...">
+          <button class="floating-chat-send-btn" onclick="sendFloatingChatMessage()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Chart Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+      {% if expense_breakdown %}
+      window.expenseCategories = {{ expense_breakdown['categories'] | tojson }};
+      window.expenseValues = {{ expense_breakdown['values'] | tojson }};
+      {% else %}
+      window.expenseCategories = [];
+      window.expenseValues = [];
+      {% endif %}
+      
+      {% if monthly_trend %}
+      window.trendLabels = {{ monthly_trend['labels'] | tojson }};
+      window.trendValues = {{ monthly_trend['values'] | tojson }};
+      {% else %}
+      window.trendLabels = [];
+      window.trendValues = [];
+      {% endif %}
+    </script>
+    <script src="/static/js/dashboard.js"></script>
+    <script src="/static/js/floating-chat.js"></script>
+  </body>
+</html>
