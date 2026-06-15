@@ -21,6 +21,7 @@
         <li><a href="/goals"><i class="fas fa-bullseye"></i> Savings Goals</a></li>
         <li><a href="/chatbot"><i class="fas fa-robot"></i> AI Assistant</a></li>
         <li><a href="/settings"><i class="fas fa-cog"></i> Settings</a></li>
+        <li><a href="/profile"><i class="fas fa-user"></i> Profile</a></li>
       </ul>
       <div class="navbar-right d-flex align-items-center gap-2">
         {% if user_plan == 'pro' %}
@@ -28,6 +29,9 @@
         {% else %}
           <a href="/upgrade" class="badge bg-secondary px-3 py-2 text-decoration-none text-white small" style="background: rgba(255, 255, 255, 0.1) !important; border: 1px solid rgba(255, 255, 255, 0.1); text-transform: uppercase; font-weight: 700; border-radius: 20px; transition: all 0.25s;" onmouseover="this.style.background='var(--accent-purple)';" onmouseout="this.style.background='rgba(255, 255, 255, 0.1) !important';">Free</a>
         {% endif %}
+        <a href="/profile" class="d-inline-flex align-items-center" title="View Profile">
+          <img src="{{ profile_picture or '/static/images/avatars/avatar_1.png' }}" class="navbar-avatar-badge" alt="Avatar">
+        </a>
         <form method="POST" action="/logout" style="margin: 0;">
           <button class="btn btn-outline-danger btn-sm px-3"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </form>

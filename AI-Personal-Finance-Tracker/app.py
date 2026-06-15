@@ -18,6 +18,7 @@ from routes.chatbot import chatbot_bp
 from routes.goals import goals_bp
 from routes.reports import reports_bp
 from routes.billing import billing_bp
+from routes.profile import profile_bp
 from services.analytics import AnalyticsService
 from services.email_service import EmailAlertsService
 
@@ -60,6 +61,7 @@ app.register_blueprint(chatbot_bp)
 app.register_blueprint(goals_bp)
 app.register_blueprint(reports_bp)
 app.register_blueprint(billing_bp)
+app.register_blueprint(profile_bp)
 
 
 def login_required(view_func):
@@ -291,13 +293,17 @@ def inject_global_user_data():
         return {"user_plan": "free", "email_verified": 0, "currency": "INR", "currency_symbol": "₹"}
     try:
         db = get_db()
-        user = db.execute("SELECT plan, email_verified, currency, currency_symbol FROM users WHERE id = ?", (session["user_id"],)).fetchone()
+        user = db.execute("SELECT name, email, plan, email_verified, currency, currency_symbol, profile_picture, auth_provider FROM users WHERE id = ?", (session["user_id"],)).fetchone()
         if user:
             return {
+                "user_name": user["name"],
+                "user_email": user["email"],
                 "user_plan": user["plan"] or "free",
                 "email_verified": user["email_verified"],
                 "currency": user["currency"] or "INR",
-                "currency_symbol": user["currency_symbol"] or "₹"
+                "currency_symbol": user["currency_symbol"] or "₹",
+                "profile_picture": user["profile_picture"],
+                "auth_provider": user["auth_provider"] or "local"
             }
     except Exception:
         pass

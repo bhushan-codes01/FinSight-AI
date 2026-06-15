@@ -106,9 +106,13 @@
         <li><a href="/goals"><i class="fas fa-bullseye"></i> Savings Goals</a></li>
         <li><a href="/chatbot"><i class="fas fa-robot"></i> AI Assistant</a></li>
         <li><a href="/settings"><i class="fas fa-cog"></i> Settings</a></li>
+        <li><a href="/profile"><i class="fas fa-user"></i> Profile</a></li>
       </ul>
       <div class="navbar-right d-flex align-items-center gap-3">
         <a href="/billing/history" class="btn btn-outline-light btn-sm px-3"><i class="fas fa-history"></i> Billing</a>
+        <a href="/profile" class="d-inline-flex align-items-center" title="View Profile">
+          <img src="{{ profile_picture or '/static/images/avatars/avatar_1.png' }}" class="navbar-avatar-badge" alt="Avatar">
+        </a>
         <form method="POST" action="/logout" style="margin: 0;">
           <button class="btn btn-outline-danger btn-sm"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </form>
