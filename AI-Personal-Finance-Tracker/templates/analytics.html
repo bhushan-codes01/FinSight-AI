@@ -9,12 +9,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script>
       // Apply theme preference instantly before loading DOM
-      if (localStorage.getItem('theme-pref') === 'dark') {
-        document.body.classList.add('theme-dark');
+      if (localStorage.getItem('theme-pref') === 'light') {
+        document.body.classList.add('theme-light');
       }
     </script>
   </head>
-  <body class="{% if theme == 'dark' %}theme-dark{% endif %}">
+  <body class="{% if theme == 'light' %}theme-light{% endif %}">
     <div class="dashboard-layout-wrapper">
       
       <!-- Modern Sidebar (Left) -->
@@ -54,7 +54,7 @@
           <div class="navbar-right-controls">
             <!-- Theme Toggle Button -->
             <button class="navbar-control-btn" onclick="toggleTheme()" title="Toggle Visual Theme">
-              <i class="{% if theme == 'dark' %}fas fa-sun{% else %}fas fa-moon{% endif %} theme-toggle-icon"></i>
+              <i class="{% if theme == 'light' %}fas fa-moon{% else %}fas fa-sun{% endif %} theme-toggle-icon"></i>
             </button>
             
             <!-- Notification Icon -->
@@ -139,6 +139,79 @@
               </div>
             </div>
           </div>
+
+          <!-- Month-over-Month Comparison Cards -->
+          {% if monthly_trend and monthly_trend.labels | length > 1 %}
+          <div class="row g-4 mb-4">
+            <div class="col-12">
+              <div class="card border-0 p-4" style="background: var(--bg-card); border: 1px solid var(--border);">
+                <h5 class="mb-3 text-white" style="color: var(--text-primary) !important; font-weight: 700;">Month-over-Month (MoM) Spending Trends</h5>
+                <div class="table-responsive">
+                  <table class="table align-middle" style="color: var(--text-primary);">
+                    <thead>
+                      <tr style="border-bottom: 2px solid var(--border);">
+                        <th style="color: var(--text-secondary);">Period</th>
+                        <th style="color: var(--text-secondary);" class="text-end">Total Spent ({{ currency_symbol }})</th>
+                        <th style="color: var(--text-secondary);" class="text-end">MoM Change</th>
+                        <th style="color: var(--text-secondary);" class="text-end">Status Indicator</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for month in monthly_trend.labels %}
+                        {% set current_val = monthly_trend.values[loop.index0] %}
+                        <tr style="border-bottom: 1px solid var(--border);">
+                          <td class="fw-semibold">{{ month }}</td>
+                          <td class="text-end fw-bold">{{ "{:,.2f}".format(current_val) }}</td>
+                          <td class="text-end">
+                            {% if loop.index0 > 0 %}
+                              {% set prev_val = monthly_trend.values[loop.index0 - 1] %}
+                              {% if prev_val > 0 %}
+                                {% set change = ((current_val - prev_val) / prev_val * 100) | round(1) %}
+                                {% if change > 0 %}
+                                  <span class="text-danger fw-bold"><i class="fas fa-arrow-trend-up me-1"></i> +{{ change }}% Increase</span>
+                                {% elif change < 0 %}
+                                  <span class="text-success fw-bold"><i class="fas fa-arrow-trend-down me-1"></i> {{ change }}% Decrease</span>
+                                {% else %}
+                                  <span class="text-muted fw-semibold">No Change</span>
+                                {% endif %}
+                              {% else %}
+                                <span class="text-muted">N/A</span>
+                              {% endif %}
+                            {% else %}
+                              <span class="text-muted">Initial Month</span>
+                            {% endif %}
+                          </td>
+                          <td class="text-end">
+                            {% if loop.index0 > 0 %}
+                              {% set prev_val = monthly_trend.values[loop.index0 - 1] %}
+                              {% if current_val > prev_val %}
+                                <span class="badge bg-danger px-2.5 py-1" style="border-radius: 20px;"><i class="fas fa-arrow-up-right-dots me-1"></i> Sped Up</span>
+                              {% else %}
+                                <span class="badge bg-success px-2.5 py-1" style="border-radius: 20px;"><i class="fas fa-circle-down me-1"></i> Under Control</span>
+                              {% endif %}
+                            {% else %}
+                              <span class="badge bg-secondary px-2.5 py-1" style="border-radius: 20px;">Baseline</span>
+                            {% endif %}
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <div class="row g-4 mb-4">
+            <div class="col-12">
+              <div class="card border-0 p-4 text-center" style="background: var(--bg-card); border: 1px solid var(--border);">
+                <div style="font-size: 2rem;" class="mb-2">📈</div>
+                <h6 class="text-white mb-2" style="color: var(--text-primary) !important; font-weight: 700;">Month-over-Month Comparisons Locked</h6>
+                <p class="text-muted small mb-0">You need transaction history across at least 2 different months to generate comparative trend comparisons.</p>
+              </div>
+            </div>
+          </div>
+          {% endif %}
 
           <!-- Category Breakdown Table List -->
           <div class="row g-4">

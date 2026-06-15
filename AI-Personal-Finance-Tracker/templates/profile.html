@@ -9,8 +9,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script>
       // Apply theme preference instantly before loading DOM
-      if (localStorage.getItem('theme-pref') === 'dark') {
-        document.body.classList.add('theme-dark');
+      if (localStorage.getItem('theme-pref') === 'light') {
+        document.body.classList.add('theme-light');
       }
     </script>
     <style>
@@ -24,8 +24,8 @@
         transition: all 0.2s;
         outline: none;
       }
-      body.theme-dark .form-select-custom {
-        background: rgba(255, 255, 255, 0.04) !important;
+      body.theme-light .form-select-custom {
+        background: rgba(0, 0, 0, 0.04) !important;
       }
       .form-select-custom:focus {
         background: rgba(255, 255, 255, 0.08) !important;
@@ -84,7 +84,7 @@
       }
     </style>
   </head>
-  <body class="{% if theme == 'dark' %}theme-dark{% endif %}">
+  <body class="{% if theme == 'light' %}theme-light{% endif %}">
     
     <div class="dashboard-layout-wrapper">
       
@@ -133,7 +133,7 @@
 
             <!-- Theme Toggle Button -->
             <button class="navbar-control-btn" onclick="toggleTheme()" title="Toggle Visual Theme">
-              <i class="{% if theme == 'dark' %}fas fa-sun{% else %}fas fa-moon{% endif %} theme-toggle-icon"></i>
+              <i class="{% if theme == 'light' %}fas fa-moon{% else %}fas fa-sun{% endif %} theme-toggle-icon"></i>
             </button>
             
             <!-- Notification Icon -->
@@ -166,6 +166,26 @@
           <div class="mb-4">
             <h1 class="display-6 text-white mb-1" style="font-weight: 700; color: var(--text-primary) !important;">Profile Configurations</h1>
             <p class="text-muted mb-0">Complete your financial persona details and configure AI advisory preferences</p>
+          </div>
+
+          <!-- Profile Setup Status / Progress Bar -->
+          <div class="card border-0 mb-4 p-4" style="background: var(--bg-card); border: 1px solid var(--border) !important; border-radius: 16px;">
+            <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+              <span class="fw-bold text-white mb-0" style="color: var(--text-primary) !important;">Profile Setup Status</span>
+              <span class="badge fw-bold" style="background: var(--gradient-1) !important; border-radius: 20px; font-size: 0.85rem; padding: 0.35rem 0.85rem;">{{ completion_percentage }}% Completed</span>
+            </div>
+            <div class="progress mb-3" style="height: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 10px;">
+              <div class="progress-bar" role="progressbar" style="width: {{ completion_percentage }}%; background: var(--gradient-1); border-radius: 10px;" aria-valuenow="{{ completion_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            {% if missing_fields %}
+              <div>
+                <small class="text-muted"><i class="fas fa-circle-info me-1 text-info"></i> To reach 100% and unlock fully optimized advice, add: 
+                  <strong style="color: var(--text-primary);">{{ missing_fields | join(', ') }}</strong>
+                </small>
+              </div>
+            {% else %}
+              <small class="text-success fw-semibold"><i class="fas fa-check-circle me-1"></i> Your profile is complete and optimized for the AI financial assistant!</small>
+            {% endif %}
           </div>
 
           <!-- Flash Messages -->
@@ -298,11 +318,12 @@
               <div class="row g-3">
                 <div class="col-md-6">
                   <label for="riskAppetite" class="form-label text-secondary small fw-bold uppercase">Investment Risk Appetite</label>
-                  <select name="risk_appetite" id="riskAppetite" class="form-select-custom">
+                  <select name="risk_appetite" id="riskAppetite" class="form-select-custom" onchange="updateRiskAppetiteDesc()">
                     <option value="Conservative" {% if user.risk_appetite == 'Conservative' %}selected{% endif %}>Conservative (Low risk, capital protection)</option>
                     <option value="Moderate" {% if user.risk_appetite == 'Moderate' or not user.risk_appetite %}selected{% endif %}>Moderate (Balanced risk, diversified)</option>
                     <option value="Aggressive" {% if user.risk_appetite == 'Aggressive' %}selected{% endif %}>Aggressive (High risk, growth seeking)</option>
                   </select>
+                  <div id="riskAppetiteDesc" class="form-text small mt-2 px-2 py-1.5 rounded" style="background: rgba(255,255,255,0.03); color: var(--text-secondary); line-height: 1.4;"></div>
                 </div>
                 
                 <div class="col-md-6">
@@ -454,6 +475,23 @@
           reader.readAsDataURL(input.files[0]);
         }
       }
+
+      function updateRiskAppetiteDesc() {
+        const select = document.getElementById('riskAppetite');
+        const desc = document.getElementById('riskAppetiteDesc');
+        if (!select || !desc) return;
+        const val = select.value;
+        if (val === 'Conservative') {
+          desc.innerHTML = '🛡️ <strong>Conservative:</strong> Focused on capital preservation. AI will recommend stable, low-yield investment suggestions and high-yield savings accounts.';
+        } else if (val === 'Aggressive') {
+          desc.innerHTML = '🔥 <strong>Aggressive:</strong> Higher risk tolerance. AI will suggest aggressive wealth accumulation vehicles, high-growth equity ETFs, and venture models.';
+        } else {
+          desc.innerHTML = '⚖️ <strong>Moderate:</strong> Balanced growth. AI will suggest a standard index-fund portfolio with fixed-income bond diversification.';
+        }
+      }
+      document.addEventListener('DOMContentLoaded', () => {
+        updateRiskAppetiteDesc();
+      });
     </script>
     <script src="/static/js/floating-chat.js"></script>
   </body>

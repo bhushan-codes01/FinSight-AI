@@ -10,8 +10,8 @@
     <link rel="stylesheet" href="/static/css/style.css">
     <script>
       // Apply theme preference instantly before loading DOM
-      if (localStorage.getItem('theme-pref') === 'dark') {
-        document.body.classList.add('theme-dark');
+      if (localStorage.getItem('theme-pref') === 'light') {
+        document.body.classList.add('theme-light');
       }
     </script>
     <style>
@@ -105,8 +105,8 @@
             transition: all 0.25s;
         }
 
-        body.theme-dark .form-input {
-            background: rgba(255, 255, 255, 0.04);
+        body.theme-light .form-input {
+            background: rgba(0, 0, 0, 0.04);
         }
 
         .form-input:focus {
@@ -245,8 +245,8 @@
             border-radius: 14px;
         }
 
-        body.theme-dark .goal-stats {
-            background: rgba(255, 255, 255, 0.02);
+        body.theme-light .goal-stats {
+            background: rgba(0, 0, 0, 0.02);
         }
 
         .stat {
@@ -452,7 +452,7 @@
         }
     </style>
 </head>
-<body class="{% if theme == 'dark' %}theme-dark{% endif %}">
+<body class="{% if theme == 'light' %}theme-light{% endif %}">
     
     <div class="dashboard-layout-wrapper">
       
@@ -499,10 +499,10 @@
               <a href="/upgrade" class="btn btn-outline-light btn-sm py-1 px-3" style="font-size: 0.8rem !important; border-radius: 20px !important;">Upgrade to Pro</a>
             {% endif %}
 
-            <!-- Theme Toggle Button -->
-            <button class="navbar-control-btn" onclick="toggleTheme()" title="Toggle Visual Theme">
-              <i class="{% if theme == 'dark' %}fas fa-sun{% else %}fas fa-moon{% endif %} theme-toggle-icon"></i>
-            </button>
+             <!-- Theme Toggle Button -->
+             <button class="navbar-control-btn" onclick="toggleTheme()" title="Toggle Visual Theme">
+               <i class="{% if theme == 'light' %}fas fa-moon{% else %}fas fa-sun{% endif %} theme-toggle-icon"></i>
+             </button>
             
             <!-- Notification Icon -->
             <button class="navbar-control-btn" title="Notifications">

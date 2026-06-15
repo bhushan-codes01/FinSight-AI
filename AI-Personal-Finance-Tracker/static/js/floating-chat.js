@@ -115,7 +115,45 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // Initialize count-up counters
+  document.querySelectorAll('.count-up').forEach(el => {
+    const val = parseFloat(el.getAttribute('data-value') || '0');
+    if (!isNaN(val) && val > 0) {
+      animateValue(el, 0, val, 1000);
+    } else {
+      el.textContent = '0';
+    }
+  });
 });
+
+// Animate Value Count Up
+function animateValue(obj, start, end, duration) {
+  let startTimestamp = null;
+  const step = (timestamp) => {
+    if (!startTimestamp) startTimestamp = timestamp;
+    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+    const currentValue = progress * (end - start) + start;
+    
+    // Check if we need decimal formatting
+    const isFloat = end % 1 !== 0;
+    obj.textContent = formatNumber(currentValue, isFloat);
+    
+    if (progress < 1) {
+      window.requestAnimationFrame(step);
+    } else {
+      obj.textContent = formatNumber(end, isFloat);
+    }
+  };
+  window.requestAnimationFrame(step);
+}
+
+function formatNumber(num, hasDecimals) {
+  if (hasDecimals) {
+    return num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  return Math.floor(num).toLocaleString();
+}
 
 // Sidebar Mobile Toggle Hamburger Helper
 function toggleSidebarMobile() {
@@ -127,21 +165,21 @@ function toggleSidebarMobile() {
 
 // Global Theme Toggle Handler
 function toggleTheme() {
-  const isDark = document.body.classList.toggle('theme-dark');
-  localStorage.setItem('theme-pref', isDark ? 'dark' : 'light');
+  const isLight = document.body.classList.toggle('theme-light');
+  localStorage.setItem('theme-pref', isLight ? 'light' : 'dark');
   
   // Update toggle icons globally
   document.querySelectorAll('.theme-toggle-icon').forEach(icon => {
-    if (isDark) {
-      icon.className = 'fas fa-sun theme-toggle-icon';
-    } else {
+    if (isLight) {
       icon.className = 'fas fa-moon theme-toggle-icon';
+    } else {
+      icon.className = 'fas fa-sun theme-toggle-icon';
     }
   });
 
   fetch('/settings/toggle-theme', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ theme: isDark ? 'dark' : 'light' })
+    body: JSON.stringify({ theme: isLight ? 'light' : 'dark' })
   }).catch(e => console.error('Theme sync error:', e));
 }

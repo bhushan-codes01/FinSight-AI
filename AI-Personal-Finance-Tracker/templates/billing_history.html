@@ -9,12 +9,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script>
       // Apply theme preference instantly before loading DOM
-      if (localStorage.getItem('theme-pref') === 'dark') {
-        document.body.classList.add('theme-dark');
+      if (localStorage.getItem('theme-pref') === 'light') {
+        document.body.classList.add('theme-light');
       }
     </script>
   </head>
-  <body class="{% if theme == 'dark' %}theme-dark{% endif %}">
+  <body class="{% if theme == 'light' %}theme-light{% endif %}">
     
     <div class="dashboard-layout-wrapper">
       
@@ -59,7 +59,7 @@
 
             <!-- Theme Toggle Button -->
             <button class="navbar-control-btn" onclick="toggleTheme()" title="Toggle Visual Theme">
-              <i class="{% if theme == 'dark' %}fas fa-sun{% else %}fas fa-moon{% endif %} theme-toggle-icon"></i>
+              <i class="{% if theme == 'light' %}fas fa-moon{% else %}fas fa-sun{% endif %} theme-toggle-icon"></i>
             </button>
             
             <!-- Notification Icon -->

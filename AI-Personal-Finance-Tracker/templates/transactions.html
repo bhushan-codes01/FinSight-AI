@@ -10,12 +10,12 @@
     <link rel="stylesheet" href="/static/css/style.css" />
     <script>
       // Apply theme preference instantly before loading DOM
-      if (localStorage.getItem('theme-pref') === 'dark') {
-        document.body.classList.add('theme-dark');
+      if (localStorage.getItem('theme-pref') === 'light') {
+        document.body.classList.add('theme-light');
       }
     </script>
   </head>
-  <body class="{% if theme == 'dark' %}theme-dark{% endif %}">
+  <body class="{% if theme == 'light' %}theme-light{% endif %}">
     
     <!-- Toast Notification Container -->
     <div id="toastContainer" style="position: fixed; top: 80px; right: 20px; z-index: 1050; display: flex; flex-direction: column; align-items: flex-end; gap: 10px;"></div>
@@ -67,7 +67,7 @@
 
             <!-- Theme Toggle Button -->
             <button class="navbar-control-btn" onclick="toggleTheme()" title="Toggle Visual Theme">
-              <i class="{% if theme == 'dark' %}fas fa-sun{% else %}fas fa-moon{% endif %} theme-toggle-icon"></i>
+              <i class="{% if theme == 'light' %}fas fa-moon{% else %}fas fa-sun{% endif %} theme-toggle-icon"></i>
             </button>
             
             <!-- Notification Icon -->

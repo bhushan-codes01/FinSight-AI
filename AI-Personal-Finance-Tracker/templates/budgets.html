@@ -10,12 +10,12 @@
     <link rel="stylesheet" href="/static/css/style.css" />
     <script>
       // Apply theme preference instantly before loading DOM
-      if (localStorage.getItem('theme-pref') === 'dark') {
-        document.body.classList.add('theme-dark');
+      if (localStorage.getItem('theme-pref') === 'light') {
+        document.body.classList.add('theme-light');
       }
     </script>
   </head>
-  <body class="{% if theme == 'dark' %}theme-dark{% endif %}">
+  <body class="{% if theme == 'light' %}theme-light{% endif %}">
     
     <!-- Toast Notification Container -->
     <div id="toastContainer" style="position: fixed; top: 80px; right: 20px; z-index: 1050; display: flex; flex-direction: column; align-items: flex-end; gap: 10px;"></div>
@@ -67,7 +67,7 @@
 
             <!-- Theme Toggle Button -->
             <button class="navbar-control-btn" onclick="toggleTheme()" title="Toggle Visual Theme">
-              <i class="{% if theme == 'dark' %}fas fa-sun{% else %}fas fa-moon{% endif %} theme-toggle-icon"></i>
+              <i class="{% if theme == 'light' %}fas fa-moon{% else %}fas fa-sun{% endif %} theme-toggle-icon"></i>
             </button>
             
             <!-- Notification Icon -->
@@ -104,6 +104,47 @@
               <div class="card border-0 shadow-sm p-4">
                 <h1 class="display-6 text-white mb-1" style="font-weight: 700; color: var(--text-primary) !important;">Monthly Budgets</h1>
                 <p class="text-muted mb-0">Create monthly category budgets and track remaining balance.</p>
+              </div>
+            </div>
+
+            <!-- Savings Forecast Simulator Card -->
+            <div class="col-12">
+              <div class="card border-0 shadow-sm p-4" style="background: var(--bg-card); border: 1px solid var(--border) !important; border-radius: 16px;">
+                <h5 class="mb-3" style="color: var(--text-primary) !important; font-weight: 700;">🔮 Savings Forecast Simulator</h5>
+                <div class="row align-items-center g-4">
+                  <div class="col-md-6">
+                    <label for="savingsRange" class="form-label text-secondary small fw-bold uppercase">Expected Monthly Savings ({{ currency_symbol }})</label>
+                    <div class="d-flex align-items-center gap-3">
+                      <input type="range" class="form-range flex-grow-1" id="savingsRange" min="0" max="100000" step="500" value="{{ savings_goal | int }}" oninput="updateForecastSim()">
+                      <input type="number" class="form-control" id="savingsSimInput" style="width: 120px; background: rgba(0,0,0,0.1); border: 1px solid var(--border); color: var(--text-primary);" value="{{ savings_goal | int }}" oninput="updateForecastSimFromNumber()">
+                    </div>
+                    <div class="form-text text-muted mt-2">
+                      Adjust the slider or enter a number to simulate long-term growth (assuming 7% annual compounding interest).
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="row g-3">
+                      <div class="col-6">
+                        <div class="p-3 rounded" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border);">
+                          <div class="small text-muted mb-1">6-Month Accumulation</div>
+                          <h5 class="fw-bold mb-0 text-white" id="accum6m">{{ currency_symbol }}0</h5>
+                        </div>
+                      </div>
+                      <div class="col-6">
+                        <div class="p-3 rounded" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border);">
+                          <div class="small text-muted mb-1">12-Month Accumulation</div>
+                          <h5 class="fw-bold mb-0 text-white" id="accum12m">{{ currency_symbol }}0</h5>
+                        </div>
+                      </div>
+                      <div class="col-12">
+                        <div class="p-3 rounded text-white" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(59, 130, 246, 0.1) 100%); border: 1px solid rgba(139, 92, 246, 0.3);">
+                          <div class="small text-white-50 mb-1">5-Year Growth (7% Compounded)</div>
+                          <h4 class="fw-bold mb-0" id="accum5y" style="background: linear-gradient(90deg, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">{{ currency_symbol }}0</h4>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -148,11 +189,11 @@
                       <div class="d-flex justify-content-between align-items-center mb-3">
                         <p class="mb-0 text-muted small">Budget: {{ currency_symbol }}{{ budget.budget_amount }} • Spent: {{ currency_symbol }}{{ budget.spent }}</p>
                         {% if budget.status == 'over-budget' %}
-                          <span class="badge bg-danger">Over Budget</span>
+                          <span class="badge bg-danger" style="box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);"><i class="fas fa-triangle-exclamation"></i> Over Budget</span>
                         {% elif budget.status == 'warning' %}
-                          <span class="badge bg-warning text-dark">Warning</span>
+                          <span class="badge bg-warning text-dark" style="box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);"><i class="fas fa-circle-exclamation"></i> Warning</span>
                         {% else %}
-                          <span class="badge bg-success">On Track</span>
+                          <span class="badge bg-success"><i class="fas fa-check-circle"></i> On Track</span>
                         {% endif %}
                       </div>
 
@@ -223,6 +264,60 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
       const CURRENCY_SYMBOL = "{{ currency_symbol }}";
+
+      function updateForecastSim() {
+        const range = document.getElementById('savingsRange');
+        const numInput = document.getElementById('savingsSimInput');
+        if (!range || !numInput) return;
+        
+        const monthly = parseFloat(range.value);
+        numInput.value = monthly;
+        calculateSavings(monthly);
+      }
+
+      function updateForecastSimFromNumber() {
+        const range = document.getElementById('savingsRange');
+        const numInput = document.getElementById('savingsSimInput');
+        if (!range || !numInput) return;
+        
+        let monthly = parseFloat(numInput.value);
+        if (isNaN(monthly) || monthly < 0) {
+          monthly = 0;
+        }
+        range.value = monthly;
+        calculateSavings(monthly);
+      }
+
+      function calculateSavings(monthly) {
+        // Direct accumulation
+        const months6 = monthly * 6;
+        const months12 = monthly * 12;
+        
+        // Compound interest: F = P * (((1 + r/n)^(n*t) - 1) / (r/n))
+        // assuming monthly additions, compounded monthly at 7% annual
+        const rate = 0.07;
+        const n = 12; // monthly compounding
+        const t = 5; // years
+        const totalMonths = n * t;
+        const r_monthly = rate / n;
+        
+        let compound5yr = 0;
+        if (r_monthly > 0) {
+          compound5yr = monthly * ((Math.pow(1 + r_monthly, totalMonths) - 1) / r_monthly) * (1 + r_monthly);
+        } else {
+          compound5yr = monthly * totalMonths;
+        }
+        
+        document.getElementById('accum6m').textContent = CURRENCY_SYMBOL + Math.round(months6).toLocaleString();
+        document.getElementById('accum12m').textContent = CURRENCY_SYMBOL + Math.round(months12).toLocaleString();
+        document.getElementById('accum5y').textContent = CURRENCY_SYMBOL + Math.round(compound5yr).toLocaleString();
+      }
+
+      // Initialize on load
+      document.addEventListener('DOMContentLoaded', () => {
+        const val = parseFloat(document.getElementById('savingsRange').value);
+        calculateSavings(val);
+      });
       // Set current month in form
       const now = new Date();
       const currentMonth = now.toISOString().slice(0, 7); // YYYY-MM

@@ -60,7 +60,9 @@ def manage_budgets():
 
     analytics = AnalyticsService(db, user_id)
     budget_status = analytics.budget_status_summary()
-    return render_template("budgets.html", budgets=budget_status)
+    user = db.execute("SELECT savings_goal FROM users WHERE id = ?", (user_id,)).fetchone()
+    savings_goal = user["savings_goal"] if (user and user["savings_goal"]) else 5000.0
+    return render_template("budgets.html", budgets=budget_status, savings_goal=savings_goal)
 
 
 @budget_bp.route("/budgets/<int:budget_id>", methods=["DELETE"])

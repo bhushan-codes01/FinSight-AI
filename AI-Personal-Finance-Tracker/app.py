@@ -311,7 +311,7 @@ def ensure_database():
 @app.context_processor
 def inject_global_user_data():
     if not has_request_context() or not session.get("user_id"):
-        return {"user_plan": "free", "email_verified": 0, "currency": "INR", "currency_symbol": "₹", "theme": "light"}
+        return {"user_plan": "free", "email_verified": 0, "currency": "INR", "currency_symbol": "₹", "theme": "dark"}
     try:
         db = get_db()
         user = db.execute("SELECT name, email, plan, email_verified, currency, currency_symbol, profile_picture, auth_provider, theme FROM users WHERE id = ?", (session["user_id"],)).fetchone()
@@ -325,11 +325,11 @@ def inject_global_user_data():
                 "currency_symbol": user["currency_symbol"] or "₹",
                 "profile_picture": user["profile_picture"],
                 "auth_provider": user["auth_provider"] or "local",
-                "theme": user["theme"] or "light"
+                "theme": user["theme"] or "dark"
             }
     except Exception:
         pass
-    return {"user_plan": "free", "email_verified": 0, "currency": "INR", "currency_symbol": "₹", "theme": "light"}
+    return {"user_plan": "free", "email_verified": 0, "currency": "INR", "currency_symbol": "₹", "theme": "dark"}
 
 
 @app.route("/")
@@ -465,15 +465,50 @@ def analytics_page():
         budget_status=budget_status
     )
 
+@app.route("/dashboard/ai-insight")
+@login_required
+def dashboard_ai_insight():
+    user_id = session["user_id"]
+    db = get_db()
+    
+    analytics = AnalyticsService(db, user_id)
+    summary = analytics.generate_dashboard_summary()
+    budget_status = analytics.budget_status_summary()
+    
+    if not summary or (summary.get('income', 0) == 0 and summary.get('expenses', 0) == 0):
+        return jsonify({
+            "insight": "Welcome to FinSight AI! Log your first transaction under the Transactions page to unlock personalized, real-time AI-powered financial advisory. 🚀"
+        })
+        
+    context = f"Income: {summary.get('income', 0)}, Expenses: {summary.get('expenses', 0)}, Net Balance: {summary.get('balance', 0)}, Savings Rate: {summary.get('savings_rate', 0)}%."
+    if budget_status:
+        over_budgets = [b['category'] for b in budget_status if b.get('status') == 'over-budget']
+        if over_budgets:
+            context += f" Over budget categories: {', '.join(over_budgets)}."
+            
+    prompt = (
+        f"You are FinSight AI, a premium personal finance coach. Analyze this snapshot of the user's monthly finances: {context}. "
+        f"Provide a short, extremely actionable, 2-sentence financial health recommendation or insight. Be encouraging and direct. Do not use markdown headers, but you can use emojis."
+    )
+    
+    try:
+        from services.gemini_service import GeminiService
+        gemini = GeminiService()
+        insight = gemini.analyze(prompt)
+    except Exception as e:
+        insight = "FinSight AI could not retrieve insights at this time. Please ensure a valid Google Gemini API key is configured."
+        
+    return jsonify({"insight": insight})
+
 @app.route("/settings/toggle-theme", methods=["POST"])
 @login_required
 def toggle_theme():
     user_id = session["user_id"]
     data = request.get_json() or {}
-    theme = data.get("theme", "light").strip()
+    theme = data.get("theme", "dark").strip()
     
     if theme not in ["light", "dark"]:
-        theme = "light"
+        theme = "dark"
         
     db = get_db()
     db.execute("UPDATE users SET theme = ? WHERE id = ?", (theme, user_id))

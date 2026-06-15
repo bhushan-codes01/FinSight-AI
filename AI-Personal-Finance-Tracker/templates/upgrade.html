@@ -9,8 +9,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script>
       // Apply theme preference instantly before loading DOM
-      if (localStorage.getItem('theme-pref') === 'dark') {
-        document.body.classList.add('theme-dark');
+      if (localStorage.getItem('theme-pref') === 'light') {
+        document.body.classList.add('theme-light');
       }
     </script>
     <style>
@@ -22,8 +22,8 @@
         border-radius: 30px;
         margin-bottom: 2.5rem;
       }
-      body.theme-dark .plan-toggle-container {
-        background: rgba(255, 255, 255, 0.05);
+      body.theme-light .plan-toggle-container {
+        background: rgba(0, 0, 0, 0.05);
       }
       .plan-toggle-btn {
         background: transparent;
@@ -102,7 +102,7 @@
       }
     </style>
   </head>
-  <body class="{% if theme == 'dark' %}theme-dark{% endif %}">
+  <body class="{% if theme == 'light' %}theme-light{% endif %}">
     
     <div class="dashboard-layout-wrapper">
       
@@ -145,10 +145,10 @@
             <!-- Billing history button -->
             <a href="/billing/history" class="btn btn-outline-light btn-sm px-3" style="font-size: 0.8rem !important; border-radius: 20px !important;"><i class="fas fa-history"></i> Billing History</a>
 
-            <!-- Theme Toggle Button -->
-            <button class="navbar-control-btn" onclick="toggleTheme()" title="Toggle Visual Theme">
-              <i class="{% if theme == 'dark' %}fas fa-sun{% else %}fas fa-moon{% endif %} theme-toggle-icon"></i>
-            </button>
+             <!-- Theme Toggle Button -->
+             <button class="navbar-control-btn" onclick="toggleTheme()" title="Toggle Visual Theme">
+               <i class="{% if theme == 'light' %}fas fa-moon{% else %}fas fa-sun{% endif %} theme-toggle-icon"></i>
+             </button>
             
             <!-- Notification Icon -->
             <button class="navbar-control-btn" title="Notifications">

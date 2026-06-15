@@ -40,6 +40,45 @@ def view_profile():
         flash("User not found.", "danger")
         return redirect(url_for("dashboard"))
 
+    # Calculate profile completion percentage
+    completion_percentage = 0
+    missing_fields = []
+    
+    if user["name"]:
+        completion_percentage += 15
+    else:
+        missing_fields.append("Display Name")
+        
+    if user["profile_picture"]:
+        completion_percentage += 15
+    else:
+        missing_fields.append("Profile Picture / Avatar")
+        
+    if user["occupation"] and user["occupation"].strip() != "":
+        completion_percentage += 15
+    else:
+        missing_fields.append("Occupation")
+        
+    if user["monthly_income"] and user["monthly_income"] > 0:
+        completion_percentage += 15
+    else:
+        missing_fields.append("Monthly Income")
+        
+    if user["savings_goal"] and user["savings_goal"] > 0:
+        completion_percentage += 15
+    else:
+        missing_fields.append("Monthly Savings Goal")
+        
+    if user["risk_appetite"] and user["risk_appetite"].strip() != "":
+        completion_percentage += 15
+    else:
+        missing_fields.append("Risk Appetite Preference")
+        
+    if user["advice_level"] and user["advice_level"].strip() != "":
+        completion_percentage += 10
+    else:
+        missing_fields.append("AI Advice Level Preference")
+
     # Get statistics
     total_tx = db.execute("SELECT COUNT(*) FROM transactions WHERE user_id = ?", (user_id,)).fetchone()[0]
     total_income = (
@@ -75,6 +114,8 @@ def view_profile():
             "total_chats": total_chats,
         },
         predefined_avatars=predefined_avatars,
+        completion_percentage=completion_percentage,
+        missing_fields=missing_fields,
     )
 
 
