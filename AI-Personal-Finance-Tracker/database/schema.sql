@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL,
+    password TEXT,
+    firebase_uid TEXT UNIQUE,
     email_notifications INTEGER DEFAULT 1,
     google_id TEXT UNIQUE,
     auth_provider TEXT DEFAULT 'local',
@@ -20,6 +21,7 @@ CREATE TABLE IF NOT EXISTS users (
     budget_style TEXT DEFAULT '50/30/20',
     risk_appetite TEXT DEFAULT 'Moderate',
     advice_level TEXT DEFAULT 'Balanced',
+    theme TEXT DEFAULT 'dark',
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
