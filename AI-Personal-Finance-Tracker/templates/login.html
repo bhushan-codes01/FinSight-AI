@@ -111,7 +111,7 @@
 
       async function sendTokenToBackend(token) {
         try {
-          const response = await fetch('/auth/login-firebase', {
+          const response = await fetch('/login-firebase', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
