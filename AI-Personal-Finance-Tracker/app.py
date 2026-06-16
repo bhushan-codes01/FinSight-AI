@@ -11,7 +11,7 @@ import sqlite3
 from functools import wraps
 from flask import Flask, g, render_template, request, redirect, url_for, session, flash, jsonify, has_request_context
 from flask_mail import Mail, Message
-from routes.auth import auth_bp, oauth
+from routes.auth import auth_bp
 from routes.transactions import transactions_bp, get_upcoming_recurring
 from routes.budget import budget_bp
 from routes.chatbot import chatbot_bp
@@ -49,9 +49,6 @@ app.mail = mail
 # Initialize Flask-Mail
 email_service = EmailAlertsService(app)
 app.email_service = email_service
-
-# Initialize OAuth
-oauth.init_app(app)
 
 # Register blueprints
 app.register_blueprint(auth_bp)
@@ -201,6 +198,10 @@ def ensure_database():
         if "profile_picture" not in user_cols:
             cursor.execute("ALTER TABLE users ADD COLUMN profile_picture TEXT")
             modified = True
+        if "firebase_uid" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN firebase_uid TEXT")
+            cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_firebase_uid ON users(firebase_uid)")
+            modified = True
         if "email_verified" not in user_cols:
             cursor.execute("ALTER TABLE users ADD COLUMN email_verified BOOLEAN DEFAULT 0")
             modified = True
@@ -310,13 +311,32 @@ def ensure_database():
 
 @app.context_processor
 def inject_global_user_data():
+    firebase_config = {
+        "apiKey": os.getenv("FIREBASE_API_KEY", ""),
+        "authDomain": os.getenv("FIREBASE_AUTH_DOMAIN", ""),
+        "projectId": os.getenv("FIREBASE_PROJECT_ID", ""),
+        "storageBucket": os.getenv("FIREBASE_STORAGE_BUCKET", ""),
+        "messagingSenderId": os.getenv("FIREBASE_MESSAGING_SENDER_ID", ""),
+        "appId": os.getenv("FIREBASE_APP_ID", "")
+    }
+    
+    context = {
+        "user_plan": "free",
+        "email_verified": 0,
+        "currency": "INR",
+        "currency_symbol": "₹",
+        "theme": "dark",
+        "firebase_config": firebase_config
+    }
+    
     if not has_request_context() or not session.get("user_id"):
-        return {"user_plan": "free", "email_verified": 0, "currency": "INR", "currency_symbol": "₹", "theme": "dark"}
+        return context
+        
     try:
         db = get_db()
         user = db.execute("SELECT name, email, plan, email_verified, currency, currency_symbol, profile_picture, auth_provider, theme FROM users WHERE id = ?", (session["user_id"],)).fetchone()
         if user:
-            return {
+            context.update({
                 "user_name": user["name"],
                 "user_email": user["email"],
                 "user_plan": user["plan"] or "free",
@@ -326,10 +346,10 @@ def inject_global_user_data():
                 "profile_picture": user["profile_picture"],
                 "auth_provider": user["auth_provider"] or "local",
                 "theme": user["theme"] or "dark"
-            }
+            })
     except Exception:
         pass
-    return {"user_plan": "free", "email_verified": 0, "currency": "INR", "currency_symbol": "₹", "theme": "dark"}
+    return context
 
 
 @app.route("/")

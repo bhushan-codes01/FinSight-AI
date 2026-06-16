@@ -426,27 +426,5 @@
       }
     </script>
     <script src="/static/js/floating-chat.js"></script>
-
-    <!-- Floating Email Verification Toast -->
-    {% if not email_verified %}
-    <div id="emailVerifyToast" class="toast-floating-premium" role="alert">
-      <div class="toast-glow"></div>
-      <div class="toast-content">
-        <div class="d-flex align-items-start gap-3">
-          <div class="toast-icon-wrapper"><i class="fas fa-envelope-open-text"></i></div>
-          <div class="flex-grow-1">
-            <h6 class="mb-1 text-white" style="font-weight: 700; font-family: 'Space Grotesk', sans-serif; color: var(--text-primary) !important;">Verify Email</h6>
-            <p class="mb-2 text-secondary" style="font-size: 0.8rem; line-height: 1.4;">Verify your email to secure your account and unlock all features.</p>
-            <div class="d-flex gap-2">
-              <form method="POST" action="/resend-verification" style="margin: 0;">
-                <button type="submit" class="btn btn-primary btn-sm py-1 px-3" style="font-size: 0.75rem !important; border-radius: 8px !important; min-height: auto;">Resend Link</button>
-              </form>
-              <button onclick="dismissToast('emailVerifyToast')" class="btn btn-outline-light btn-sm py-1 px-3" style="font-size: 0.75rem !important; border-radius: 8px !important; min-height: auto;">Later</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    {% endif %}
   </body>
 </html>
