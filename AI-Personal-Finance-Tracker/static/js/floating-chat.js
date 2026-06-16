@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialize count-up counters
   document.querySelectorAll('.count-up').forEach(el => {
     const val = parseFloat(el.getAttribute('data-value') || '0');
-    if (!isNaN(val) && val > 0) {
+    if (!isNaN(val) && val !== 0) {
       animateValue(el, 0, val, 1000);
     } else {
       el.textContent = '0';

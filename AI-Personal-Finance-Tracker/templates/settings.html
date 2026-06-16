@@ -11,7 +11,7 @@
     <script>
       // Apply theme preference instantly before loading DOM
       if (localStorage.getItem('theme-pref') === 'light') {
-        document.body.classList.add('theme-light');
+        document.documentElement.classList.add('theme-light');
       }
     </script>
     <style>
@@ -114,6 +114,13 @@
     </style>
   </head>
   <body class="{% if theme == 'light' %}theme-light{% endif %}">
+    <script>
+      if (localStorage.getItem('theme-pref') === 'light') {
+        document.body.classList.add('theme-light');
+      } else if (localStorage.getItem('theme-pref') === 'dark') {
+        document.body.classList.remove('theme-light');
+      }
+    </script>
     
     <div class="dashboard-layout-wrapper">
       

@@ -235,7 +235,7 @@ def ensure_database():
             cursor.execute("ALTER TABLE users ADD COLUMN advice_level TEXT DEFAULT 'Balanced'")
             modified = True
         if "theme" not in user_cols:
-            cursor.execute("ALTER TABLE users ADD COLUMN theme TEXT DEFAULT 'light'")
+            cursor.execute("ALTER TABLE users ADD COLUMN theme TEXT DEFAULT 'dark'")
             modified = True
 
         # Check if auth_tokens table exists
@@ -357,9 +357,24 @@ def dashboard():
     email_verified = user_data["email_verified"] if user_data else 0
     user_plan = user_data["plan"] if user_data else "free"
 
+    # Extract metrics with safe defaults (0 instead of None or empty)
+    total_income = summary.get("income", 0) if summary else 0
+    total_expenses = summary.get("expenses", 0) if summary else 0
+    net_balance = summary.get("balance", 0) if summary else 0
+    savings_rate = summary.get("savings_rate", 0) if summary else 0
+
+    if total_income is None: total_income = 0
+    if total_expenses is None: total_expenses = 0
+    if net_balance is None: net_balance = 0
+    if savings_rate is None: savings_rate = 0
+
     return render_template(
         "dashboard.html",
         summary=summary,
+        total_income=total_income,
+        total_expenses=total_expenses,
+        net_balance=net_balance,
+        savings_rate=savings_rate,
         expense_breakdown=expense_breakdown,
         monthly_trend=monthly_trend,
         budget_status=budget_status,

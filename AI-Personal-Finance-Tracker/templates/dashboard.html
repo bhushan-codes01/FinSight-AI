@@ -10,11 +10,9 @@
     <script>
       // Apply theme preference instantly before loading DOM
       if (localStorage.getItem('theme-pref') === 'light') {
-        document.body.classList.add('theme-light');
+        document.documentElement.classList.add('theme-light');
       }
     </script>
-  </head>
-  <body class="{% if theme == 'light' %}theme-light{% endif %}">
     <div class="dashboard-layout-wrapper">
       
       <!-- Modern Sidebar (Left) -->
@@ -112,11 +110,11 @@
 
             <!-- Quick Action Buttons Row -->
             <div class="col-12">
-              <div class="quick-actions-pills-container">
-                <a href="/transactions" class="quick-action-pill primary-pill"><i class="fas fa-plus-circle"></i> Add Transaction</a>
-                <a href="/budgets" class="quick-action-pill"><i class="fas fa-wallet"></i> Manage Budgets</a>
-                <a href="/goals" class="quick-action-pill"><i class="fas fa-bullseye"></i> Set Savings Goal</a>
-                <div onclick="toggleFloatingChat()" class="quick-action-pill"><i class="fas fa-robot"></i> Chat with AI Coach</div>
+              <div class="quick-actions">
+                <div class="qa-pill primary" onclick="location.href='/transactions'">➕ Add Transaction</div>
+                <div class="qa-pill" onclick="location.href='/budgets'">📊 Add Budget</div>
+                <div class="qa-pill" onclick="location.href='/goals'">🎯 New Goal</div>
+                <div class="qa-pill" onclick="toggleFloatingChat()">🤖 Ask AI</div>
               </div>
             </div>
 
@@ -128,7 +126,7 @@
                   <div class="kpi-card-icon"><i class="fas fa-wallet" style="color: var(--accent-purple);"></i></div>
                 </div>
                 <h2 class="fw-bold mb-2" style="color: var(--text-primary) !important;">
-                  {{ currency_symbol }}<span class="count-up" data-value="{{ summary.income }}">0</span>
+                  {{ currency_symbol }}<span class="count-up" data-value="{{ total_income }}">0</span>
                 </h2>
                 <span class="kpi-trend-badge up"><i class="fas fa-arrow-trend-up"></i> +12.4% MoM</span>
               </div>
@@ -140,7 +138,7 @@
                   <div class="kpi-card-icon"><i class="fas fa-credit-card" style="color: var(--accent-purple);"></i></div>
                 </div>
                 <h2 class="fw-bold mb-2" style="color: var(--text-primary) !important;">
-                  {{ currency_symbol }}<span class="count-up" data-value="{{ summary.expenses }}">0</span>
+                  {{ currency_symbol }}<span class="count-up" data-value="{{ total_expenses }}">0</span>
                 </h2>
                 <span class="kpi-trend-badge down"><i class="fas fa-arrow-trend-down"></i> -4.2% MoM</span>
               </div>
@@ -152,7 +150,7 @@
                   <div class="kpi-card-icon"><i class="fas fa-scale-balanced" style="color: var(--accent-purple);"></i></div>
                 </div>
                 <h2 class="fw-bold mb-2" style="color: var(--text-primary) !important;">
-                  {{ currency_symbol }}<span class="count-up" data-value="{{ summary.balance }}">0</span>
+                  {{ currency_symbol }}<span class="count-up" data-value="{{ net_balance }}">0</span>
                 </h2>
                 <span class="kpi-trend-badge up"><i class="fas fa-arrow-trend-up"></i> +8.1% MoM</span>
               </div>
@@ -165,7 +163,7 @@
                 </div>
                 <div class="d-flex align-items-center justify-content-between mb-2">
                   <h2 class="fw-bold mb-0" style="color: var(--text-primary) !important;">
-                    <span class="count-up" data-value="{{ summary.savings_rate }}">0</span>%
+                    <span class="count-up" data-value="{{ savings_rate }}">0</span>%
                   </h2>
                   <!-- Mini Progress Circle -->
                   <div class="mini-progress-circle-wrapper" style="width: 44px; height: 44px; position: relative;">
@@ -173,7 +171,7 @@
                       <circle cx="22" cy="22" r="18" fill="none" stroke="var(--border)" stroke-width="3.5"></circle>
                       <circle cx="22" cy="22" r="18" fill="none" stroke="url(#savingsGlowGradient)" stroke-width="3.5" 
                               stroke-dasharray="113" 
-                              stroke-dashoffset="{{ 113 - (113 * (summary.savings_rate | float) / 100) if (summary.savings_rate | float) <= 100 else 0 }}"
+                              stroke-dashoffset="{{ 113 - (113 * (savings_rate | float) / 100) if (savings_rate | float) <= 100 else 0 }}"
                               stroke-linecap="round"></circle>
                       <defs>
                         <linearGradient id="savingsGlowGradient" x1="0%" y1="0%" x2="100%" y2="100%">

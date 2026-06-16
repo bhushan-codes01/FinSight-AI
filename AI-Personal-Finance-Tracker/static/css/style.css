@@ -1,10 +1,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Gen-Z Design Tokens (Dark Mode) */
   --bg-primary: #0d0d0d;
   --bg-secondary: #111111;
   --bg-card: #1a1a1a;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  background-color: #0d0d0d !important;
+  background: #0d0d0d !important;
+  color: #ffffff !important;
+  min-height: 100vh;
+}
+
+:root {
+  /* Gen-Z Design Tokens (Dark Mode) */
   --bg-hover: #222222;
   --accent-purple: #a855f7;
   --accent-pink: #ec4899;
@@ -258,17 +274,14 @@ body.theme-light,
   transition: background 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease !important;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+body.theme-light {
+  background: #F8FAFC !important;
+  background-color: #F8FAFC !important;
+  color: #0d0d0d !important;
 }
-
 body {
-  font-family: 'Inter', sans-serif;
-  background: var(--bg-primary);
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
   color: var(--text-primary);
-  min-height: 100vh;
   background-image: 
     radial-gradient(at 0% 0%, rgba(124, 58, 237, 0.08) 0px, transparent 50%),
     radial-gradient(at 100% 100%, rgba(37, 99, 235, 0.08) 0px, transparent 50%);
@@ -1349,6 +1362,10 @@ body {
   display: flex;
   min-height: 100vh;
   position: relative;
+  background: #0d0d0d !important;
+}
+body.theme-light .dashboard-layout-wrapper {
+  background: #F8FAFC !important;
 }
 
 .sidebar-wrapper-custom {
@@ -1362,7 +1379,10 @@ body {
   bottom: 0;
   left: 0;
   z-index: 100;
-  padding: 1.5rem 1.25rem;
+  padding: 1.5rem 1.25rem 1.5rem 16px !important;
+  padding-left: 16px !important;
+  margin-left: 0 !important;
+  overflow: visible !important;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 4px 0 30px rgba(0, 0, 0, 0.15);
 }
@@ -1565,7 +1585,10 @@ body.theme-light .sidebar-user-card {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  background: var(--bg-primary);
+  background: #0d0d0d !important;
+}
+body.theme-light .main-content-layout-custom {
+  background: #F8FAFC !important;
 }
 
 /* Premium Top Navbar */
@@ -2390,6 +2413,110 @@ body.theme-light .category-grid-item {
 }
 .category-grid-item.active .cat-label {
   color: var(--text-primary);
+}
+
+/* Quick Actions and Pills aliases */
+.quick-actions {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding: 4px 4px 12px 4px;
+  margin-bottom: 0.5rem;
+  scrollbar-width: none;
+}
+.quick-actions::-webkit-scrollbar {
+  display: none;
+}
+
+.qa-pill {
+  flex-shrink: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 0.6rem 1.25rem;
+  border-radius: 100px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.qa-pill:hover {
+  border-color: var(--accent-purple);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+.qa-pill.primary {
+  background: var(--gradient-1) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.25) !important;
+}
+
+body.theme-light .qa-pill {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+body.theme-light .qa-pill:hover {
+  background: var(--bg-hover);
+}
+
+/* FORCE DARK THEME — override any Bootstrap/default styles */
+html:not(.theme-light),
+body:not(.theme-light),
+body:not(.theme-light) .container,
+body:not(.theme-light) .container-fluid,
+body:not(.theme-light) .row,
+body:not(.theme-light) .wrapper,
+body:not(.theme-light) .main-content,
+body:not(.theme-light) .page-wrapper,
+body:not(.theme-light) .content-wrapper {
+  background-color: #0d0d0d !important;
+  background: #0d0d0d !important;
+}
+
+body:not(.theme-light) .card,
+body:not(.theme-light) .modal-content,
+body:not(.theme-light) .dropdown-menu {
+  background: #1a1a1a !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  color: #ffffff !important;
+}
+
+body:not(.theme-light) input, 
+body:not(.theme-light) textarea, 
+body:not(.theme-light) select {
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  color: #ffffff !important;
+}
+
+body:not(.theme-light) input::placeholder, 
+body:not(.theme-light) textarea::placeholder {
+  color: #71717a !important;
+}
+
+/* Fix any white text-on-white issues */
+body:not(.theme-light) p, 
+body:not(.theme-light) h1, 
+body:not(.theme-light) h2, 
+body:not(.theme-light) h3, 
+body:not(.theme-light) h4, 
+body:not(.theme-light) h5, 
+body:not(.theme-light) h6, 
+body:not(.theme-light) span, 
+body:not(.theme-light) label, 
+body:not(.theme-light) td, 
+body:not(.theme-light) th, 
+body:not(.theme-light) li {
+  color: inherit;
 }
 
 
