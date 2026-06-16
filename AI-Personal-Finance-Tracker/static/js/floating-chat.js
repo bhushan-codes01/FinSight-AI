@@ -177,6 +177,11 @@ function toggleTheme() {
     }
   });
 
+  // Dynamically update active charts if available
+  if (typeof window.updateChartsTheme === 'function') {
+    window.updateChartsTheme();
+  }
+
   fetch('/settings/toggle-theme', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

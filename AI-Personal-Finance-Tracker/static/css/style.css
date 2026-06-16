@@ -1,49 +1,151 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  /* Default: Premium Dark Mode */
-  --bg-primary: #0F172A; /* Deep Navy */
-  --bg-secondary: #0b1120; /* Darker Navy */
-  --bg-card: rgba(30, 41, 59, 0.5); /* Glassmorphic Slate */
-  --bg-hover: rgba(255, 255, 255, 0.05);
-  --accent-purple: #8B5CF6; /* Gemini Purple */
-  --accent-green: #10B981; /* Emerald Green */
-  --accent-blue: #3b82f6;
-  --accent-red: #ef4444;
+  /* Centralized Design Token System - Semantic Variables (Default: Dark Mode) */
+  --background: #0F172A; /* Deep Navy */
+  --surface: #0b1120; /* Darker Navy */
+  --card: rgba(30, 41, 59, 0.5); /* Glassmorphic Slate */
   --text-primary: #FFFFFF; /* White */
   --text-secondary: #94a3b8; /* Slate Light */
-  --text-muted: #64748b;
+  --text-muted: #64748b; /* Slate Gray */
   --border: rgba(255, 255, 255, 0.08);
-  --gradient-1: linear-gradient(135deg, #8B5CF6, #3b82f6);
+  --accent: #8B5CF6; /* Gemini Purple */
+  --success: #10B981; /* Emerald Green */
+  --danger: #ef4444;
+  --bg-hover: rgba(255, 255, 255, 0.05);
+  --gradient-1: linear-gradient(135deg, var(--accent), #3b82f6);
   --gradient-glow: 0 8px 32px 0 rgba(139, 92, 246, 0.25);
+
+  /* Centralized Dynamic Overlay Tokens */
+  --overlay-subtle: rgba(255, 255, 255, 0.03);
+  --overlay-normal: rgba(255, 255, 255, 0.05);
+  --overlay-strong: rgba(255, 255, 255, 0.1);
+
+  /* Backward Compatibility Mappings */
+  --bg-primary: var(--background);
+  --bg-secondary: var(--surface);
+  --bg-card: var(--card);
+  --accent-purple: var(--accent);
+  --accent-green: var(--success);
+  --accent-blue: #3b82f6;
+  --accent-red: var(--danger);
   
-  /* Backward compatibility variables */
   --bg-dark: var(--bg-primary);
   --surface-dark: var(--bg-card);
   --surface-darker: var(--bg-secondary);
-  --accent: var(--accent-purple);
   --accent-soft: rgba(139, 92, 246, 0.15);
   --text: var(--text-primary);
   --text-muted-old: var(--text-muted);
 }
 
 body.theme-light {
-  /* Premium Light Mode Override */
-  --bg-primary: #F8FAFC; /* Light Gray */
-  --bg-secondary: #FFFFFF; /* White */
-  --bg-card: rgba(255, 255, 255, 0.8); /* Glassmorphic White */
-  --bg-hover: rgba(15, 23, 42, 0.04);
+  /* Centralized Design Token System - Semantic Variables (Light Mode) */
+  --background: #F8FAFC; /* Light Gray */
+  --surface: #FFFFFF; /* White */
+  --card: rgba(255, 255, 255, 0.8); /* Glassmorphic White */
   --text-primary: #0F172A; /* Deep Navy */
   --text-secondary: #475569; /* Slate */
   --text-muted: #94a3b8;
   --border: rgba(15, 23, 42, 0.08);
+  --accent: #8B5CF6; /* Gemini Purple */
+  --success: #10B981; /* Emerald Green */
+  --danger: #ef4444;
+  --bg-hover: rgba(15, 23, 42, 0.04);
   --gradient-glow: 0 8px 32px 0 rgba(139, 92, 246, 0.12);
+
+  /* Centralized Dynamic Overlay Tokens */
+  --overlay-subtle: rgba(0, 0, 0, 0.02);
+  --overlay-normal: rgba(0, 0, 0, 0.04);
+  --overlay-strong: rgba(0, 0, 0, 0.08);
+
+  /* Backward Compatibility Mappings */
+  --bg-primary: var(--background);
+  --bg-secondary: var(--surface);
+  --bg-card: var(--card);
+  --accent-purple: var(--accent);
+  --accent-green: var(--success);
+  --accent-blue: #3b82f6;
+  --accent-red: var(--danger);
   
   --bg-dark: var(--bg-primary);
   --surface-dark: var(--bg-card);
   --surface-darker: var(--bg-secondary);
+  --accent-soft: rgba(139, 92, 246, 0.08);
   --text: var(--text-primary);
   --text-muted-old: var(--text-muted);
+}
+
+/* Centralized Global Theme Override Utilities for Bootstrap */
+.text-white, .text-dark, .text-light, .text-muted {
+  transition: color 0.3s ease;
+}
+
+.text-white {
+  color: var(--text-primary) !important;
+}
+
+.text-dark {
+  color: var(--text-secondary) !important;
+}
+
+.text-light {
+  color: var(--text-secondary) !important;
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.bg-white {
+  background-color: var(--surface) !important;
+}
+
+.bg-dark {
+  background-color: var(--background) !important;
+}
+
+.bg-light {
+  background-color: var(--surface) !important;
+}
+
+/* Ensure default inputs / textareas / selects use variables */
+input, select, textarea, .form-control {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border) !important;
+}
+
+body.theme-light input, 
+body.theme-light select, 
+body.theme-light textarea, 
+body.theme-light .form-control {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border) !important;
+}
+
+/* Fix text input placeholders */
+input::placeholder, textarea::placeholder, .form-control::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 0.8;
+}
+
+/* Smooth Theme Transitions */
+body, 
+body.theme-light,
+.card,
+.sidebar-wrapper-custom,
+.top-navbar-custom-new,
+.form-control,
+.form-select-custom,
+.btn,
+.table,
+.floating-chat-panel-custom,
+.floating-chat-bubble-custom,
+.stat-item-card,
+.list-group-item,
+.modal-content {
+  transition: background 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease !important;
 }
 
 * {
@@ -246,13 +348,13 @@ body {
   background: transparent !important;
 }
 .table td {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  border-bottom: 1px solid var(--border) !important;
   background: transparent !important;
   color: var(--text-primary) !important;
 }
 
 .budget-item {
-  background: rgba(255, 255, 255, 0.02) !important;
+  background: var(--overlay-subtle) !important;
   border: 1px solid var(--border) !important;
   border-radius: 12px !important;
   padding: 1.25rem !important;
@@ -1247,7 +1349,7 @@ body {
 
 .search-input-custom-new {
   width: 100%;
-  background: rgba(15, 23, 42, 0.04) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
   border: 1px solid var(--border) !important;
   border-radius: 20px !important;
   padding: 0.45rem 1rem 0.45rem 2.5rem !important;
@@ -1257,8 +1359,8 @@ body {
   transition: all 0.2s;
 }
 
-body.theme-dark .search-input-custom-new {
-  background: rgba(255, 255, 255, 0.04) !important;
+body.theme-light .search-input-custom-new {
+  background: rgba(15, 23, 42, 0.04) !important;
 }
 
 .search-input-custom-new:focus {
@@ -1276,7 +1378,7 @@ body.theme-dark .search-input-custom-new {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: rgba(15, 23, 42, 0.04);
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border);
   color: var(--text-primary);
   display: flex;
@@ -1286,8 +1388,8 @@ body.theme-dark .search-input-custom-new {
   transition: all 0.2s;
 }
 
-body.theme-dark .navbar-control-btn {
-  background: rgba(255, 255, 255, 0.04);
+body.theme-light .navbar-control-btn {
+  background: rgba(15, 23, 42, 0.04) !important;
 }
 
 .navbar-control-btn:hover {
@@ -1424,15 +1526,15 @@ body.theme-dark .navbar-control-btn {
 }
 
 .floating-chat-message-bubble.ai {
-  background: rgba(15, 23, 42, 0.04);
+  background: rgba(255, 255, 255, 0.04);
   color: var(--text-primary);
   align-self: flex-start;
   border-bottom-left-radius: 4px;
   border: 1px solid var(--border);
 }
 
-body.theme-dark .floating-chat-message-bubble.ai {
-  background: rgba(255, 255, 255, 0.04);
+body.theme-light .floating-chat-message-bubble.ai {
+  background: rgba(15, 23, 42, 0.04);
 }
 
 .floating-chat-suggested-prompts {
@@ -1443,7 +1545,7 @@ body.theme-dark .floating-chat-message-bubble.ai {
 }
 
 .suggested-prompt-btn-custom {
-  background: rgba(15, 23, 42, 0.03);
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border);
   color: var(--text-secondary);
   font-size: 0.78rem;
@@ -1453,8 +1555,8 @@ body.theme-dark .floating-chat-message-bubble.ai {
   transition: all 0.2s;
 }
 
-body.theme-dark .suggested-prompt-btn-custom {
-  background: rgba(255, 255, 255, 0.03);
+body.theme-light .suggested-prompt-btn-custom {
+  background: rgba(15, 23, 42, 0.03);
 }
 
 .suggested-prompt-btn-custom:hover {
@@ -1472,7 +1574,7 @@ body.theme-dark .suggested-prompt-btn-custom {
 
 .floating-chat-input-field {
   flex: 1;
-  background: rgba(15, 23, 42, 0.04) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
   border: 1px solid var(--border) !important;
   border-radius: 20px !important;
   padding: 0.45rem 1rem !important;
@@ -1481,8 +1583,8 @@ body.theme-dark .suggested-prompt-btn-custom {
   outline: none;
 }
 
-body.theme-dark .floating-chat-input-field {
-  background: rgba(255, 255, 255, 0.04) !important;
+body.theme-light .floating-chat-input-field {
+  background: rgba(15, 23, 42, 0.04) !important;
 }
 
 .floating-chat-send-btn {
