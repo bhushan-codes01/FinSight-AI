@@ -118,26 +118,7 @@
     <div class="dashboard-layout-wrapper">
       
       <!-- Modern Sidebar (Left) -->
-      <aside class="sidebar-wrapper-custom" id="sidebarWrapper">
-        <div class="sidebar-logo-custom">
-          <span>🏺</span> FinSight AI
-        </div>
-        <ul class="sidebar-menu-custom">
-          <li><a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-          <li><a href="/transactions"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
-          <li><a href="/budgets"><i class="fas fa-wallet"></i> Budgets</a></li>
-          <li><a href="/goals"><i class="fas fa-bullseye"></i> Savings Goals</a></li>
-          <li><a href="/analytics"><i class="fas fa-chart-pie"></i> Analytics</a></li>
-          <li><a href="/chatbot"><i class="fas fa-robot"></i> AI Assistant</a></li>
-          <li><a href="/profile"><i class="fas fa-user"></i> Profile</a></li>
-          <li><a href="/settings" class="active"><i class="fas fa-cog"></i> Settings</a></li>
-        </ul>
-        <div class="sidebar-footer-custom">
-          <form method="POST" action="/logout" style="margin: 0;">
-            <button class="btn btn-outline-danger w-100 btn-sm"><i class="fas fa-sign-out-alt"></i> Logout</button>
-          </form>
-        </div>
-      </aside>
+      {% include 'sidebar.html' %}
 
       <!-- Main Layout (Right) -->
       <div class="main-content-layout-custom">

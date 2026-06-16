@@ -1,0 +1,109 @@
+<aside class="sidebar-wrapper-custom" id="sidebarWrapper">
+  <!-- Brand Logo -->
+  <div class="sidebar-logo-custom" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+    <div style="background: var(--gradient-hero); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.6rem; font-weight: 800;">
+      <i class="fas fa-wallet"></i>
+    </div>
+    <span class="logo-text" style="font-weight: 800; font-family: 'Space Grotesk', sans-serif; background: var(--gradient-hero); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">FinSight AI</span>
+  </div>
+
+  <!-- User Avatar / Meta Card -->
+  <div class="sidebar-user-card">
+    <img src="{{ profile_picture or '/static/images/avatars/avatar_1.png' }}" class="sidebar-user-avatar" alt="Avatar">
+    <div class="sidebar-user-info">
+      <span class="sidebar-user-name">{{ user_name or 'FinSighter' }}</span>
+      <span class="sidebar-user-badge {% if user_plan == 'pro' %}pro-badge{% else %}free-badge{% endif %}">
+        {% if user_plan == 'pro' %}Pro ⭐{% else %}Free{% endif %}
+      </span>
+    </div>
+  </div>
+
+  <!-- Navigation Groups -->
+  <div style="display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; flex-grow: 1; margin-bottom: 1rem; padding-right: 2px;">
+    <!-- Overview Section -->
+    <div>
+      <div class="sidebar-category-header">Overview</div>
+      <ul class="sidebar-menu-custom">
+        <li>
+          <a href="/dashboard" class="{% if request.path == '/dashboard' %}active{% endif %}">
+            <i class="fas fa-chart-line"></i> Dashboard
+          </a>
+        </li>
+        <li>
+          <a href="/analytics" class="{% if request.path == '/analytics' %}active{% endif %}">
+            <i class="fas fa-chart-pie"></i> Analytics
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Manage Section -->
+    <div>
+      <div class="sidebar-category-header">Manage</div>
+      <ul class="sidebar-menu-custom">
+        <li>
+          <a href="/transactions" class="{% if request.path == '/transactions' %}active{% endif %}">
+            <i class="fas fa-exchange-alt"></i> Transactions
+          </a>
+        </li>
+        <li>
+          <a href="/budgets" class="{% if request.path == '/budgets' %}active{% endif %}">
+            <i class="fas fa-wallet"></i> Budgets
+          </a>
+        </li>
+        <li>
+          <a href="/goals" class="{% if request.path == '/goals' %}active{% endif %}">
+            <i class="fas fa-bullseye"></i> Savings Goals
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- AI Tools Section -->
+    <div>
+      <div class="sidebar-category-header">AI Tools</div>
+      <ul class="sidebar-menu-custom">
+        <li>
+          <a href="/chatbot" class="{% if request.path == '/chatbot' %}active{% endif %}">
+            <i class="fas fa-robot"></i> AI Assistant
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Account Section -->
+    <div>
+      <div class="sidebar-category-header">Account</div>
+      <ul class="sidebar-menu-custom">
+        <li>
+          <a href="/profile" class="{% if request.path == '/profile' %}active{% endif %}">
+            <i class="fas fa-user"></i> Profile
+          </a>
+        </li>
+        <li>
+          <a href="/settings" class="{% if request.path == '/settings' %}active{% endif %}">
+            <i class="fas fa-cog"></i> Settings
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Upgrade Card if Free -->
+    {% if user_plan != 'pro' %}
+    <div class="sidebar-promo-card">
+      <div class="promo-content">
+        <h5>Upgrade to Pro</h5>
+        <p>Unlock ultimate financial insights, custom alerts & premium support.</p>
+        <a href="/upgrade" class="btn btn-primary btn-sm w-100 promo-btn">Go Pro ⭐</a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Logout Footer -->
+  <div class="sidebar-footer-custom">
+    <form method="POST" action="/logout" style="margin: 0;">
+      <button class="btn btn-outline-danger w-100 btn-sm logout-btn-sidebar"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </form>
+  </div>
+</aside>

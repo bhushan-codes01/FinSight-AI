@@ -23,26 +23,7 @@
     <div class="dashboard-layout-wrapper">
       
       <!-- Modern Sidebar (Left) -->
-      <aside class="sidebar-wrapper-custom" id="sidebarWrapper">
-        <div class="sidebar-logo-custom">
-          <span>🏺</span> FinSight AI
-        </div>
-        <ul class="sidebar-menu-custom">
-          <li><a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-          <li><a href="/transactions" class="active"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
-          <li><a href="/budgets"><i class="fas fa-wallet"></i> Budgets</a></li>
-          <li><a href="/goals"><i class="fas fa-bullseye"></i> Savings Goals</a></li>
-          <li><a href="/analytics"><i class="fas fa-chart-pie"></i> Analytics</a></li>
-          <li><a href="/chatbot"><i class="fas fa-robot"></i> AI Assistant</a></li>
-          <li><a href="/profile"><i class="fas fa-user"></i> Profile</a></li>
-          <li><a href="/settings"><i class="fas fa-cog"></i> Settings</a></li>
-        </ul>
-        <div class="sidebar-footer-custom">
-          <form method="POST" action="/logout" style="margin: 0;">
-            <button class="btn btn-outline-danger w-100 btn-sm"><i class="fas fa-sign-out-alt"></i> Logout</button>
-          </form>
-        </div>
-      </aside>
+      {% include 'sidebar.html' %}
 
       <!-- Main Layout (Right) -->
       <div class="main-content-layout-custom">
@@ -81,20 +62,6 @@
             </a>
           </div>
         </header>
-
-        <!-- Email Verification Warning Banner -->
-        {% if not email_verified %}
-        <div class="alert alert-warning border-0 rounded-0 mb-0 d-flex justify-content-between align-items-center px-4 py-3" role="alert" style="background: rgba(245, 158, 11, 0.12); border-bottom: 1px solid rgba(245, 158, 11, 0.2) !important; color: #f59e0b;">
-          <div class="d-flex align-items-center gap-2">
-            <i class="fas fa-exclamation-triangle"></i>
-            <span><strong>Verify your email:</strong> Please verify your email to secure your account.</span>
-          </div>
-          <form method="POST" action="/resend-verification" style="margin: 0;">
-            <button type="submit" class="btn btn-warning btn-sm py-1 px-3 text-dark fw-bold" style="border-radius: 6px !important; font-size: 0.8rem !important; min-height: unset; padding: 0.25rem 0.75rem !important;">Resend Email</button>
-          </form>
-        </div>
-        {% endif %}
-
         <!-- Main Content -->
         <main class="container-fluid px-4 py-4">
           <div class="row g-4">
@@ -121,36 +88,45 @@
               <div class="card border-0 shadow-sm p-4">
                 <h5 class="mb-3" style="color: var(--text-primary) !important; font-weight: 700;">New Transaction</h5>
                 <form id="addTransactionForm" class="row g-3">
-                  <div class="col-md-3">
-                    <label class="form-label">Amount</label>
-                    <input type="number" step="0.01" name="amount" class="form-control" required />
+                  <!-- Large glowing Amount Input -->
+                  <div class="col-12">
+                    <label class="form-label text-center d-block">Amount</label>
+                    <div class="amount-input-wrapper mb-4 text-center">
+                      <div class="currency-symbol-large">{{ currency_symbol }}</div>
+                      <input type="number" step="0.01" name="amount" id="addTxnAmountInput" class="large-amount-input" placeholder="0.00" required />
+                      <div class="amount-glow-line"></div>
+                    </div>
                   </div>
-                  <div class="col-md-3">
-                    <label class="form-label">Category</label>
-                    <input type="text" name="category" class="form-control" required />
-                  </div>
-                  <div class="col-md-3">
+
+                  <!-- Type Toggle Pill -->
+                  <div class="col-md-4">
                     <label class="form-label">Type</label>
-                    <select name="transaction_type" class="form-select" required>
-                      <option value="expense" selected>Expense</option>
-                      <option value="income">Income</option>
-                    </select>
+                    <div class="transaction-type-toggle-wrapper">
+                      <input type="radio" name="transaction_type" id="typeExpense" value="expense" checked style="display: none;">
+                      <input type="radio" name="transaction_type" id="typeIncome" value="income" style="display: none;">
+                      <div class="type-toggle-container">
+                        <label for="typeExpense" class="toggle-btn active" id="labelExpense">Expense</label>
+                        <label for="typeIncome" class="toggle-btn" id="labelIncome">Income</label>
+                        <div class="toggle-slider"></div>
+                      </div>
+                    </div>
                   </div>
-                  <div class="col-md-3">
+
+                  <!-- Date -->
+                  <div class="col-md-4">
                     <label class="form-label">Date</label>
                     <input type="date" name="transaction_date" class="form-control" required />
                   </div>
-                  <div class="col-12">
-                    <label class="form-label">Description</label>
-                    <textarea name="description" rows="2" class="form-control"></textarea>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="form-check form-switch mt-4">
+
+                  <!-- Recurrence Toggle -->
+                  <div class="col-md-4">
+                    <div class="form-check form-switch" style="margin-top: 2.2rem;">
                       <input class="form-check-input" type="checkbox" name="is_recurring" value="1" id="isRecurringCheckbox" onchange="toggleRecurrenceSelect()">
                       <label class="form-check-label" for="isRecurringCheckbox" style="margin-left: 0.35rem; cursor: pointer; color: var(--text-primary) !important;">Recurring Transaction</label>
                     </div>
                   </div>
-                  <div class="col-md-6" id="recurrenceTypeGroup" style="display: none;">
+
+                  <div class="col-12" id="recurrenceTypeGroup" style="display: none; margin-top: 1rem;">
                     <label class="form-label">Recurrence Type</label>
                     <select name="recurrence_type" class="form-select">
                       <option value="none">None</option>
@@ -158,7 +134,53 @@
                       <option value="monthly">Monthly</option>
                     </select>
                   </div>
-                  <div class="col-12 text-end">
+
+                  <!-- Category Grid Selector -->
+                  <div class="col-12 my-3">
+                    <label class="form-label">Category</label>
+                    <input type="hidden" name="category" id="selectedCategory" value="Food" required />
+                    <div class="category-grid-custom">
+                      <button type="button" class="category-grid-item active" data-category="Food" onclick="selectCategory('Food')">
+                        <span class="cat-icon" style="background: var(--gradient-warm);"><i class="fas fa-utensils"></i></span>
+                        <span class="cat-label">Food</span>
+                      </button>
+                      <button type="button" class="category-grid-item" data-category="Travel" onclick="selectCategory('Travel')">
+                        <span class="cat-icon" style="background: linear-gradient(135deg, #3b82f6, #22d3ee);"><i class="fas fa-plane"></i></span>
+                        <span class="cat-label">Travel</span>
+                      </button>
+                      <button type="button" class="category-grid-item" data-category="Shopping" onclick="selectCategory('Shopping')">
+                        <span class="cat-icon" style="background: linear-gradient(135deg, #ec4899, #fb7185);"><i class="fas fa-shopping-bag"></i></span>
+                        <span class="cat-label">Shopping</span>
+                      </button>
+                      <button type="button" class="category-grid-item" data-category="Bills" onclick="selectCategory('Bills')">
+                        <span class="cat-icon" style="background: linear-gradient(135deg, #ef4444, #f97316);"><i class="fas fa-receipt"></i></span>
+                        <span class="cat-label">Bills</span>
+                      </button>
+                      <button type="button" class="category-grid-item" data-category="Entertainment" onclick="selectCategory('Entertainment')">
+                        <span class="cat-icon" style="background: linear-gradient(135deg, #8b5cf6, #d946ef);"><i class="fas fa-film"></i></span>
+                        <span class="cat-label">Entertainment</span>
+                      </button>
+                      <button type="button" class="category-grid-item" data-category="Salary" onclick="selectCategory('Salary')">
+                        <span class="cat-icon" style="background: var(--gradient-green);"><i class="fas fa-money-bill-wave"></i></span>
+                        <span class="cat-label">Salary</span>
+                      </button>
+                      <button type="button" class="category-grid-item" data-category="Other" onclick="selectCategory('Other')">
+                        <span class="cat-icon" style="background: linear-gradient(135deg, #6b7280, #9ca3af);"><i class="fas fa-ellipsis-h"></i></span>
+                        <span class="cat-label">Other</span>
+                      </button>
+                    </div>
+                    <div id="customCategoryWrapper" class="mt-3" style="display: none;">
+                      <input type="text" id="customCategoryInput" class="form-control" placeholder="Enter custom category name..." oninput="updateCustomCategory(this.value)">
+                    </div>
+                  </div>
+
+                  <!-- Description -->
+                  <div class="col-12">
+                    <label class="form-label">Description</label>
+                    <textarea name="description" rows="2" class="form-control" placeholder="Write transaction notes..."></textarea>
+                  </div>
+
+                  <div class="col-12 text-end mt-3">
                     <button type="submit" class="btn btn-success">Save Transaction</button>
                   </div>
                 </form>
@@ -222,7 +244,7 @@
                           <span class="badge bg-info ms-2"><i class="fas fa-redo"></i> {{ txn.recurrence_type.title() }}</span>
                           {% endif %}
                         </td>
-                        <td><span class="badge bg-secondary px-2 py-1 small" style="background: rgba(139, 92, 246, 0.1) !important; color: var(--accent-purple) !important; border: 1px solid rgba(139, 92, 246, 0.2);">{{ txn.category }}</span></td>
+                        <td><span class="category-badge-custom category-{{ txn.category | lower }}">{{ txn.category }}</span></td>
                         <td>
                           {% if txn.transaction_type == 'income' %}
                             <span class="text-success"><i class="fas fa-arrow-down me-1"></i> Income</span>
@@ -563,7 +585,7 @@
               <span class="txn-desc fw-medium">${escapeHTML(txn.description || "")}</span>
               ${isRecurringBadge}
             </td>
-            <td><span class="badge bg-secondary px-2 py-1 small" style="background: rgba(139, 92, 246, 0.1) !important; color: var(--accent-purple) !important; border: 1px solid rgba(139, 92, 246, 0.2);">${escapeHTML(txn.category)}</span></td>
+            <td><span class="category-badge-custom category-${txn.category.toLowerCase()}">${escapeHTML(txn.category)}</span></td>
             <td>
               ${txn.transaction_type === 'income' 
                 ? '<span class="text-success"><i class="fas fa-arrow-down me-1"></i> Income</span>' 
@@ -598,7 +620,80 @@
       function escapeJS(str) {
         return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
       }
+
+      function selectCategory(category) {
+        document.getElementById('selectedCategory').value = category;
+        document.querySelectorAll('.category-grid-item').forEach(item => {
+          item.classList.remove('active');
+        });
+        const clickedItem = document.querySelector(`.category-grid-item[data-category="${category}"]`);
+        if (clickedItem) {
+          clickedItem.classList.add('active');
+        }
+        const customWrapper = document.getElementById('customCategoryWrapper');
+        if (category === 'Other') {
+          customWrapper.style.display = 'block';
+          document.getElementById('customCategoryInput').focus();
+        } else {
+          customWrapper.style.display = 'none';
+          document.getElementById('customCategoryInput').value = '';
+        }
+      }
+
+      function updateCustomCategory(val) {
+        document.getElementById('selectedCategory').value = val.trim();
+      }
+
+      function dismissToast(id) {
+        const el = document.getElementById(id);
+        if (el) {
+          el.style.transition = 'all 0.3s ease';
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(20px)';
+          setTimeout(() => el.remove(), 300);
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const typeExpense = document.getElementById('typeExpense');
+        const typeIncome = document.getElementById('typeIncome');
+        const labelExpense = document.getElementById('labelExpense');
+        const labelIncome = document.getElementById('labelIncome');
+
+        if (typeExpense && typeIncome) {
+          typeExpense.addEventListener('change', () => {
+            labelExpense.classList.add('active');
+            labelIncome.classList.remove('active');
+          });
+          typeIncome.addEventListener('change', () => {
+            labelIncome.classList.add('active');
+            labelExpense.classList.remove('active');
+          });
+        }
+      });
     </script>
     <script src="/static/js/floating-chat.js"></script>
+
+    <!-- Floating Email Verification Toast -->
+    {% if not email_verified %}
+    <div id="emailVerifyToast" class="toast-floating-premium" role="alert">
+      <div class="toast-glow"></div>
+      <div class="toast-content">
+        <div class="d-flex align-items-start gap-3">
+          <div class="toast-icon-wrapper"><i class="fas fa-envelope-open-text"></i></div>
+          <div class="flex-grow-1">
+            <h6 class="mb-1 text-white" style="font-weight: 700; font-family: 'Space Grotesk', sans-serif; color: var(--text-primary) !important;">Verify Email</h6>
+            <p class="mb-2 text-secondary" style="font-size: 0.8rem; line-height: 1.4;">Verify your email to secure your account and unlock all features.</p>
+            <div class="d-flex gap-2">
+              <form method="POST" action="/resend-verification" style="margin: 0;">
+                <button type="submit" class="btn btn-primary btn-sm py-1 px-3" style="font-size: 0.75rem !important; border-radius: 8px !important; min-height: auto;">Resend Link</button>
+              </form>
+              <button onclick="dismissToast('emailVerifyToast')" class="btn btn-outline-light btn-sm py-1 px-3" style="font-size: 0.75rem !important; border-radius: 8px !important; min-height: auto;">Later</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
   </body>
 </html>

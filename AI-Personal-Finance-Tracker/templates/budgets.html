@@ -23,26 +23,7 @@
     <div class="dashboard-layout-wrapper">
       
       <!-- Modern Sidebar (Left) -->
-      <aside class="sidebar-wrapper-custom" id="sidebarWrapper">
-        <div class="sidebar-logo-custom">
-          <span>🏺</span> FinSight AI
-        </div>
-        <ul class="sidebar-menu-custom">
-          <li><a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-          <li><a href="/transactions"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
-          <li><a href="/budgets" class="active"><i class="fas fa-wallet"></i> Budgets</a></li>
-          <li><a href="/goals"><i class="fas fa-bullseye"></i> Savings Goals</a></li>
-          <li><a href="/analytics"><i class="fas fa-chart-pie"></i> Analytics</a></li>
-          <li><a href="/chatbot"><i class="fas fa-robot"></i> AI Assistant</a></li>
-          <li><a href="/profile"><i class="fas fa-user"></i> Profile</a></li>
-          <li><a href="/settings"><i class="fas fa-cog"></i> Settings</a></li>
-        </ul>
-        <div class="sidebar-footer-custom">
-          <form method="POST" action="/logout" style="margin: 0;">
-            <button class="btn btn-outline-danger w-100 btn-sm"><i class="fas fa-sign-out-alt"></i> Logout</button>
-          </form>
-        </div>
-      </aside>
+      {% include 'sidebar.html' %}
 
       <!-- Main Layout (Right) -->
       <div class="main-content-layout-custom">
@@ -81,20 +62,6 @@
             </a>
           </div>
         </header>
-
-        <!-- Email Verification Warning Banner -->
-        {% if not email_verified %}
-        <div class="alert alert-warning border-0 rounded-0 mb-0 d-flex justify-content-between align-items-center px-4 py-3" role="alert" style="background: rgba(245, 158, 11, 0.12); border-bottom: 1px solid rgba(245, 158, 11, 0.2) !important; color: #f59e0b;">
-          <div class="d-flex align-items-center gap-2">
-            <i class="fas fa-exclamation-triangle"></i>
-            <span><strong>Verify your email:</strong> Please verify your email to secure your account.</span>
-          </div>
-          <form method="POST" action="/resend-verification" style="margin: 0;">
-            <button type="submit" class="btn btn-warning btn-sm py-1 px-3 text-dark fw-bold" style="border-radius: 6px !important; font-size: 0.8rem !important; min-height: unset; padding: 0.25rem 0.75rem !important;">Resend Email</button>
-          </form>
-        </div>
-        {% endif %}
-
         <!-- Main Content -->
         <main class="container-fluid px-4 py-4">
           <div class="row g-4">
@@ -502,7 +469,39 @@
           }[tag] || tag)
         );
       }
+
+      function dismissToast(id) {
+        const el = document.getElementById(id);
+        if (el) {
+          el.style.transition = 'all 0.3s ease';
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(20px)';
+          setTimeout(() => el.remove(), 300);
+        }
+      }
     </script>
     <script src="/static/js/floating-chat.js"></script>
+
+    <!-- Floating Email Verification Toast -->
+    {% if not email_verified %}
+    <div id="emailVerifyToast" class="toast-floating-premium" role="alert">
+      <div class="toast-glow"></div>
+      <div class="toast-content">
+        <div class="d-flex align-items-start gap-3">
+          <div class="toast-icon-wrapper"><i class="fas fa-envelope-open-text"></i></div>
+          <div class="flex-grow-1">
+            <h6 class="mb-1 text-white" style="font-weight: 700; font-family: 'Space Grotesk', sans-serif; color: var(--text-primary) !important;">Verify Email</h6>
+            <p class="mb-2 text-secondary" style="font-size: 0.8rem; line-height: 1.4;">Verify your email to secure your account and unlock all features.</p>
+            <div class="d-flex gap-2">
+              <form method="POST" action="/resend-verification" style="margin: 0;">
+                <button type="submit" class="btn btn-primary btn-sm py-1 px-3" style="font-size: 0.75rem !important; border-radius: 8px !important; min-height: auto;">Resend Link</button>
+              </form>
+              <button onclick="dismissToast('emailVerifyToast')" class="btn btn-outline-light btn-sm py-1 px-3" style="font-size: 0.75rem !important; border-radius: 8px !important; min-height: auto;">Later</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
   </body>
 </html>
