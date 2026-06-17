@@ -2577,6 +2577,63 @@ body.theme-light select.form-select option {
   color: #0f172a !important;
 }
 
+/* Landing Page Scrolled Navigation state styles */
+.landing-nav.scrolled {
+  background: rgba(10, 10, 15, 0.9) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3) !important;
+  padding: 0.75rem 2rem !important;
+}
+
+/* Landing Page Light Mode Theme overrides */
+body.theme-light .landing-nav {
+  background: rgba(248, 250, 252, 0.75) !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+body.theme-light .landing-nav.scrolled {
+  background: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.05) !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1) !important;
+}
+
+body.theme-light .landing-nav-logo {
+  background: var(--gradient-hero) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+body.theme-light .btn-ghost {
+  color: #0d0d0d !important;
+}
+
+body.theme-light .btn-ghost:hover {
+  background: rgba(15, 23, 42, 0.05) !important;
+  color: #000000 !important;
+}
+
+body.theme-light .hero-badge {
+  background: rgba(168, 85, 247, 0.08) !important;
+  color: var(--accent-purple) !important;
+  border: 1px solid rgba(168, 85, 247, 0.2) !important;
+}
+
+body.theme-light .feature-card {
+  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+body.theme-light .feature-card:hover {
+  border-color: rgba(124, 58, 237, 0.25) !important;
+  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.04), 0 0 20px rgba(124, 58, 237, 0.08) !important;
+}
+
+body.theme-light .footer-landing {
+  background: #f1f5f9 !important;
+  border-top: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+
 
 
 

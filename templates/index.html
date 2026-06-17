@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinanceAI - Personal Finance Management</title>
+    <title>FinSight AI - Personal Finance Management</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/css/style.css">
@@ -24,8 +24,8 @@
     </script>
     <!-- Sticky Glassmorphism Landing Navbar -->
     <nav class="landing-nav" id="landingNav">
-        <a href="/" class="landing-nav-logo">
-            <span>🏺</span> FinanceAI
+        <a href="/" class="landing-nav-logo" style="display: flex; align-items: center; text-decoration: none;">
+            <i class="fa-solid fa-chart-line me-2" style="color: #f59e0b; -webkit-text-fill-color: initial;"></i> FinSight<span>AI</span>
         </a>
         <div class="landing-nav-right">
             <a href="/login" class="btn btn-ghost">Login</a>
@@ -101,10 +101,10 @@
     <!-- Footer -->
     <footer class="footer-landing">
         <div class="footer-content">
-            <a href="/" class="footer-logo">
-                <span>🏺</span> FinanceAI
+            <a href="/" class="footer-logo" style="display: flex; align-items: center; text-decoration: none;">
+                <i class="fa-solid fa-chart-line me-2" style="color: #f59e0b; -webkit-text-fill-color: initial;"></i> FinSight<span>AI</span>
             </a>
-            <p class="footer-text">&copy; 2026 FinanceAI. All rights reserved. Your financial assistant powered by Gemini.</p>
+            <p class="footer-text">&copy; 2026 FinSight AI. All rights reserved. Your financial assistant powered by Gemini.</p>
         </div>
     </footer>
 
@@ -113,11 +113,9 @@
         window.addEventListener('scroll', () => {
             const navbar = document.getElementById('landingNav');
             if (window.scrollY > 30) {
-                navbar.style.background = "rgba(10, 10, 15, 0.9)";
-                navbar.style.boxShadow = "0 8px 30px rgba(0, 0, 0, 0.3)";
+                navbar.classList.add('scrolled');
             } else {
-                navbar.style.background = "rgba(10, 10, 15, 0.7)";
-                navbar.style.boxShadow = "none";
+                navbar.classList.remove('scrolled');
             }
         });
 
