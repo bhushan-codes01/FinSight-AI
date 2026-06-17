@@ -1,116 +1,234 @@
-import os
-from flask import render_template
-from services.gemini_service import GeminiService
-
 try:
     from weasyprint import HTML
     WEASYPRINT_AVAILABLE = True
-except Exception:
+except Exception as e:
+    import warnings
+    warnings.warn(f"WeasyPrint could not be loaded due to missing GTK libraries: {e}. PDF generation will fail locally but will work on Render.")
     WEASYPRINT_AVAILABLE = False
 
-try:
-    from xhtml2pdf import pisa
-    XHTML2PDF_AVAILABLE = True
-except Exception:
-    XHTML2PDF_AVAILABLE = False
+from flask import render_template_string
+from datetime import datetime
+import os
+from services.db import get_db
+
+# Category colors mapping
+CATEGORY_COLORS = {
+    'Food': '#f59e0b',
+    'Travel': '#06b6d4',
+    'Shopping': '#a855f7',
+    'Housing': '#3b82f6',
+    'Health': '#10b981',
+    'Entertainment': '#ec4899',
+    'Education': '#8b5cf6',
+    'Utilities': '#f97316',
+    'Income': '#4ade80',
+    'Other': '#78716c',
+}
+
+# Category emoji mapping
+CATEGORY_EMOJIS = {
+    'Food': '🍔',
+    'Travel': '🚗',
+    'Shopping': '🛍️',
+    'Housing': '🏠',
+    'Health': '💊',
+    'Entertainment': '🎮',
+    'Education': '📚',
+    'Utilities': '💡',
+    'Income': '💰',
+    'Other': '📦',
+}
 
 
-class ReportGeneratorService:
-    @staticmethod
-    def generate_monthly_report_html(db, user_id, month, year):
-        # Format month to 2 digits (e.g. 6 -> '06')
-        month_str = f"{int(month):02d}"
-        year_str = str(year)
-        month_year = f"{year_str}-{month_str}"
-
-        # Fetch user
-        user = db.execute("SELECT name, email, currency_symbol FROM users WHERE id = ?", (user_id,)).fetchone()
-        user_name = user["name"] if user else "Valued Client"
-        currency_symbol = user["currency_symbol"] if (user and user["currency_symbol"]) else "₹"
-
-        # Fetch transactions
-        transactions = db.execute(
-            "SELECT amount, category, description, transaction_type, transaction_date FROM transactions "
-            "WHERE user_id = ? AND substr(transaction_date, 1, 4) = ? AND substr(transaction_date, 6, 2) = ? "
-            "ORDER BY transaction_date DESC",
-            (user_id, year_str, month_str)
-        ).fetchall()
-
-        income = sum(t["amount"] for t in transactions if t["transaction_type"] == "income")
-        expenses = sum(t["amount"] for t in transactions if t["transaction_type"] == "expense")
-        net = income - expenses
-        savings_rate = (net / income * 100) if income > 0 else 0.0
-
-        # Category breakdown
-        categories = {}
-        for t in transactions:
-            if t["transaction_type"] == "expense":
-                cat = t["category"]
-                categories[cat] = categories.get(cat, 0.0) + t["amount"]
-
-        # Calculate category percentages
-        category_breakdown = []
-        for cat, amt in sorted(categories.items(), key=lambda x: x[1], reverse=True):
-            pct = (amt / expenses * 100) if expenses > 0 else 0.0
-            category_breakdown.append({
-                "category": cat,
-                "amount": amt,
-                "percentage": round(pct, 1)
-            })
-
-        # Generate AI Summary using GeminiService
-        prompt = (
-            f"Please write a professional, concise financial report summary paragraph (2-3 sentences) "
-            f"for {user_name} for {month_year}. "
-            f"They had an income of {currency_symbol}{income:,.2f}, expenses of {currency_symbol}{expenses:,.2f}, a net balance of {currency_symbol}{net:,.2f}, "
-            f"and a savings rate of {savings_rate:.1f}%. "
-            f"Their top spending categories were: {', '.join([c['category'] + ' (' + currency_symbol + f'{c['amount']:,.0f}' + ')' for c in category_breakdown[:3]])}. "
-            f"Offer brief financial coaching advice. Provide your response using {currency_symbol} as the currency symbol for all monetary amounts."
+def generate_pdf_report(user_id, month, year, db_conn, gemini_service=None):
+    """
+    Generate a Warm Premium PDF report for the given user and month.
+    Returns PDF bytes for download.
+    """
+    if not WEASYPRINT_AVAILABLE:
+        raise RuntimeError(
+            "WeasyPrint is missing GObject/GTK C-libraries on your Windows system. "
+            "Please follow the installation instructions to install GTK3 on Windows: "
+            "https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#windows "
+            "Note: This will work perfectly on Render production Linux containers where weasyprint dependencies are pre-installed."
         )
 
+    conn = db_conn
+
+    # ── Fetch user info ──
+    user = conn.execute(
+        'SELECT name, email, currency_symbol FROM users WHERE id = ?',
+        (user_id,)
+    ).fetchone()
+
+    currency_symbol = user['currency_symbol'] if (user and user['currency_symbol']) else '₹'
+    user_name = user['name'] if user else 'Valued Client'
+    user_email = user['email'] if user else ''
+
+    # ── Fetch transactions for the month ──
+    # Note: Using substr to support both SQLite and PostgreSQL.
+    transactions_raw = conn.execute('''
+        SELECT amount, category, description, transaction_type, transaction_date
+        FROM transactions
+        WHERE user_id = ?
+          AND substr(transaction_date, 6, 2) = ?
+          AND substr(transaction_date, 1, 4) = ?
+        ORDER BY transaction_date DESC
+    ''', (user_id, str(month).zfill(2), str(year))).fetchall()
+
+    # ── Calculate totals ──
+    total_income = sum(
+        t['amount'] for t in transactions_raw
+        if t['transaction_type'] == 'income'
+    )
+    total_expenses = sum(
+        t['amount'] for t in transactions_raw
+        if t['transaction_type'] == 'expense'
+    )
+    net_savings = total_income - total_expenses
+    savings_rate = round((net_savings / total_income * 100), 1) if total_income > 0 else 0
+
+    # ── Category breakdown ──
+    category_totals = {}
+    for t in transactions_raw:
+        if t['transaction_type'] == 'expense':
+            cat = t['category'] or 'Other'
+            category_totals[cat] = category_totals.get(cat, 0) + t['amount']
+
+    categories = []
+    for cat, amount in sorted(category_totals.items(), key=lambda x: x[1], reverse=True):
+        percent = round((amount / total_expenses * 100), 1) if total_expenses > 0 else 0
+        categories.append({
+            'name': cat,
+            'amount': f'{amount:,.2f}',
+            'percent': percent,
+            'color': CATEGORY_COLORS.get(cat, '#78716c'),
+        })
+
+    # ── Budget status ──
+    budgets_raw = conn.execute('''
+        SELECT category, budget_amount FROM budgets
+        WHERE user_id = ? AND month = ?
+    ''', (user_id, f'{year}-{str(month).zfill(2)}')).fetchall()
+
+    budgets = []
+    for b in budgets_raw:
+        spent = category_totals.get(b['category'], 0)
+        limit = b['budget_amount']
+        percent_used = (spent / limit * 100) if limit > 0 else 0
+        status = 'over' if percent_used >= 100 else 'warning' if percent_used >= 80 else 'ok'
+        budgets.append({
+            'category': b['category'],
+            'spent': f'{spent:,.2f}',
+            'limit': f'{limit:,.2f}',
+            'status': status,
+            'emoji': CATEGORY_EMOJIS.get(b['category'], '📦'),
+        })
+
+    # ── Savings goals ──
+    goals_raw = conn.execute('''
+        SELECT title, target_amount, current_amount FROM goals
+        WHERE user_id = ?
+    ''', (user_id,)).fetchall()
+
+    goals = []
+    for g in goals_raw:
+        progress = round(
+            (g['current_amount'] / g['target_amount'] * 100), 1
+        ) if g['target_amount'] > 0 else 0
+        goals.append({
+            'title': g['title'],
+            'current': f"{g['current_amount']:,.2f}",
+            'target': f"{g['target_amount']:,.2f}",
+            'progress': min(progress, 100),
+        })
+
+    # ── Format transactions ──
+    transactions = []
+    for t in transactions_raw:
+        transactions.append({
+            'date': t['transaction_date'],
+            'description': t['description'] or 'No description',
+            'category': t['category'] or 'Other',
+            'type': t['transaction_type'],
+            'amount': f"{t['amount']:,.2f}",
+        })
+
+    # ── AI Summary from Gemini ──
+    ai_summary = "Financial summary not available."
+    ai_tips = []
+
+    if gemini_service and total_income > 0:
         try:
-            gemini = GeminiService()
-            ai_summary = gemini.analyze(prompt)
+            prompt = f"""
+            Generate a brief 2-sentence financial summary and 3 actionable tips for:
+            - User: {user_name}
+            - Month: {datetime(year, month, 1).strftime('%B %Y')}
+            - Income: {currency_symbol}{total_income:,.2f}
+            - Expenses: {currency_symbol}{total_expenses:,.2f}
+            - Savings: {currency_symbol}{net_savings:,.2f} ({savings_rate}%)
+            - Top category: {categories[0]['name'] if categories else 'N/A'}
+
+            Format your response as:
+            SUMMARY: [2 sentence summary]
+            TIP1: [tip 1]
+            TIP2: [tip 2]
+            TIP3: [tip 3]
+
+            Use {currency_symbol} for all amounts. Be specific and actionable.
+            """
+            response = gemini_service.generate_content(prompt)
+            lines = response.text.strip().split('\n')
+            for line in lines:
+                if line.startswith('SUMMARY:'):
+                    ai_summary = line.replace('SUMMARY:', '').strip()
+                elif line.startswith('TIP'):
+                    tip = line.split(':', 1)[-1].strip()
+                    if tip:
+                        ai_tips.append(tip)
         except Exception as e:
-            ai_summary = f"AI summary currently unavailable due to an error: {e}"
+            print(f"[PDF] Gemini AI summary failed: {e}")
+            ai_summary = (
+                f"For {datetime(year, month, 1).strftime('%B %Y')}, "
+                f"{user_name} had total income of {currency_symbol}{total_income:,.2f} "
+                f"and expenses of {currency_symbol}{total_expenses:,.2f}, "
+                f"resulting in net savings of {currency_symbol}{net_savings:,.2f}."
+            )
 
-        # Render report_template.html
-        return render_template(
-            "report_template.html",
-            user_name=user_name,
-            month=month_str,
-            year=year_str,
-            income=income,
-            expenses=expenses,
-            net=net,
-            savings_rate=round(savings_rate, 1),
-            category_breakdown=category_breakdown,
-            transactions=transactions,
-            ai_summary=ai_summary,
-            currency_symbol=currency_symbol
-        )
+    # ── Month name ──
+    month_name = datetime(year, month, 1).strftime('%B')
+    generated_date = datetime.now().strftime('%d %b %Y, %I:%M %p')
 
-    @staticmethod
-    def html_to_pdf(html_content):
-        # Try WeasyPrint first
-        if WEASYPRINT_AVAILABLE:
-            try:
-                return HTML(string=html_content).write_pdf()
-            except Exception as e:
-                # Log error or print to stderr
-                print(f"WeasyPrint PDF generation failed: {e}")
+    # ── Load HTML template ──
+    template_path = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)),
+        'templates',
+        'report_template.html'
+    )
+    with open(template_path, 'r', encoding='utf-8') as f:
+        template_str = f.read()
 
-        # Try xhtml2pdf as fallback
-        if XHTML2PDF_AVAILABLE:
-            try:
-                from io import BytesIO
-                result = BytesIO()
-                pdf = pisa.pisaDocument(BytesIO(html_content.encode("utf-8")), result)
-                if not pdf.err:
-                    return result.getvalue()
-                else:
-                    print(f"xhtml2pdf PDF generation failed with error code: {pdf.err}")
-            except Exception as e:
-                print(f"xhtml2pdf PDF generation raised exception: {e}")
+    # ── Render Jinja2 template ──
+    rendered_html = render_template_string(
+        template_str,
+        user_name=user_name,
+        user_email=user_email,
+        month_name=month_name,
+        year=year,
+        generated_date=generated_date,
+        currency_symbol=currency_symbol,
+        total_income=f'{total_income:,.2f}',
+        total_expenses=f'{total_expenses:,.2f}',
+        net_savings=f'{net_savings:,.2f}',
+        savings_rate=savings_rate,
+        categories=categories,
+        budgets=budgets,
+        goals=goals,
+        transactions=transactions,
+        ai_summary=ai_summary,
+        ai_tips=ai_tips,
+    )
 
-        return None
+    # ── Convert HTML to PDF ──
+    pdf_bytes = HTML(string=rendered_html).write_pdf()
+    return pdf_bytes

@@ -1,43 +1,57 @@
 from flask import Blueprint, request, redirect, url_for, session, current_app, g, jsonify, send_file, flash
 from services.pdf_service import PDFReportService
-from services.report_generator import ReportGeneratorService
+from services.report_generator import generate_pdf_report
 from services.email_service import EmailAlertsService
 from services.plan_gate import require_pro
 from datetime import datetime
 from services.db import get_db
+import google.generativeai as genai
+import os
+import io
 
 reports_bp = Blueprint("reports", __name__)
 
 
-@reports_bp.route("/reports/pdf", methods=["GET"])
-@require_pro
-def download_report():
-    if not session.get("user_id"):
-        return redirect(url_for("auth.login"))
+def get_gemini_model():
+    try:
+        genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
+        return genai.GenerativeModel('gemini-1.5-flash')
+    except Exception as e:
+        print(f"[GEMINI] Failed to initialize: {e}")
+        return None
 
-    now = datetime.now()
-    month = request.args.get("month", now.strftime("%m"))
-    year = request.args.get("year", now.strftime("%Y"))
-    db = get_db()
 
-    html_content = ReportGeneratorService.generate_monthly_report_html(db, session["user_id"], month, year)
-    pdf_bytes = ReportGeneratorService.html_to_pdf(html_content)
+@reports_bp.route('/reports/pdf')
+def download_pdf():
+    if 'user_id' not in session:
+        return redirect('/login')
 
-    if pdf_bytes:
-        mimetype = "application/pdf"
-        filename = f"FinSight_Report_{month}_{year}.pdf"
-        data_bytes = pdf_bytes
-    else:
-        mimetype = "text/html"
-        filename = f"FinSight_Report_{month}_{year}.html"
-        data_bytes = html_content.encode("utf-8")
+    try:
+        month = int(request.args.get('month', datetime.now().month))
+        year = int(request.args.get('year', datetime.now().year))
 
-    return send_file(
-        __import__("io").BytesIO(data_bytes),
-        mimetype=mimetype,
-        as_attachment=True,
-        download_name=filename
-    )
+        gemini_model = get_gemini_model()
+
+        pdf_bytes = generate_pdf_report(
+            user_id=session['user_id'],
+            month=month,
+            year=year,
+            db_conn=get_db(),
+            gemini_service=gemini_model
+        )
+
+        filename = f"FinSight_Report_{year}_{str(month).zfill(2)}.pdf"
+
+        return send_file(
+            io.BytesIO(pdf_bytes),
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=filename
+        )
+
+    except Exception as e:
+        print(f"[PDF ERROR] {e}")
+        return f"Error generating report: {str(e)}", 500
 
 
 @reports_bp.route("/reports/send-email", methods=["POST"])

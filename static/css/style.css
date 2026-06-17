@@ -2519,5 +2519,52 @@ body:not(.theme-light) li {
   color: inherit;
 }
 
+/* Warm Premium Download Button styles */
+.btn-download-report {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #1c1917;
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  padding: 0.65rem 1.25rem;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+.btn-download-report:hover {
+  background: #f59e0b;
+  color: #1c1917;
+  border-color: #f59e0b;
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.25);
+}
+.btn-download-report:active {
+  transform: translateY(0) scale(0.98);
+}
+.btn-download-report i {
+  font-size: 1.05rem;
+}
+
+/* Report Selector Styling overrides */
+#reportMonth, #reportYear {
+  transition: border-color 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+#reportMonth:focus, #reportYear:focus {
+  border-color: var(--accent-purple) !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15) !important;
+}
+body.theme-light #reportMonth,
+body.theme-light #reportYear {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+
 
 

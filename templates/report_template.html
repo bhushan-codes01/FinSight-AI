@@ -2,207 +2,413 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>FinSight AI - Monthly Financial Report</title>
+    <title>FinSight AI - Financial Report</title>
     <style>
+        @font-face {
+            font-family: 'NotoSans';
+            src: url('https://fonts.gstatic.com/s/notosans/v27/o-0IIpQlx3QUlC5A4PNb4j5Ba_2c7A.woff2') format('woff2');
+        }
         @page {
             size: A4;
-            margin: 20mm;
+            margin: 15mm 15mm 20mm 15mm;
+            @bottom-right {
+                content: "Page " counter(page) " of " counter(pages);
+                font-family: 'NotoSans', 'Helvetica Neue', Arial, sans-serif;
+                font-size: 8pt;
+                color: #78716c;
+            }
+            @bottom-left {
+                content: "FinSight AI - Confidential Report";
+                font-family: 'NotoSans', 'Helvetica Neue', Arial, sans-serif;
+                font-size: 8pt;
+                color: #78716c;
+            }
         }
+        
         body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            color: #111;
-            background: #fff;
-            line-height: 1.5;
-            font-size: 14px;
+            font-family: 'NotoSans', 'Helvetica Neue', Arial, sans-serif;
+            color: #1c1917;
+            background: #ffffff;
+            line-height: 1.4;
+            font-size: 10pt;
+            margin: 0;
+            padding: 0;
         }
-        .header {
-            border-bottom: 2px solid #333;
-            padding-bottom: 15px;
-            margin-bottom: 25px;
-        }
-        .header h1 {
-            font-size: 24px;
-            margin: 0 0 5px 0;
-            color: #1a1a1a;
-            font-weight: 700;
-        }
-        .header .meta {
-            color: #666;
-            font-size: 12px;
-            display: flex;
-            justify-content: space-between;
-        }
-        .summary-grid {
-            display: table;
-            width: 100%;
-            margin-bottom: 30px;
-            border-collapse: separate;
-            border-spacing: 15px 0;
-            margin-left: -15px;
-            margin-right: -15px;
-        }
-        .summary-card {
-            display: table-cell;
-            width: 25%;
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 6px;
-            padding: 15px;
-            text-align: center;
-        }
-        .card-label {
-            font-size: 10px;
-            color: #6c757d;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 5px;
-            font-weight: 600;
-        }
-        .card-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: #212529;
-        }
-        .card-value.income { color: #198754; }
-        .card-value.expense { color: #dc3545; }
-        .section-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: #333;
-            margin-top: 25px;
-            margin-bottom: 12px;
-            border-bottom: 1px solid #dee2e6;
-            padding-bottom: 6px;
-        }
-        table {
+        
+        /* Header section */
+        .header-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f59e0b;
+            padding-bottom: 12px;
         }
-        th {
-            background: #f1f3f5;
-            color: #495057;
+        .header-logo {
+            font-size: 20pt;
+            font-weight: 800;
+            color: #1c1917;
+            letter-spacing: -0.5px;
+        }
+        .header-logo span {
+            color: #f59e0b;
+        }
+        .header-meta {
+            text-align: right;
+            font-size: 9pt;
+            color: #78716c;
+        }
+        .header-meta strong {
+            color: #1c1917;
+        }
+
+        /* Metrics grid */
+        .metrics-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 10px 0;
+            margin-bottom: 20px;
+            margin-left: -10px;
+            margin-right: -10px;
+        }
+        .metric-card {
+            display: table-cell;
+            width: 25%;
+            background: #fafaf9;
+            border: 1px solid #e7e5e4;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+        .metric-label {
+            font-size: 7.5pt;
+            color: #78716c;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 4px;
+            font-weight: 700;
+        }
+        .metric-value {
+            font-size: 14pt;
+            font-weight: 800;
+            color: #1c1917;
+        }
+        .metric-value.income { color: #16a34a; }
+        .metric-value.expense { color: #dc2626; }
+        .metric-value.savings { color: #d97706; }
+
+        /* General sections */
+        .section-title {
+            font-size: 12pt;
+            font-weight: 800;
+            color: #1c1917;
+            margin-top: 20px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #e7e5e4;
+            padding-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* AI insights block */
+        .ai-container {
+            background: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 20px;
+        }
+        .ai-title {
+            font-size: 9.5pt;
+            font-weight: 700;
+            color: #b45309;
+            margin-bottom: 4px;
+        }
+        .ai-summary {
+            font-size: 9pt;
+            color: #451a03;
+            margin-bottom: 8px;
+            font-style: italic;
+        }
+        .ai-tips-list {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .ai-tips-list li {
+            font-size: 9pt;
+            color: #78350f;
+            margin-bottom: 4px;
+        }
+
+        /* Data Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .data-table th {
+            background: #f5f5f4;
+            color: #78716c;
             font-weight: 700;
             text-align: left;
-            padding: 10px;
-            font-size: 12px;
-            border-bottom: 2px solid #dee2e6;
+            padding: 8px 10px;
+            font-size: 8pt;
+            border-bottom: 2px solid #e7e5e4;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        td {
-            padding: 10px;
-            border-bottom: 1px solid #e9ecef;
+        .data-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #f5f5f4;
+            font-size: 9pt;
+            vertical-align: middle;
         }
         .text-right {
-            text-align: right;
+            text-align: right !important;
         }
-        .ai-insights {
-            background: #f0f7ff;
-            border-left: 4px solid #0d6efd;
-            padding: 15px;
-            border-radius: 0 6px 6px 0;
-            margin-bottom: 30px;
-            color: #0f2c59;
-            font-size: 13.5px;
+        .text-center {
+            text-align: center !important;
         }
-        .footer {
-            margin-top: 40px;
-            border-top: 1px solid #dee2e6;
-            padding-top: 15px;
-            font-size: 10px;
-            color: #868e96;
-            text-align: center;
+        
+        /* Category specific formatting */
+        .cat-badge {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        
+        /* Progress bars */
+        .progress-container {
+            background: #e7e5e4;
+            border-radius: 100px;
+            height: 6px;
+            width: 120px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            border-radius: 100px;
+        }
+        
+        .status-badge {
+            font-size: 7.5pt;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 100px;
+            text-transform: uppercase;
+        }
+        .status-badge.ok { background: #dcfce7; color: #166534; }
+        .status-badge.warning { background: #fef3c7; color: #92400e; }
+        .status-badge.over { background: #fee2e2; color: #991b1b; }
+        
+        /* Keep page splits clean */
+        .page-break {
+            page-break-before: always;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>FinSight AI - Monthly Financial Report</h1>
-        <div class="meta">
-            <span>Prepared for: <strong>{{ user_name }}</strong></span>
-            <span>Period: <strong>{{ month }}/{{ year }}</strong></span>
-        </div>
+
+    <!-- Header -->
+    <table class="header-table">
+        <tr>
+            <td class="header-logo">
+                FinSight<span>AI</span>
+            </td>
+            <td class="header-meta">
+                Prepared for: <strong>{{ user_name }}</strong> ({{ user_email }})<br>
+                Report Period: <strong>{{ month_name }} {{ year }}</strong><br>
+                Generated: <strong>{{ generated_date }}</strong>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Metrics row -->
+    <table class="metrics-table">
+        <tr>
+            <td class="metric-card">
+                <div class="metric-label">Total Income</div>
+                <div class="metric-value income">{{ currency_symbol }}{{ total_income }}</div>
+            </td>
+            <td class="metric-card">
+                <div class="metric-label">Total Expenses</div>
+                <div class="metric-value expense">{{ currency_symbol }}{{ total_expenses }}</div>
+            </td>
+            <td class="metric-card">
+                <div class="metric-label">Net Savings</div>
+                <div class="metric-value savings">{{ currency_symbol }}{{ net_savings }}</div>
+            </td>
+            <td class="metric-card">
+                <div class="metric-label">Savings Rate</div>
+                <div class="metric-value">{{ savings_rate }}%</div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- AI Insights block -->
+    <div class="section-title">AI Insights & Financial Coaching</div>
+    <div class="ai-container">
+        <div class="ai-title">🤖 FinSight Coach snapshot</div>
+        <div class="ai-summary">{{ ai_summary }}</div>
+        {% if ai_tips %}
+        <ul class="ai-tips-list">
+            {% for tip in ai_tips %}
+            <li>{{ tip }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
     </div>
 
-    <div class="summary-grid">
-        <div class="summary-card">
-            <div class="card-label">Total Income</div>
-            <div class="card-value income">{{ currency_symbol }}{{ "{:,.2f}".format(income) }}</div>
-        </div>
-        <div class="summary-card">
-            <div class="card-label">Total Expenses</div>
-            <div class="card-value expense">{{ currency_symbol }}{{ "{:,.2f}".format(expenses) }}</div>
-        </div>
-        <div class="summary-card">
-            <div class="card-label">Net Savings</div>
-            <div class="card-value">{{ currency_symbol }}{{ "{:,.2f}".format(net) }}</div>
-        </div>
-        <div class="summary-card">
-            <div class="card-label">Savings Rate</div>
-            <div class="card-value">{{ savings_rate }}%</div>
-        </div>
-    </div>
-
-    <div class="section-title">AI Insights & Coaching</div>
-    <div class="ai-insights">
-        {{ ai_summary }}
-    </div>
-
+    <!-- Spending Breakdown & Budgets side-by-side or stacked -->
     <div class="section-title">Spending by Category</div>
-    <table>
+    <table class="data-table">
         <thead>
             <tr>
                 <th>Category</th>
                 <th class="text-right">Amount</th>
-                <th class="text-right">% of Total Expenses</th>
+                <th class="text-right">% of Expenses</th>
+                <th>Distribution</th>
             </tr>
         </thead>
         <tbody>
-            {% for cat in category_breakdown %}
+            {% for cat in categories %}
             <tr>
-                <td>{{ cat.category }}</td>
-                <td class="text-right">{{ currency_symbol }}{{ "{:,.2f}".format(cat.amount) }}</td>
-                <td class="text-right">{{ cat.percentage }}%</td>
+                <td>
+                    <span class="cat-badge" style="background-color: {{ cat.color }};"></span>
+                    {{ cat.name }}
+                </td>
+                <td class="text-right">{{ currency_symbol }}{{ cat.amount }}</td>
+                <td class="text-right">{{ cat.percent }}%</td>
+                <td>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: {{ cat.percent }}%; background-color: {{ cat.color }};"></div>
+                    </div>
+                </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="3" class="text-center" style="color: #6c757d;">No expense categories recorded.</td>
+                <td colspan="4" class="text-center" style="color: #78716c;">No expense records available for this month.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
-    <div class="section-title">Detailed Transactions History</div>
-    <table>
+    {% if budgets %}
+    <div class="section-title">Monthly Budget Thresholds</div>
+    <table class="data-table">
         <thead>
             <tr>
-                <th>Date</th>
-                <th>Description</th>
                 <th>Category</th>
-                <th>Type</th>
-                <th class="text-right">Amount</th>
+                <th class="text-right">Spent</th>
+                <th class="text-right">Limit</th>
+                <th>Usage</th>
+                <th class="text-center">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for b in budgets %}
+            <tr>
+                <td>{{ b.emoji }} {{ b.category }}</td>
+                <td class="text-right">{{ currency_symbol }}{{ b.spent }}</td>
+                <td class="text-right">{{ currency_symbol }}{{ b.limit }}</td>
+                <td>
+                    {% set b_spent_clean = b.spent.replace(',', '') | float %}
+                    {% set b_limit_clean = b.limit.replace(',', '') | float %}
+                    {% set b_percent = (b_spent_clean / b_limit_clean * 100) if b_limit_clean > 0 else 0 %}
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: {{ 100 if b_percent > 100 else b_percent }}%; background-color: {% if b.status == 'over' %}#dc2626{% elif b.status == 'warning' %}#d97706{% else %}#16a34a{% endif %};"></div>
+                    </div>
+                    <span style="font-size: 8pt; color: #78716c;">{{ b_percent | round | int }}%</span>
+                </td>
+                <td class="text-center">
+                    <span class="status-badge {{ b.status }}">
+                        {% if b.status == 'over' %}Over Limit{% elif b.status == 'warning' %}Warning{% else %}Healthy{% endif %}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if goals %}
+    <div class="section-title">Savings Milestones & Goals</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Goal Title</th>
+                <th class="text-right">Current Savings</th>
+                <th class="text-right">Target Amount</th>
+                <th>Progress Milestones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for g in goals %}
+            <tr>
+                <td>🎯 {{ g.title }}</td>
+                <td class="text-right">{{ currency_symbol }}{{ g.current }}</td>
+                <td class="text-right">{{ currency_symbol }}{{ g.target }}</td>
+                <td>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: {{ g.progress }}%; background-color: #f59e0b;"></div>
+                    </div>
+                    <span style="font-size: 8pt; color: #78716c;">{{ g.progress }}%</span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <!-- Page break for detailed transaction history to keep layout clean -->
+    <div class="page-break"></div>
+
+    <table class="header-table">
+        <tr>
+            <td class="header-logo">
+                FinSight<span>AI</span>
+            </td>
+            <td class="header-meta">
+                Report Period: <strong>{{ month_name }} {{ year }}</strong>
+            </td>
+        </tr>
+    </table>
+
+    <div class="section-title">Detailed Monthly Transaction History</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 15%;">Date</th>
+                <th style="width: 45%;">Description</th>
+                <th style="width: 15%;">Category</th>
+                <th style="width: 10%;">Type</th>
+                <th style="width: 15%;" class="text-right">Amount</th>
             </tr>
         </thead>
         <tbody>
             {% for txn in transactions %}
             <tr>
-                <td>{{ txn.transaction_date }}</td>
-                <td>{{ txn.description or '-' }}</td>
+                <td>{{ txn.date }}</td>
+                <td>{{ txn.description }}</td>
                 <td>{{ txn.category }}</td>
-                <td style="text-transform: capitalize; color: {% if txn.transaction_type == 'income' %}#198754{% else %}#dc3545{% endif %};">
-                    {{ txn.transaction_type }}
+                <td style="text-transform: capitalize; font-weight: 600; color: {% if txn.type == 'income' %}#16a34a{% else %}#dc2626{% endif %};">
+                    {{ txn.type }}
                 </td>
-                <td class="text-right">{{ currency_symbol }}{{ "{:,.2f}".format(txn.amount) }}</td>
+                <td class="text-right" style="font-weight: 700; color: {% if txn.type == 'income' %}#16a34a{% else %}#dc2626{% endif %};">
+                    {{ '+' if txn.type == 'income' else '-' }}{{ currency_symbol }}{{ txn.amount }}
+                </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="5" class="text-center" style="color: #6c757d;">No transactions recorded for this period.</td>
+                <td colspan="5" class="text-center" style="color: #78716c;">No transaction records available for this month.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
-    <div class="footer">
-        <p>Generated automatically by FinSight AI. Confidential financial report.</p>
-    </div>
 </body>
 </html>

@@ -18,3 +18,7 @@ database/*.db
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Scratch directory
+scratch/
+
