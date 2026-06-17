@@ -1,6 +1,20 @@
+# Virtual environment
 venv/
-**/__pycache__/
-**/*.pyc
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables (sensitive keys)
 .env
-**/*.db
-*.log
+
+# SQLite Databases
+database/*.db
+*.db
+
+# OS generated files
+.DS_Store
+Thumbs.db
