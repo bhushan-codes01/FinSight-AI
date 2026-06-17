@@ -3,6 +3,7 @@ Werkzeug==3.0.1
 python-dotenv==1.0.0
 requests==2.31.0
 weasyprint==62.0
+pydyf<0.11.0
 xhtml2pdf==0.2.17
 Flask-Mail==0.10.0
 gunicorn==21.2.0
