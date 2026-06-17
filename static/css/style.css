@@ -2565,6 +2565,19 @@ body.theme-light #reportYear {
   border-color: #cbd5e1 !important;
 }
 
+/* Global styling for option elements in select boxes to avoid white-on-white text issues */
+body:not(.theme-light) select option,
+body:not(.theme-light) select.form-select option {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+}
+body.theme-light select option,
+body.theme-light select.form-select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+
 
 
 
