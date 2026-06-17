@@ -136,35 +136,47 @@ def verify_payment():
             is_valid = False
             
     if is_valid:
-        db = get_db()
-        
-        # Calculate expiry date
-        now = datetime.now()
-        if billing_cycle == "yearly":
-            expiry = now + timedelta(days=365)
-        else:
-            expiry = now + timedelta(days=30)
+        try:
+            db = get_db()
             
-        expiry_str = expiry.strftime("%Y-%m-%d %H:%M:%S")
-        
-        # Update user plan
-        db.execute(
-            "UPDATE users SET plan = 'pro', plan_expiry = ? WHERE id = ?",
-            (expiry.strftime("%Y-%m-%d"), user_id)
-        )
-        
-        # Insert subscription record
-        db.execute(
-            "INSERT INTO subscriptions (user_id, plan, billing_cycle, razorpay_subscription_id, razorpay_payment_id, status, started_at, expires_at) "
-            "VALUES (?, 'pro', ?, ?, ?, 'active', ?, ?)",
-            (user_id, billing_cycle, order_id, payment_id, now.strftime("%Y-%m-%d %H:%M:%S"), expiry_str)
-        )
-        db.commit()
-        
-        # Update user session details (optional but helpful)
-        session["user_plan"] = "pro"
-        
-        return jsonify({"success": True, "message": "Successfully upgraded to Pro!"})
+            # Check if user exists (to handle cases where session persists but DB was reset/recreated)
+            user = db.execute("SELECT id FROM users WHERE id = ?", (user_id,)).fetchone()
+            if not user:
+                return jsonify({
+                    "success": False, 
+                    "error": "User session is invalid or the database was recently reset. Please logout and log back in to recreate your user account, then try again."
+                }), 400
+            
+            # Calculate expiry date
+            now = datetime.now()
+            if billing_cycle == "yearly":
+                expiry = now + timedelta(days=365)
+            else:
+                expiry = now + timedelta(days=30)
+                
+            expiry_str = expiry.strftime("%Y-%m-%d %H:%M:%S")
+            
+            # Update user plan
+            db.execute(
+                "UPDATE users SET plan = 'pro', plan_expiry = ? WHERE id = ?",
+                (expiry.strftime("%Y-%m-%d"), user_id)
+            )
+            
+            # Insert subscription record
+            db.execute(
+                "INSERT INTO subscriptions (user_id, plan, billing_cycle, razorpay_subscription_id, razorpay_payment_id, status, started_at, expires_at) "
+                "VALUES (?, 'pro', ?, ?, ?, 'active', ?, ?)",
+                (user_id, billing_cycle, order_id, payment_id, now.strftime("%Y-%m-%d %H:%M:%S"), expiry_str)
+            )
+            db.commit()
+            
+            # Update user session details (optional but helpful)
+            session["user_plan"] = "pro"
+            
+            return jsonify({"success": True, "message": "Successfully upgraded to Pro!"})
+        except Exception as e:
+            current_app.logger.error(f"Database update failed during payment verification: {e}")
+            return jsonify({"success": False, "error": f"Database update failed: {str(e)}"}), 500
     else:
         return jsonify({"success": False, "error": "Invalid signature or payment verification failed"}), 400
 
