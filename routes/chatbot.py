@@ -1,26 +1,11 @@
 import os
-import sqlite3
 import datetime
 import pandas as pd
 from flask import Blueprint, render_template, request, redirect, url_for, session, current_app, g, flash, jsonify
 from services.gemini_service import GeminiService
+from services.db import get_db
 
 chatbot_bp = Blueprint("chatbot", __name__)
-
-
-def get_db():
-    db = getattr(g, "_database", None)
-    if db is None:
-        db = g._database = sqlite3.connect(current_app.config["DATABASE"])
-        db.row_factory = sqlite3.Row
-    return db
-
-
-@chatbot_bp.teardown_app_request
-def close_connection(exception):
-    db = getattr(g, "_database", None)
-    if db is not None:
-        db.close()
 
 
 @chatbot_bp.route("/chatbot")

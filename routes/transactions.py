@@ -1,23 +1,8 @@
-import sqlite3
 from datetime import datetime, timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, session, current_app, g, jsonify, flash
+from services.db import get_db
 
 transactions_bp = Blueprint("transactions", __name__)
-
-
-def get_db():
-    db = getattr(g, "_database", None)
-    if db is None:
-        db = g._database = sqlite3.connect(current_app.config["DATABASE"])
-        db.row_factory = sqlite3.Row
-    return db
-
-
-@transactions_bp.teardown_app_request
-def close_connection(exception):
-    db = getattr(g, "_database", None)
-    if db is not None:
-        db.close()
 
 
 @transactions_bp.route("/transactions", methods=["GET", "POST"])
@@ -65,7 +50,7 @@ def manage_transactions():
                         spent_row = db.execute(
                             "SELECT SUM(amount) as total_spent FROM transactions "
                             "WHERE user_id = ? AND category = ? AND transaction_type = 'expense' "
-                            "AND strftime('%Y-%m', transaction_date) = ?",
+                            "AND substr(transaction_date, 1, 7) = ?",
                             (user_id, category, month_str)
                         ).fetchone()
                         

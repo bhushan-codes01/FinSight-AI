@@ -1,25 +1,10 @@
 import os
-import sqlite3
 from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, session, current_app, g, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
+from services.db import get_db
 
 profile_bp = Blueprint("profile", __name__)
-
-
-def get_db():
-    db = getattr(g, "_database", None)
-    if db is None:
-        db = g._database = sqlite3.connect(current_app.config["DATABASE"])
-        db.row_factory = sqlite3.Row
-    return db
-
-
-@profile_bp.teardown_app_request
-def close_connection(exception):
-    db = getattr(g, "_database", None)
-    if db is not None:
-        db.close()
 
 
 @profile_bp.route("/profile", methods=["GET"])

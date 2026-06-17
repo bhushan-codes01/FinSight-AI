@@ -1,14 +1,7 @@
-import sqlite3
 from datetime import datetime
 from functools import wraps
 from flask import g, current_app, redirect, url_for, session, jsonify, request
-
-def get_db():
-    db = getattr(g, "_database", None)
-    if db is None:
-        db = g._database = sqlite3.connect(current_app.config["DATABASE"])
-        db.row_factory = sqlite3.Row
-    return db
+from services.db import get_db
 
 def get_user_plan(user_id):
     db = get_db()

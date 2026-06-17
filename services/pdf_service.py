@@ -13,7 +13,7 @@ try:
 except Exception:
     XHTML2PDF_AVAILABLE = False
 
-import sqlite3
+# sqlite3 removed
 
 
 class PDFReportService:
@@ -32,7 +32,7 @@ class PDFReportService:
         currency_symbol = user["currency_symbol"] if (user and user["currency_symbol"]) else "₹"
 
         transactions = self.db.execute(
-            "SELECT amount, category, description, transaction_type, transaction_date FROM transactions WHERE user_id = ? AND strftime('%Y-%m', transaction_date) = ? ORDER BY transaction_date DESC",
+            "SELECT amount, category, description, transaction_type, transaction_date FROM transactions WHERE user_id = ? AND substr(transaction_date, 1, 7) = ? ORDER BY transaction_date DESC",
             (self.user_id, month_year),
         ).fetchall()
 

@@ -1,5 +1,4 @@
 import os
-import sqlite3
 from flask import render_template
 from services.gemini_service import GeminiService
 
@@ -32,7 +31,7 @@ class ReportGeneratorService:
         # Fetch transactions
         transactions = db.execute(
             "SELECT amount, category, description, transaction_type, transaction_date FROM transactions "
-            "WHERE user_id = ? AND strftime('%Y', transaction_date) = ? AND strftime('%m', transaction_date) = ? "
+            "WHERE user_id = ? AND substr(transaction_date, 1, 4) = ? AND substr(transaction_date, 6, 2) = ? "
             "ORDER BY transaction_date DESC",
             (user_id, year_str, month_str)
         ).fetchall()

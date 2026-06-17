@@ -1,27 +1,12 @@
-import sqlite3
 from flask import Blueprint, request, redirect, url_for, session, current_app, g, jsonify, send_file, flash
 from services.pdf_service import PDFReportService
 from services.report_generator import ReportGeneratorService
 from services.email_service import EmailAlertsService
 from services.plan_gate import require_pro
 from datetime import datetime
+from services.db import get_db
 
 reports_bp = Blueprint("reports", __name__)
-
-
-def get_db():
-    db = getattr(g, "_database", None)
-    if db is None:
-        db = g._database = sqlite3.connect(current_app.config["DATABASE"])
-        db.row_factory = sqlite3.Row
-    return db
-
-
-@reports_bp.teardown_app_request
-def close_connection(exception):
-    db = getattr(g, "_database", None)
-    if db is not None:
-        db.close()
 
 
 @reports_bp.route("/reports/pdf", methods=["GET"])
@@ -92,7 +77,7 @@ def check_budget_alerts():
     currency_symbol = user["currency_symbol"] if (user and user["currency_symbol"]) else "₹"
 
     budgets = db.execute(
-        "SELECT b.*, COALESCE(SUM(t.amount), 0) as spent FROM budgets b LEFT JOIN transactions t ON b.user_id = t.user_id AND b.category = t.category AND t.transaction_type = 'expense' AND strftime('%Y-%m', t.transaction_date) = b.month WHERE b.user_id = ? GROUP BY b.id",
+        "SELECT b.*, COALESCE(SUM(t.amount), 0) as spent FROM budgets b LEFT JOIN transactions t ON b.user_id = t.user_id AND b.category = t.category AND t.transaction_type = 'expense' AND substr(t.transaction_date, 1, 7) = b.month WHERE b.user_id = ? GROUP BY b.id",
         (user_id,),
     ).fetchall()
 

@@ -1,27 +1,12 @@
 import os
 import time
-import sqlite3
 import secrets
 from datetime import datetime, timedelta
 from flask import Blueprint, render_template, request, redirect, url_for, session, current_app, g, jsonify, flash
 import razorpay
+from services.db import get_db
 
 billing_bp = Blueprint("billing", __name__)
-
-
-def get_db():
-    db = getattr(g, "_database", None)
-    if db is None:
-        db = g._database = sqlite3.connect(current_app.config["DATABASE"])
-        db.row_factory = sqlite3.Row
-    return db
-
-
-@billing_bp.teardown_app_request
-def close_connection(exception):
-    db = getattr(g, "_database", None)
-    if db is not None:
-        db.close()
 
 
 @billing_bp.route("/upgrade")

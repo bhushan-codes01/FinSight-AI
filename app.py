@@ -70,20 +70,22 @@ def login_required(view_func):
     return wrapped_view
 
 
-def get_db():
-    db = getattr(g, "_database", None)
-    if db is None:
-        db = g._database = sqlite3.connect(app.config["DATABASE"])
-        db.row_factory = sqlite3.Row
-    return db
-
+from services.db import get_db, query_db, is_postgres_configured
 
 def init_db():
     db = get_db()
-    schema_path = os.path.join(BASE_DIR, "database", "schema.sql")
-    with open(schema_path, mode="r", encoding="utf-8") as f:
-        db.executescript(f.read())
-    db.commit()
+    if is_postgres_configured():
+        schema_path = os.path.join(BASE_DIR, "database", "schema_postgres.sql")
+        with open(schema_path, mode="r", encoding="utf-8") as f:
+            cursor = db.cursor()
+            cursor.execute(f.read())
+            db.commit()
+            cursor.close()
+    else:
+        schema_path = os.path.join(BASE_DIR, "database", "schema.sql")
+        with open(schema_path, mode="r", encoding="utf-8") as f:
+            db.executescript(f.read())
+        db.commit()
 
 
 @app.teardown_appcontext
@@ -93,29 +95,38 @@ def close_connection(exception):
         db.close()
 
 
-def query_db(query, args=(), one=False):
-    cur = get_db().execute(query, args)
-    rv = cur.fetchall()
-    cur.close()
-    return (rv[0] if rv else None) if one else rv
-
-
 def init_database():
-    if not os.path.exists(app.config["DATABASE"]):
-        os.makedirs(os.path.dirname(app.config["DATABASE"]), exist_ok=True)
-
-    conn = sqlite3.connect(app.config["DATABASE"])
-    cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(name) FROM sqlite_master WHERE type='table'")
-    table_count = cursor.fetchone()[0]
-    conn.close()
-
-    if table_count == 0:
-        with app.app_context():
+    if is_postgres_configured():
+        db = get_db()
+        cursor = db.cursor()
+        try:
+            cursor.execute("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public'")
+            table_count = cursor.fetchone()[0]
+            if table_count == 0:
+                init_db()
+        except Exception:
             init_db()
+        finally:
+            cursor.close()
+    else:
+        if not os.path.exists(app.config["DATABASE"]):
+            os.makedirs(os.path.dirname(app.config["DATABASE"]), exist_ok=True)
+
+        conn = sqlite3.connect(app.config["DATABASE"])
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(name) FROM sqlite_master WHERE type='table'")
+        table_count = cursor.fetchone()[0]
+        conn.close()
+
+        if table_count == 0:
+            with app.app_context():
+                init_db()
 
 
 def migrate_database():
+    if is_postgres_configured():
+        return
+        
     conn = sqlite3.connect(app.config["DATABASE"])
     cursor = conn.cursor()
     
