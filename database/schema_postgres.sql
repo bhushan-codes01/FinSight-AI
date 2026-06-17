@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     google_id TEXT UNIQUE,
     auth_provider TEXT DEFAULT 'local',
     profile_picture TEXT,
-    email_verified BOOLEAN DEFAULT 0,
+    email_verified BOOLEAN DEFAULT FALSE,
     plan TEXT DEFAULT 'free',
     plan_expiry DATE,
     currency TEXT DEFAULT 'INR',
@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS auth_tokens (
     token TEXT UNIQUE NOT NULL,
     token_type TEXT NOT NULL,
     expires_at TIMESTAMP NOT NULL,
-    used BOOLEAN DEFAULT 0,
+    used BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(user_id) REFERENCES users(id)
 );
