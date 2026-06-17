@@ -10,7 +10,7 @@
         }
         @page {
             size: A4;
-            margin: 15mm 15mm 20mm 15mm;
+            margin: 12mm 12mm 15mm 12mm;
             @bottom-right {
                 content: "Page " counter(page) " of " counter(pages);
                 font-family: 'NotoSans', 'Helvetica Neue', Arial, sans-serif;
@@ -18,7 +18,7 @@
                 color: #78716c;
             }
             @bottom-left {
-                content: "FinSight AI - Confidential Report";
+                content: "FinSight AI - Financial Intelligence Report";
                 font-family: 'NotoSans', 'Helvetica Neue', Arial, sans-serif;
                 font-size: 8pt;
                 color: #78716c;
@@ -30,134 +30,167 @@
             color: #1c1917;
             background: #ffffff;
             line-height: 1.4;
-            font-size: 10pt;
+            font-size: 9.5pt;
             margin: 0;
             padding: 0;
         }
-        
-        /* Header section */
-        .header-table {
+
+        /* Dark premium header */
+        .header-container {
+            background-color: #1c1917;
+            color: #ffffff;
+            padding: 20px 24px;
+            border-bottom: 4px solid #f59e0b;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 20px;
+        }
+        .header-top-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #f59e0b;
-            padding-bottom: 12px;
+            margin-bottom: 15px;
         }
-        .header-logo {
+        .logo-text {
             font-size: 20pt;
             font-weight: 800;
-            color: #1c1917;
+            color: #ffffff;
             letter-spacing: -0.5px;
         }
-        .header-logo span {
+        .logo-text span {
             color: #f59e0b;
         }
-        .header-meta {
+        .period-info {
             text-align: right;
-            font-size: 9pt;
-            color: #78716c;
+            font-size: 9.5pt;
+            color: #a8a29e;
         }
-        .header-meta strong {
-            color: #1c1917;
+        .period-info strong {
+            color: #ffffff;
         }
 
-        /* Metrics grid */
-        .metrics-table {
+        /* Hero stats table inside header */
+        .hero-stats-table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 10px 0;
-            margin-bottom: 20px;
-            margin-left: -10px;
-            margin-right: -10px;
+            border-collapse: collapse;
+            margin-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 15px;
         }
-        .metric-card {
-            display: table-cell;
+        .hero-stats-table td {
             width: 25%;
-            background: #fafaf9;
-            border: 1px solid #e7e5e4;
-            border-radius: 8px;
-            padding: 12px;
             text-align: center;
+            padding: 8px 0;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .metric-label {
+        .hero-stats-table td:last-child {
+            border-right: none;
+        }
+        .hero-label {
             font-size: 7.5pt;
-            color: #78716c;
+            color: #a8a29e;
             text-transform: uppercase;
             letter-spacing: 0.8px;
             margin-bottom: 4px;
             font-weight: 700;
         }
-        .metric-value {
-            font-size: 14pt;
+        .hero-value {
+            font-size: 13.5pt;
             font-weight: 800;
-            color: #1c1917;
         }
-        .metric-value.income { color: #16a34a; }
-        .metric-value.expense { color: #dc2626; }
-        .metric-value.savings { color: #d97706; }
+        .hero-value.income { color: #4ade80; }
+        .hero-value.expense { color: #f87171; }
+        .hero-value.savings { color: #fbbf24; }
+        .hero-value.rate { color: #fbbf24; }
 
-        /* General sections */
+        /* General section headers */
         .section-title {
-            font-size: 12pt;
+            font-size: 11pt;
             font-weight: 800;
             color: #1c1917;
             margin-top: 20px;
             margin-bottom: 8px;
-            border-bottom: 1px solid #e7e5e4;
+            border-bottom: 1.5px solid #e7e5e4;
             padding-bottom: 4px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
         }
 
-        /* AI insights block */
-        .ai-container {
-            background: #fffbeb;
+        /* AI Insights block */
+        .ai-insights-block {
+            background-color: #fafaf9;
+            border: 1px solid #e7e5e4;
             border-left: 4px solid #f59e0b;
+            border-radius: 4px;
             padding: 12px 16px;
-            border-radius: 0 8px 8px 0;
             margin-bottom: 20px;
         }
-        .ai-title {
+        .ai-badge-container {
+            margin-bottom: 6px;
+        }
+        .ai-insights-badge {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #1c1917;
+            font-weight: 800;
+            font-size: 8pt;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .ai-summary-text {
             font-size: 9.5pt;
-            font-weight: 700;
-            color: #b45309;
-            margin-bottom: 4px;
-        }
-        .ai-summary {
-            font-size: 9pt;
-            color: #451a03;
-            margin-bottom: 8px;
             font-style: italic;
+            color: #292524;
+            line-height: 1.5;
+            margin-bottom: 8px;
         }
-        .ai-tips-list {
+        .ai-tips-container {
             margin: 0;
             padding-left: 20px;
         }
-        .ai-tips-list li {
+        .ai-tips-container li {
             font-size: 9pt;
-            color: #78350f;
-            margin-bottom: 4px;
+            color: #44403c;
+            margin-bottom: 3px;
         }
 
-        /* Data Tables */
-        .data-table {
+        /* Two-column layout */
+        .columns-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
         }
+        .columns-table td.col {
+            width: 50%;
+            vertical-align: top;
+        }
+        .columns-table td.left-col {
+            padding-right: 12px;
+        }
+        .columns-table td.right-col {
+            padding-left: 12px;
+        }
+
+        /* Standard data tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
         .data-table th {
-            background: #f5f5f4;
+            background: #fafaf9;
             color: #78716c;
             font-weight: 700;
             text-align: left;
-            padding: 8px 10px;
+            padding: 6px 8px;
             font-size: 8pt;
-            border-bottom: 2px solid #e7e5e4;
+            border-bottom: 1.5px solid #e7e5e4;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         .data-table td {
-            padding: 8px 10px;
+            padding: 6px 8px;
             border-bottom: 1px solid #f5f5f4;
             font-size: 9pt;
             vertical-align: middle;
@@ -168,44 +201,102 @@
         .text-center {
             text-align: center !important;
         }
-        
-        /* Category specific formatting */
+
+        /* Category progress elements */
         .cat-badge {
             display: inline-block;
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            margin-right: 6px;
+            margin-right: 5px;
         }
-        
-        /* Progress bars */
-        .progress-container {
+        .bar-container {
             background: #e7e5e4;
             border-radius: 100px;
-            height: 6px;
-            width: 120px;
+            height: 5px;
+            width: 80px;
             display: inline-block;
             vertical-align: middle;
-            margin-right: 8px;
+            margin-right: 6px;
             overflow: hidden;
         }
-        .progress-bar {
+        .bar-fill {
             height: 100%;
             border-radius: 100px;
         }
-        
+
+        /* Budget statuses */
         .status-badge {
-            font-size: 7.5pt;
-            font-weight: 700;
-            padding: 2px 6px;
+            font-size: 7pt;
+            font-weight: 800;
+            padding: 1.5px 5px;
             border-radius: 100px;
             text-transform: uppercase;
         }
-        .status-badge.ok { background: #dcfce7; color: #166534; }
-        .status-badge.warning { background: #fef3c7; color: #92400e; }
-        .status-badge.over { background: #fee2e2; color: #991b1b; }
-        
-        /* Keep page splits clean */
+        .status-badge.ok { background: #dcfce7; color: #15803d; }
+        .status-badge.warning { background: #fef3c7; color: #b45309; }
+        .status-badge.over { background: #fee2e2; color: #b91c1c; }
+
+        /* Savings Goals SVG Rings */
+        .goals-grid-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .goal-item-td {
+            width: 50%;
+            padding: 8px;
+            border: 1px solid #e7e5e4;
+            background: #fafaf9;
+            border-radius: 6px;
+        }
+        .goal-flex-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .goal-text-cell {
+            vertical-align: middle;
+        }
+        .goal-svg-cell {
+            width: 50px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .goal-title-lbl {
+            font-weight: 700;
+            color: #1c1917;
+            font-size: 9pt;
+            margin-bottom: 2px;
+        }
+        .goal-amount-lbl {
+            font-size: 8pt;
+            color: #78716c;
+        }
+
+        /* Footer block */
+        .footer-container {
+            background-color: #1c1917;
+            color: #a8a29e;
+            padding: 12px 20px;
+            border-top: 3px solid #f59e0b;
+            border-radius: 0 0 8px 8px;
+            margin-top: 25px;
+            font-size: 8pt;
+        }
+        .footer-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .confidential-badge {
+            background-color: #b91c1c;
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 7.5pt;
+            padding: 2px 6px;
+            border-radius: 3px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
         .page-break {
             page-break-before: always;
         }
@@ -213,49 +304,52 @@
 </head>
 <body>
 
-    <!-- Header -->
-    <table class="header-table">
-        <tr>
-            <td class="header-logo">
-                FinSight<span>AI</span>
-            </td>
-            <td class="header-meta">
-                Prepared for: <strong>{{ user_name }}</strong> ({{ user_email }})<br>
-                Report Period: <strong>{{ month_name }} {{ year }}</strong><br>
-                Generated: <strong>{{ generated_date }}</strong>
-            </td>
-        </tr>
-    </table>
+    <!-- Header & Hero snapshot -->
+    <div class="header-container">
+        <table class="header-top-table">
+            <tr>
+                <td class="logo-text">
+                    FinSight<span>AI</span>
+                </td>
+                <td class="period-info">
+                    Period: <strong>{{ month_name }} {{ year }}</strong><br>
+                    Prepared for: <strong>{{ user_name }}</strong><br>
+                    Generated: <strong>{{ generated_date }}</strong>
+                </td>
+            </tr>
+        </table>
+        
+        <table class="hero-stats-table">
+            <tr>
+                <td>
+                    <div class="hero-label">Total Income</div>
+                    <div class="hero-value income">{{ currency_symbol }}{{ total_income }}</div>
+                </td>
+                <td>
+                    <div class="hero-label">Total Expenses</div>
+                    <div class="hero-value expense">{{ currency_symbol }}{{ total_expenses }}</div>
+                </td>
+                <td>
+                    <div class="hero-label">Net Savings</div>
+                    <div class="hero-value savings">{{ currency_symbol }}{{ net_savings }}</div>
+                </td>
+                <td>
+                    <div class="hero-label">Savings Rate</div>
+                    <div class="hero-value rate">{{ savings_rate }}%</div>
+                </td>
+            </tr>
+        </table>
+    </div>
 
-    <!-- Metrics row -->
-    <table class="metrics-table">
-        <tr>
-            <td class="metric-card">
-                <div class="metric-label">Total Income</div>
-                <div class="metric-value income">{{ currency_symbol }}{{ total_income }}</div>
-            </td>
-            <td class="metric-card">
-                <div class="metric-label">Total Expenses</div>
-                <div class="metric-value expense">{{ currency_symbol }}{{ total_expenses }}</div>
-            </td>
-            <td class="metric-card">
-                <div class="metric-label">Net Savings</div>
-                <div class="metric-value savings">{{ currency_symbol }}{{ net_savings }}</div>
-            </td>
-            <td class="metric-card">
-                <div class="metric-label">Savings Rate</div>
-                <div class="metric-value">{{ savings_rate }}%</div>
-            </td>
-        </tr>
-    </table>
-
-    <!-- AI Insights block -->
-    <div class="section-title">AI Insights & Financial Coaching</div>
-    <div class="ai-container">
-        <div class="ai-title">🤖 FinSight Coach snapshot</div>
-        <div class="ai-summary">{{ ai_summary }}</div>
+    <!-- AI Coaching insights -->
+    <div class="section-title">✦ AI Insights by Gemini</div>
+    <div class="ai-insights-block">
+        <div class="ai-badge-container">
+            <span class="ai-insights-badge">Financial Insights</span>
+        </div>
+        <div class="ai-summary-text">{{ ai_summary }}</div>
         {% if ai_tips %}
-        <ul class="ai-tips-list">
+        <ul class="ai-tips-container">
             {% for tip in ai_tips %}
             <li>{{ tip }}</li>
             {% endfor %}
@@ -263,122 +357,144 @@
         {% endif %}
     </div>
 
-    <!-- Spending Breakdown & Budgets side-by-side or stacked -->
-    <div class="section-title">Spending by Category</div>
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>Category</th>
-                <th class="text-right">Amount</th>
-                <th class="text-right">% of Expenses</th>
-                <th>Distribution</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for cat in categories %}
-            <tr>
-                <td>
-                    <span class="cat-badge" style="background-color: {{ cat.color }};"></span>
-                    {{ cat.name }}
-                </td>
-                <td class="text-right">{{ currency_symbol }}{{ cat.amount }}</td>
-                <td class="text-right">{{ cat.percent }}%</td>
-                <td>
-                    <div class="progress-container">
-                        <div class="progress-bar" style="width: {{ cat.percent }}%; background-color: {{ cat.color }};"></div>
-                    </div>
-                </td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="4" class="text-center" style="color: #78716c;">No expense records available for this month.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    {% if budgets %}
-    <div class="section-title">Monthly Budget Thresholds</div>
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>Category</th>
-                <th class="text-right">Spent</th>
-                <th class="text-right">Limit</th>
-                <th>Usage</th>
-                <th class="text-center">Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for b in budgets %}
-            <tr>
-                <td>{{ b.emoji }} {{ b.category }}</td>
-                <td class="text-right">{{ currency_symbol }}{{ b.spent }}</td>
-                <td class="text-right">{{ currency_symbol }}{{ b.limit }}</td>
-                <td>
-                    {% set b_spent_clean = b.spent.replace(',', '') | float %}
-                    {% set b_limit_clean = b.limit.replace(',', '') | float %}
-                    {% set b_percent = (b_spent_clean / b_limit_clean * 100) if b_limit_clean > 0 else 0 %}
-                    <div class="progress-container">
-                        <div class="progress-bar" style="width: {{ 100 if b_percent > 100 else b_percent }}%; background-color: {% if b.status == 'over' %}#dc2626{% elif b.status == 'warning' %}#d97706{% else %}#16a34a{% endif %};"></div>
-                    </div>
-                    <span style="font-size: 8pt; color: #78716c;">{{ b_percent | round | int }}%</span>
-                </td>
-                <td class="text-center">
-                    <span class="status-badge {{ b.status }}">
-                        {% if b.status == 'over' %}Over Limit{% elif b.status == 'warning' %}Warning{% else %}Healthy{% endif %}
-                    </span>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% endif %}
-
-    {% if goals %}
-    <div class="section-title">Savings Milestones & Goals</div>
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>Goal Title</th>
-                <th class="text-right">Current Savings</th>
-                <th class="text-right">Target Amount</th>
-                <th>Progress Milestones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for g in goals %}
-            <tr>
-                <td>🎯 {{ g.title }}</td>
-                <td class="text-right">{{ currency_symbol }}{{ g.current }}</td>
-                <td class="text-right">{{ currency_symbol }}{{ g.target }}</td>
-                <td>
-                    <div class="progress-container">
-                        <div class="progress-bar" style="width: {{ g.progress }}%; background-color: #f59e0b;"></div>
-                    </div>
-                    <span style="font-size: 8pt; color: #78716c;">{{ g.progress }}%</span>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% endif %}
-
-    <!-- Page break for detailed transaction history to keep layout clean -->
-    <div class="page-break"></div>
-
-    <table class="header-table">
+    <!-- Two-column Section: Spending Breakdown & Budgets Status -->
+    <table class="columns-table">
         <tr>
-            <td class="header-logo">
-                FinSight<span>AI</span>
+            <!-- Left Column: Spending Breakdown -->
+            <td class="col left-col">
+                <div class="section-title">Spending Categories</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th class="text-right">Amount</th>
+                            <th class="text-right">%</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cat in categories %}
+                        <tr>
+                            <td>
+                                <span class="cat-badge" style="background-color: {{ cat.color }};"></span>
+                                {{ cat.name }}
+                            </td>
+                            <td class="text-right">{{ currency_symbol }}{{ cat.amount }}</td>
+                            <td class="text-right">
+                                <div class="bar-container">
+                                    <div class="bar-fill" style="width: {{ cat.percent }}%; background-color: {{ cat.color }};"></div>
+                                </div>
+                                <span style="font-size: 8pt;">{{ cat.percent }}%</span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center" style="color: #78716c;">No expenses recorded.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </td>
-            <td class="header-meta">
-                Report Period: <strong>{{ month_name }} {{ year }}</strong>
+
+            <!-- Right Column: Budget Status -->
+            <td class="col right-col">
+                <div class="section-title">Budget Health</div>
+                {% if budgets %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th class="text-right">Spent / Limit</th>
+                            <th class="text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in budgets %}
+                        <tr>
+                            <td>{{ b.emoji }} {{ b.category }}</td>
+                            <td class="text-right" style="font-size: 8.5pt;">
+                                {{ currency_symbol }}{{ b.spent }} / <span style="color: #78716c;">{{ currency_symbol }}{{ b.limit }}</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="status-badge {{ b.status }}">
+                                    {% if b.status == 'over' %}Over{% elif b.status == 'warning' %}Warn{% else %}Ok{% endif %}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div style="background: #fafaf9; border: 1px solid #e7e5e4; border-radius: 4px; padding: 15px; text-align: center; color: #78716c; font-size: 9pt;">
+                    No budgets configured.
+                </div>
+                {% endif %}
             </td>
         </tr>
     </table>
 
-    <div class="section-title">Detailed Monthly Transaction History</div>
+    <!-- Savings goals milestones -->
+    {% if goals %}
+    <div class="section-title">Goal Milestones</div>
+    <table class="goals-grid-table">
+        <tr>
+            {% for g in goals %}
+            <td class="goal-item-td" style="{% if not loop.first %}border-left: none;{% endif %}">
+                <table class="goal-flex-table">
+                    <tr>
+                        <td class="goal-text-cell">
+                            <div class="goal-title-lbl">{{ g.title }}</div>
+                            <div class="goal-amount-lbl">{{ currency_symbol }}{{ g.current }} saved of {{ currency_symbol }}{{ g.target }}</div>
+                        </td>
+                        <td class="goal-svg-cell">
+                            <svg width="44" height="44" viewBox="0 0 44 44" style="transform: rotate(-90deg);">
+                              <circle cx="22" cy="22" r="18" fill="none" stroke="#e7e5e4" stroke-width="3"></circle>
+                              <circle cx="22" cy="22" r="18" fill="none" stroke="#f59e0b" stroke-width="3"
+                                      stroke-dasharray="113"
+                                      stroke-dashoffset="{{ 113 - (113 * (g.progress | float) / 100) if (g.progress | float) <= 100 else 0 }}"
+                                      stroke-linecap="round"></circle>
+                            </svg>
+                            <div style="font-size: 7.5pt; font-weight: bold; color: #1c1917; margin-top: -30px; margin-bottom: 15px; text-align: center;">{{ g.progress | int }}%</div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            {% if loop.index is divisibleby 2 and not loop.last %}
+            </tr><tr>
+            {% endif %}
+            {% endfor %}
+        </tr>
+    </table>
+    {% endif %}
+
+    <!-- Footer of Page 1 -->
+    <div class="footer-container">
+        <table class="footer-table">
+            <tr>
+                <td>FinSight AI Monthly Report • {{ month_name }} {{ year }}</td>
+                <td class="text-right">
+                    <span class="confidential-badge">Confidential</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Page Break for transaction ledger -->
+    <div class="page-break"></div>
+
+    <div class="header-container" style="padding: 12px 24px; margin-bottom: 15px;">
+        <table class="header-top-table" style="margin-bottom: 0;">
+            <tr>
+                <td class="logo-text" style="font-size: 15pt;">
+                    FinSight<span>AI</span>
+                </td>
+                <td class="period-info" style="font-size: 8.5pt;">
+                    Transaction History Ledger • <strong>{{ month_name }} {{ year }}</strong>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section-title">Detailed Transactions History</div>
     <table class="data-table">
         <thead>
             <tr>
@@ -395,20 +511,32 @@
                 <td>{{ txn.date }}</td>
                 <td>{{ txn.description }}</td>
                 <td>{{ txn.category }}</td>
-                <td style="text-transform: capitalize; font-weight: 600; color: {% if txn.type == 'income' %}#16a34a{% else %}#dc2626{% endif %};">
+                <td style="text-transform: capitalize; font-weight: bold; color: {% if txn.type == 'income' %}#16a34a{% else %}#dc2626{% endif %};">
                     {{ txn.type }}
                 </td>
-                <td class="text-right" style="font-weight: 700; color: {% if txn.type == 'income' %}#16a34a{% else %}#dc2626{% endif %};">
+                <td class="text-right" style="font-weight: bold; color: {% if txn.type == 'income' %}#16a34a{% else %}#dc2626{% endif %};">
                     {{ '+' if txn.type == 'income' else '-' }}{{ currency_symbol }}{{ txn.amount }}
                 </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="5" class="text-center" style="color: #78716c;">No transaction records available for this month.</td>
+                <td colspan="5" class="text-center" style="color: #78716c;">No transaction records available.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+
+    <!-- Footer of Page 2 -->
+    <div class="footer-container">
+        <table class="footer-table">
+            <tr>
+                <td>FinSight AI Monthly Report • {{ month_name }} {{ year }}</td>
+                <td class="text-right">
+                    <span class="confidential-badge">Confidential</span>
+                </td>
+            </tr>
+        </table>
+    </div>
 
 </body>
 </html>
