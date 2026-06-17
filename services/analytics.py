@@ -38,7 +38,7 @@ class AnalyticsService:
         import datetime
         six_months_ago = (datetime.datetime.now() - datetime.timedelta(days=180)).strftime("%Y-%m-%d")
         rows = self.db.execute(
-            "SELECT strftime('%Y-%m', transaction_date) AS month, SUM(amount) AS total FROM transactions "
+            "SELECT substr(transaction_date, 1, 7) AS month, SUM(amount) AS total FROM transactions "
             "WHERE user_id = ? AND transaction_type = 'expense' AND transaction_date >= ? "
             "GROUP BY month ORDER BY month ASC",
             (self.user_id, six_months_ago),
@@ -49,7 +49,7 @@ class AnalyticsService:
 
     def budget_status_summary(self):
         rows = self.db.execute(
-            "SELECT b.id, b.category, b.budget_amount, b.month, COALESCE(SUM(t.amount), 0) AS spent FROM budgets b LEFT JOIN transactions t ON b.user_id = t.user_id AND b.category = t.category AND t.transaction_type = 'expense' AND strftime('%Y-%m', t.transaction_date) = b.month WHERE b.user_id = ? GROUP BY b.id ORDER BY b.month DESC",
+            "SELECT b.id, b.category, b.budget_amount, b.month, COALESCE(SUM(t.amount), 0) AS spent FROM budgets b LEFT JOIN transactions t ON b.user_id = t.user_id AND b.category = t.category AND t.transaction_type = 'expense' AND substr(t.transaction_date, 1, 7) = b.month WHERE b.user_id = ? GROUP BY b.id ORDER BY b.month DESC",
             (self.user_id,),
         ).fetchall()
         budget_status = []
