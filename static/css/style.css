@@ -2646,6 +2646,22 @@ body.theme-light .footer-landing {
 .active-lang-item {
   background-color: #7c3aed !important;
 }
+.recurring-due-soon {
+  background: rgba(245, 158, 11, 0.08) !important;
+  border-left: 4px solid #f59e0b !important;
+}
+.flash-success {
+  border: 1px solid var(--accent-green) !important;
+}
+.flash-error, .flash-danger {
+  border: 1px solid var(--accent-red) !important;
+}
+.flash-info {
+  border: 1px solid var(--accent-blue) !important;
+}
+.flash-warning {
+  border: 1px solid var(--accent-yellow) !important;
+}
 
 
 

@@ -188,7 +188,7 @@
             {% if messages %}
               <div class="flash-messages mb-4">
                 {% for category, message in messages %}
-                  <div class="flash-message {{ category }} d-flex align-items-center gap-2" style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 12px; border: 1px solid {% if category == 'success' %}var(--accent-green){% else %}var(--accent-red){% endif %}; color: var(--text-primary);">
+                  <div class="flash-message flash-{{ category }} d-flex align-items-center gap-2" style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 12px; border: 1px solid var(--border); color: var(--text-primary);">
                     {% if category == 'success' %}
                       <i class="fas fa-check-circle text-success" style="font-size: 1.2rem;"></i>
                     {% else %}

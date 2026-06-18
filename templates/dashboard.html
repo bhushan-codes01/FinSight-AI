@@ -348,7 +348,7 @@
                     </thead>
                     <tbody>
                       {% for txn in upcoming_recurring %}
-                      <tr style="border-bottom: 1px solid var(--border); {% if txn.days_until <= 2 %}background: rgba(245, 158, 11, 0.08); border-left: 4px solid #f59e0b;{% endif %}">
+                      <tr class="{% if txn.days_until <= 2 %}recurring-due-soon{% endif %}" style="border-bottom: 1px solid var(--border);">
                         <td class="fw-medium">{{ txn.description }}</td>
                         <td><span class="badge bg-secondary px-2 py-1 small" style="background: rgba(139, 92, 246, 0.1) !important; color: var(--accent-purple) !important; border: 1px solid rgba(139, 92, 246, 0.2);">{{ txn.category }}</span></td>
                         <td class="fw-bold">{{ currency_symbol }}{{ txn.amount }}</td>

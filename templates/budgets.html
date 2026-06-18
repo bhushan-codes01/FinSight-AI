@@ -126,7 +126,7 @@
                       <div class="col-12">
                         <div class="p-3 rounded text-white" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(59, 130, 246, 0.1) 100%); border: 1px solid rgba(139, 92, 246, 0.3);">
                           <div class="small text-white-50 mb-1">5-Year Growth (7% Compounded)</div>
-                          <h4 class="fw-bold mb-0" id="accum5y" style="background: linear-gradient(90deg, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">{{ currency_symbol }}0</h4>
+                          <h4 class="fw-bold mb-0" id="accum5y" style="background: linear-gradient(90deg, #a78bfa, #60a5fa); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">{{ currency_symbol }}0</h4>
                         </div>
                       </div>
                     </div>
@@ -198,7 +198,7 @@
                             {{ currency_symbol }}{{ -budget.remaining }} over limit
                           {% endif %}
                         </span>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteBudget({{ budget.id }})">
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteBudget(this.dataset.id)" data-id="{{ budget.id }}">
                           <i class="fas fa-trash-alt"></i> Delete
                         </button>
                       </div>
