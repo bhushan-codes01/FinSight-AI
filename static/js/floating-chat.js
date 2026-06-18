@@ -71,7 +71,23 @@ function sendFloatingChatMessage(promptText = null) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message: messageText })
   })
-  .then(res => res.json())
+  .then(async res => {
+    if (res.redirected || (res.url && res.url.includes('/login'))) {
+      throw new Error("⚠️ Session expired or unauthorized. Please refresh the page and log in to use the AI Coach.");
+    }
+    if (!res.ok) {
+      if (res.status === 401) {
+        throw new Error("⚠️ Session expired or unauthorized. Please refresh the page and log in to use the AI Coach.");
+      }
+      try {
+        const data = await res.json();
+        throw new Error(data.response || data.message || data.error || `HTTP error! status: ${res.status}`);
+      } catch (e) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+    }
+    return res.json();
+  })
   .then(data => {
     // Remove typing placeholder
     const placeholder = document.getElementById('floatingChatTypingPlaceholder');
@@ -99,7 +115,15 @@ function sendFloatingChatMessage(promptText = null) {
     
     const errorBubble = document.createElement('div');
     errorBubble.className = 'floating-chat-message-bubble ai text-danger';
-    errorBubble.textContent = 'Sorry, I encountered an error connecting to the AI Assistant. Please try again.';
+    
+    let errorMsg = err.message;
+    if (err instanceof SyntaxError || (errorMsg && (errorMsg.includes('JSON') || errorMsg.includes('Unexpected token')))) {
+      errorMsg = '⚠️ Session expired or invalid response format. Please refresh the page and log in again.';
+    } else if (!errorMsg || errorMsg === 'Failed to fetch') {
+      errorMsg = '⚠️ Unable to connect to the AI Assistant. Please check your internet connection.';
+    }
+    
+    errorBubble.textContent = errorMsg;
     messagesContainer.appendChild(errorBubble);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
   });

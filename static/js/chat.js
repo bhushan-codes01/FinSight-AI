@@ -167,11 +167,15 @@ async function submitQuestion() {
         appendAIBubble(data.error || "Unexpected AI service response.");
       }
     } else {
-      try {
-        const data = await response.json();
-        appendAIBubble(data.response || data.message || data.error || "Error: Unable to connect to assistant.");
-      } catch (e) {
-        appendAIBubble("Error: Unable to connect to assistant.");
+      if (response.status === 401) {
+        appendAIBubble("⚠️ Session expired or unauthorized. Please refresh the page and log in to use the AI Coach.");
+      } else {
+        try {
+          const data = await response.json();
+          appendAIBubble(data.response || data.message || data.error || `Error: Unable to connect to assistant (status ${response.status}).`);
+        } catch (e) {
+          appendAIBubble(`Error: Unable to connect to assistant (status ${response.status}).`);
+        }
       }
     }
   } catch (error) {
