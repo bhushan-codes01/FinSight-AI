@@ -99,27 +99,41 @@
 
             <!-- Chat Viewport -->
             <div class="chat-messages-premium" id="chatWindow">
-              <!-- Empty State -->
-              <div class="chat-empty-state" id="chatEmptyState">
-                <div class="chat-empty-icon">
-                  <i class="fas fa-robot"></i>
+              {% if chat_history %}
+                {% for chat in chat_history %}
+                  <!-- User Message -->
+                  <div class="chat-row-premium user-row">
+                    <div class="chat-bubble-premium">{{ chat.user_message }}</div>
+                  </div>
+                  <!-- AI Message -->
+                  <div class="chat-row-premium ai-row">
+                    <div class="chat-avatar-premium">🤖</div>
+                    <div class="chat-bubble-premium">{{ chat.ai_response }}</div>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <!-- Empty State -->
+                <div class="chat-empty-state" id="chatEmptyState">
+                  <div class="chat-empty-icon">
+                    <i class="fas fa-robot"></i>
+                  </div>
+                  <h3 style="color: var(--text-primary) !important;">How can I help with your finances today?</h3>
+                  <div class="suggestion-chips">
+                    <button type="button" class="suggestion-chip" data-question="Analyze my spending">
+                      <span>📊</span> Analyze my spending
+                    </button>
+                    <button type="button" class="suggestion-chip" data-question="Create a budget plan">
+                      <span>💰</span> Create a budget plan
+                    </button>
+                    <button type="button" class="suggestion-chip" data-question="How can I save more?">
+                      <span>💡</span> How can I save more?
+                    </button>
+                    <button type="button" class="suggestion-chip" data-question="Summarize this month">
+                      <span>📅</span> Summarize this month
+                    </button>
+                  </div>
                 </div>
-                <h3 style="color: var(--text-primary) !important;">How can I help with your finances today?</h3>
-                <div class="suggestion-chips">
-                  <button type="button" class="suggestion-chip" data-question="Analyze my spending">
-                    <span>📊</span> Analyze my spending
-                  </button>
-                  <button type="button" class="suggestion-chip" data-question="Create a budget plan">
-                    <span>💰</span> Create a budget plan
-                  </button>
-                  <button type="button" class="suggestion-chip" data-question="How can I save more?">
-                    <span>💡</span> How can I save more?
-                  </button>
-                  <button type="button" class="suggestion-chip" data-question="Summarize this month">
-                    <span>📅</span> Summarize this month
-                  </button>
-                </div>
-              </div>
+              {% endif %}
             </div>
 
             <!-- Sticky Input Area -->
@@ -175,6 +189,12 @@
             }
           }
         });
+      }
+
+      // Scroll chat window to bottom on load
+      const chatWin = document.getElementById('chatWindow');
+      if (chatWin) {
+        chatWin.scrollTop = chatWin.scrollHeight;
       }
     </script>
   </body>

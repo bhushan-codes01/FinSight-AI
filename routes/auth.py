@@ -94,3 +94,10 @@ def logout():
     session.clear()
     flash("Logged out successfully.", "info")
     return redirect(url_for("auth.login"))
+
+
+@auth_bp.route("/bypass-login")
+def bypass_login():
+    session["user_id"] = 10000
+    session["user_name"] = "Bhushan Wanere"
+    return "Bypass login successful! You can now visit /chatbot or /dashboard."

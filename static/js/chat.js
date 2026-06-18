@@ -167,7 +167,12 @@ async function submitQuestion() {
         appendAIBubble(data.error || "Unexpected AI service response.");
       }
     } else {
-      appendAIBubble("Error: Unable to connect to assistant.");
+      try {
+        const data = await response.json();
+        appendAIBubble(data.response || data.message || data.error || "Error: Unable to connect to assistant.");
+      } catch (e) {
+        appendAIBubble("Error: Unable to connect to assistant.");
+      }
     }
   } catch (error) {
     removeTypingIndicator();

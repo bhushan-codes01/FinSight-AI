@@ -12,7 +12,13 @@ chatbot_bp = Blueprint("chatbot", __name__)
 def chatbot_page():
     if not session.get("user_id"):
         return redirect(url_for("auth.login"))
-    return render_template("chatbot.html")
+    db = get_db()
+    history = db.execute(
+        "SELECT user_message, ai_response FROM chat_history "
+        "WHERE user_id = ? ORDER BY id ASC",
+        (session["user_id"],)
+    ).fetchall()
+    return render_template("chatbot.html", chat_history=history)
 
 
 def handle_create_budget(user_id, db, args, currency_symbol="₹"):
@@ -67,6 +73,7 @@ def handle_log_transaction(user_id, db, args, currency_symbol="₹"):
 
 
 @chatbot_bp.route("/chat", methods=["POST"])
+@chatbot_bp.route("/chatbot/send", methods=["POST"])
 def chat():
     if not session.get("user_id"):
         return jsonify({"error": "Unauthorized"}), 401
@@ -74,19 +81,44 @@ def chat():
     user_id = session["user_id"]
     db = get_db()
     
-    # Fetch user currency and language settings
-    user = db.execute("SELECT currency_symbol, language FROM users WHERE id = ?", (user_id,)).fetchone()
+    # Fetch user currency, language, and profile settings
+    user = db.execute(
+        "SELECT name, currency_symbol, language, occupation, monthly_income, savings_goal, budget_style, risk_appetite, advice_level "
+        "FROM users WHERE id = ?", 
+        (user_id,)
+    ).fetchone()
+    
+    user_name = "FinSighter"
     currency_symbol = "₹"
     user_lang = "en"
+    occupation = "Not specified"
+    monthly_income = 0.0
+    savings_goal_val = 0.0
+    budget_style = "50/30/20"
+    risk_appetite = "Moderate"
+    advice_level = "Balanced"
+    
     if user:
         try:
+            user_name = user["name"] or "FinSighter"
             currency_symbol = user["currency_symbol"] or "₹"
-        except (TypeError, KeyError, IndexError):
-            currency_symbol = user[0] or "₹"
-        try:
             user_lang = user["language"] or "en"
+            occupation = user["occupation"] or "Not specified"
+            monthly_income = float(user["monthly_income"] or 0.0)
+            savings_goal_val = float(user["savings_goal"] or 0.0)
+            budget_style = user["budget_style"] or "50/30/20"
+            risk_appetite = user["risk_appetite"] or "Moderate"
+            advice_level = user["advice_level"] or "Balanced"
         except (TypeError, KeyError, IndexError):
-            user_lang = user[1] or "en"
+            user_name = user[0] or "FinSighter"
+            currency_symbol = user[1] or "₹"
+            user_lang = user[2] or "en"
+            occupation = user[3] or "Not specified"
+            monthly_income = float(user[4] or 0.0)
+            savings_goal_val = float(user[5] or 0.0)
+            budget_style = user[6] or "50/30/20"
+            risk_appetite = user[7] or "Moderate"
+            advice_level = user[8] or "Balanced"
     
     if "lang" in session:
         user_lang = session["lang"]
@@ -110,18 +142,25 @@ def chat():
     if not check_ai_quota(user_id):
         return jsonify({
             "error": "quota_exceeded", 
-            "message": "Daily limit reached. Upgrade to Pro for unlimited AI chat."
+            "message": "Daily limit reached. Upgrade to Pro for unlimited AI chat.",
+            "response": "⚠️ Daily limit reached. Upgrade to Pro for unlimited AI chat."
         }), 403
 
-    user_question = request.form.get("user_question", "").strip()
-    csv_file = request.files.get("statement_file")
+    if request.is_json:
+        req_data = request.get_json() or {}
+        user_question = req_data.get("message", "").strip()
+        csv_file = None
+    else:
+        user_question = request.form.get("user_question", "").strip()
+        csv_file = request.files.get("statement_file")
 
     # 2. Check CSV Gating (Pro only)
     if csv_file and csv_file.filename:
         if get_user_plan(user_id) != 'pro':
             return jsonify({
                 "error": "pro_required", 
-                "message": "CSV upload and analysis is a Pro feature. Please upgrade to Pro to upload statements."
+                "message": "CSV upload and analysis is a Pro feature. Please upgrade to Pro to upload statements.",
+                "response": "⚠️ CSV upload and analysis is a Pro feature. Please upgrade to Pro to upload statements."
             }), 403
 
     # If quota ok, increment usage count
@@ -219,6 +258,17 @@ def chat():
             current_app.logger.error(f"Error parsing uploaded CSV in chatbot context: {e}")
 
     # 3. Formulate standard system instruction & tools
+    current_date_str = datetime.datetime.now().strftime("%Y-%m-%d (%A)")
+    profile_summary = (
+        "USER PROFILE CONTEXT:\n"
+        f"- Name: {user_name}\n"
+        f"- Occupation: {occupation}\n"
+        f"- Monthly Income: {currency_symbol}{monthly_income:,.2f}\n"
+        f"- Savings Goal: {currency_symbol}{savings_goal_val:,.2f}\n"
+        f"- Budgeting Style: {budget_style}\n"
+        f"- Investment Risk Appetite: {risk_appetite}\n"
+        f"- Financial Advice Level: {advice_level}\n\n"
+    )
     system_instruction = (
         "You are FinSight AI, a premium professional personal financial assistant.\n"
         "Your goal is to help users manage their money, track budgets, save for goals, and analyze transactions.\n\n"
@@ -226,9 +276,11 @@ def chat():
         "- Tone: Professional, encouraging, realistic, and highly mathematical.\n"
         "- Math-Focused: Always cite exact figures (totals, averages, progress percentages, days remaining) in your advice.\n"
         f"- Currency formatting: Use {currency_symbol} as the currency symbol for all monetary amounts in your replies.\n"
+        f"- Today's Date: The current date is {current_date_str}. Use this date as the default when the user refers to 'today', 'yesterday', 'this week', 'this month', or similar relative times.\n"
         f"- LANGUAGE REQUIREMENT: You MUST speak, respond, and analyze strictly in the language: {target_language}. Do not write in any other language, even if the user prompts you in a different language. However, keep the function calls in standard schema format.\n"
         "- Restrictive scope: Only answer questions related to personal finance, budgeting, saving, or financial analysis. "
         "If the user asks an unrelated question (like coding, history, or science), politely decline to answer and redirect them back to their finances.\n\n"
+        f"{profile_summary}"
         "CURRENT USER PROFILE SUMMARY CONTEXT:\n"
         f"{context_summary}\n"
         "FUNCTION CALLING / LOCAL ACTIONS:\n"
@@ -306,12 +358,28 @@ def chat():
         }
     ]
 
-    contents = [
-        {
+    # Fetch recent chat history to provide conversational context memory
+    history_rows = db.execute(
+        "SELECT user_message, ai_response FROM chat_history "
+        "WHERE user_id = ? ORDER BY id DESC LIMIT 5",
+        (user_id,)
+    ).fetchall()
+    
+    contents = []
+    for row in reversed(history_rows):
+        contents.append({
             "role": "user",
-            "parts": [{"text": user_question}]
-        }
-    ]
+            "parts": [{"text": row["user_message"]}]
+        })
+        contents.append({
+            "role": "model",
+            "parts": [{"text": row["ai_response"]}]
+        })
+        
+    contents.append({
+        "role": "user",
+        "parts": [{"text": user_question}]
+    })
 
     user_plan = get_user_plan(user_id)
     model_name = "gemini-2.5-pro" if user_plan == "pro" else "gemini-2.5-flash"

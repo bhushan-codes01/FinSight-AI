@@ -10,6 +10,7 @@ class GeminiService:
         self.api_key = os.getenv("GEMINI_API_KEY")
         if not model_name:
             model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+        self.model_name = model_name
         self.endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
 
     def analyze(self, prompt):
@@ -39,10 +40,36 @@ class GeminiService:
                 url = f"{self.endpoint}?key={self.api_key}"
                 response = requests.post(url, json=payload, headers=headers, timeout=30)
                 if response.status_code == 429 and attempt < max_retries:
-                    retry_after = response.headers.get("Retry-After")
-                    sleep_time = float(retry_after) if (retry_after and retry_after.replace('.', '', 1).isdigit()) else backoff
+                    if self.model_name == "gemini-2.5-pro":
+                        self.model_name = "gemini-2.5-flash"
+                        self.endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+                        url = f"{self.endpoint}?key={self.api_key}"
+                        response = requests.post(url, json=payload, headers=headers, timeout=30)
+                        if response.status_code != 429:
+                            response.raise_for_status()
+                            data = response.json()
+                            if "candidates" in data and data["candidates"]:
+                                candidate = data["candidates"][0]
+                                if "content" in candidate and "parts" in candidate["content"]:
+                                    parts = candidate["content"]["parts"]
+                                    if parts and "text" in parts[0]:
+                                        return parts[0]["text"]
+                            return "No response returned from Gemini."
+
+                    sleep_time = backoff
+                    try:
+                        err_json = response.json()
+                        details = err_json.get("error", {}).get("details", [])
+                        for detail in details:
+                            if "retryDelay" in detail:
+                                delay_str = detail["retryDelay"]
+                                if delay_str.endswith("s"):
+                                    sleep_time = float(delay_str[:-1]) + 0.5
+                                    break
+                    except Exception:
+                        pass
                     time.sleep(sleep_time)
-                    backoff *= 2
+                    backoff = max(backoff * 2, sleep_time * 1.5)
                     continue
                 response.raise_for_status()
                 data = response.json()
@@ -88,10 +115,40 @@ class GeminiService:
                 url = f"{self.endpoint}?key={self.api_key}"
                 response = requests.post(url, json=payload, headers=headers, timeout=30)
                 if response.status_code == 429 and attempt < max_retries:
-                    retry_after = response.headers.get("Retry-After")
-                    sleep_time = float(retry_after) if (retry_after and retry_after.replace('.', '', 1).isdigit()) else backoff
+                    if self.model_name == "gemini-2.5-pro":
+                        self.model_name = "gemini-2.5-flash"
+                        self.endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+                        url = f"{self.endpoint}?key={self.api_key}"
+                        response = requests.post(url, json=payload, headers=headers, timeout=30)
+                        if response.status_code != 429:
+                            response.raise_for_status()
+                            data = response.json()
+                            if "candidates" in data and data["candidates"]:
+                                candidate = data["candidates"][0]
+                                if "content" in candidate and "parts" in candidate["content"]:
+                                    parts = candidate["content"]["parts"]
+                                    if parts:
+                                        part = parts[0]
+                                        if "functionCall" in part:
+                                            return {"functionCall": part["functionCall"]}
+                                        if "text" in part:
+                                            return {"text": part["text"]}
+                            return {"text": "No response returned from Gemini."}
+
+                    sleep_time = backoff
+                    try:
+                        err_json = response.json()
+                        details = err_json.get("error", {}).get("details", [])
+                        for detail in details:
+                            if "retryDelay" in detail:
+                                delay_str = detail["retryDelay"]
+                                if delay_str.endswith("s"):
+                                    sleep_time = float(delay_str[:-1]) + 0.5
+                                    break
+                    except Exception:
+                        pass
                     time.sleep(sleep_time)
-                    backoff *= 2
+                    backoff = max(backoff * 2, sleep_time * 1.5)
                     continue
                 response.raise_for_status()
                 data = response.json()
