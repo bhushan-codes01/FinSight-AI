@@ -112,15 +112,21 @@ def init_database():
         if not os.path.exists(app.config["DATABASE"]):
             os.makedirs(os.path.dirname(app.config["DATABASE"]), exist_ok=True)
 
-        conn = sqlite3.connect(app.config["DATABASE"])
-        cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(name) FROM sqlite_master WHERE type='table'")
-        table_count = cursor.fetchone()[0]
-        conn.close()
+        try:
+            conn = sqlite3.connect(app.config["DATABASE"], timeout=60.0)
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(name) FROM sqlite_master WHERE type='table'")
+            table_count = cursor.fetchone()[0]
+            conn.close()
 
-        if table_count == 0:
-            with app.app_context():
-                init_db()
+            if table_count == 0:
+                with app.app_context():
+                    init_db()
+        except sqlite3.OperationalError as e:
+            if "locked" in str(e):
+                print("[DB INIT WARNING] Database is locked, initialization skipped (likely running in another process)")
+            else:
+                raise e
 
 
 def migrate_database():
@@ -144,182 +150,188 @@ def migrate_database():
             cursor.close()
         return
         
-    conn = sqlite3.connect(app.config["DATABASE"])
-    cursor = conn.cursor()
-    
-    columns_to_add = [
-        ("firebase_uid", "TEXT UNIQUE"),
-        ("auth_provider", "TEXT DEFAULT 'local'"),
-        ("profile_picture", "TEXT"),
-        ("email_verified", "BOOLEAN DEFAULT 0"),
-        ("plan", "TEXT DEFAULT 'free'"),
-        ("plan_expiry", "DATE"),
-        ("currency", "TEXT DEFAULT 'INR'"),
-        ("currency_symbol", "TEXT DEFAULT '₹'"),
-    ]
-    
-    existing_columns = [row[1] for row in 
-                        cursor.execute("PRAGMA table_info(users)").fetchall()]
-    
-    for column_name, column_def in columns_to_add:
-        if column_name not in existing_columns:
-            cursor.execute(f"ALTER TABLE users ADD COLUMN {column_name} {column_def}")
-            print(f"[DB MIGRATION] Added column: {column_name}")
-
-    # Also check other tables/columns
-    # Check if goals table exists
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='goals'")
-    goals_exists = cursor.fetchone()
-    if not goals_exists:
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS goals (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER,
-                title TEXT,
-                target_amount REAL,
-                current_amount REAL DEFAULT 0,
-                deadline DATE,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-            )
-        """)
-
-    # Check if sent_alerts table exists
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='sent_alerts'")
-    sent_alerts_exists = cursor.fetchone()
-    if not sent_alerts_exists:
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS sent_alerts (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER,
-                category TEXT,
-                month TEXT,
-                alert_type TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-            )
-        """)
+    try:
+        conn = sqlite3.connect(app.config["DATABASE"], timeout=60.0)
+        cursor = conn.cursor()
         
-    # Check if budgets table exists
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='budgets'")
-    budgets_exists = cursor.fetchone()
-    if not budgets_exists:
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS budgets (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                category TEXT NOT NULL,
-                budget_amount REAL NOT NULL,
-                month TEXT NOT NULL,
-                FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-            )
-        """)
+        columns_to_add = [
+            ("firebase_uid", "TEXT UNIQUE"),
+            ("auth_provider", "TEXT DEFAULT 'local'"),
+            ("profile_picture", "TEXT"),
+            ("email_verified", "BOOLEAN DEFAULT 0"),
+            ("plan", "TEXT DEFAULT 'free'"),
+            ("plan_expiry", "DATE"),
+            ("currency", "TEXT DEFAULT 'INR'"),
+            ("currency_symbol", "TEXT DEFAULT '₹'"),
+        ]
+        
+        existing_columns = [row[1] for row in 
+                            cursor.execute("PRAGMA table_info(users)").fetchall()]
+        
+        for column_name, column_def in columns_to_add:
+            if column_name not in existing_columns:
+                cursor.execute(f"ALTER TABLE users ADD COLUMN {column_name} {column_def}")
+                print(f"[DB MIGRATION] Added column: {column_name}")
 
-    # Check if chat_history table exists
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='chat_history'")
-    chat_history_exists = cursor.fetchone()
-    if not chat_history_exists:
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS chat_history (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                user_message TEXT NOT NULL,
-                ai_response TEXT NOT NULL,
-                created_at TEXT NOT NULL DEFAULT (datetime('now')),
-                FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-            )
-        """)
+        # Also check other tables/columns
+        # Check if goals table exists
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='goals'")
+        goals_exists = cursor.fetchone()
+        if not goals_exists:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS goals (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER,
+                    title TEXT,
+                    target_amount REAL,
+                    current_amount REAL DEFAULT 0,
+                    deadline DATE,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+                )
+            """)
 
-    # Check users columns
-    cursor.execute("PRAGMA table_info(users)")
-    user_cols = [row[1] for row in cursor.fetchall()]
-    if "email_notifications" not in user_cols:
-        cursor.execute("ALTER TABLE users ADD COLUMN email_notifications INTEGER DEFAULT 1")
-    if "google_id" not in user_cols:
-        cursor.execute("ALTER TABLE users ADD COLUMN google_id TEXT")
-        cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id)")
-    if "occupation" not in user_cols:
-        cursor.execute("ALTER TABLE users ADD COLUMN occupation TEXT DEFAULT ''")
-    if "monthly_income" not in user_cols:
-        cursor.execute("ALTER TABLE users ADD COLUMN monthly_income REAL DEFAULT 0.0")
-    if "savings_goal" not in user_cols:
-        cursor.execute("ALTER TABLE users ADD COLUMN savings_goal REAL DEFAULT 0.0")
-    if "budget_style" not in user_cols:
-        cursor.execute("ALTER TABLE users ADD COLUMN budget_style TEXT DEFAULT '50/30/20'")
-    if "risk_appetite" not in user_cols:
-        cursor.execute("ALTER TABLE users ADD COLUMN risk_appetite TEXT DEFAULT 'Moderate'")
-    if "advice_level" not in user_cols:
-        cursor.execute("ALTER TABLE users ADD COLUMN advice_level TEXT DEFAULT 'Balanced'")
-    if "theme" not in user_cols:
-        cursor.execute("ALTER TABLE users ADD COLUMN theme TEXT DEFAULT 'dark'")
-    if "language" not in user_cols:
-        cursor.execute("ALTER TABLE users ADD COLUMN language TEXT DEFAULT 'en'")
+        # Check if sent_alerts table exists
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='sent_alerts'")
+        sent_alerts_exists = cursor.fetchone()
+        if not sent_alerts_exists:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS sent_alerts (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER,
+                    category TEXT,
+                    month TEXT,
+                    alert_type TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+                )
+            """)
+            
+        # Check if budgets table exists
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='budgets'")
+        budgets_exists = cursor.fetchone()
+        if not budgets_exists:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS budgets (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    category TEXT NOT NULL,
+                    budget_amount REAL NOT NULL,
+                    month TEXT NOT NULL,
+                    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+                )
+            """)
 
-    # Ensure unique index exists for firebase_uid
-    cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_firebase_uid ON users(firebase_uid)")
+        # Check if chat_history table exists
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='chat_history'")
+        chat_history_exists = cursor.fetchone()
+        if not chat_history_exists:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS chat_history (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    user_message TEXT NOT NULL,
+                    ai_response TEXT NOT NULL,
+                    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+                )
+            """)
 
-    # Check if auth_tokens table exists
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='auth_tokens'")
-    auth_tokens_exists = cursor.fetchone()
-    if not auth_tokens_exists:
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS auth_tokens (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER,
-                token TEXT UNIQUE NOT NULL,
-                token_type TEXT NOT NULL,
-                expires_at TIMESTAMP NOT NULL,
-                used BOOLEAN DEFAULT 0,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY(user_id) REFERENCES users(id)
-            )
-        """)
+        # Check users columns
+        cursor.execute("PRAGMA table_info(users)")
+        user_cols = [row[1] for row in cursor.fetchall()]
+        if "email_notifications" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN email_notifications INTEGER DEFAULT 1")
+        if "google_id" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN google_id TEXT")
+            cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id)")
+        if "occupation" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN occupation TEXT DEFAULT ''")
+        if "monthly_income" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN monthly_income REAL DEFAULT 0.0")
+        if "savings_goal" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN savings_goal REAL DEFAULT 0.0")
+        if "budget_style" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN budget_style TEXT DEFAULT '50/30/20'")
+        if "risk_appetite" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN risk_appetite TEXT DEFAULT 'Moderate'")
+        if "advice_level" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN advice_level TEXT DEFAULT 'Balanced'")
+        if "theme" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN theme TEXT DEFAULT 'dark'")
+        if "language" not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN language TEXT DEFAULT 'en'")
 
-    # Check if subscriptions table exists
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='subscriptions'")
-    subscriptions_exists = cursor.fetchone()
-    if not subscriptions_exists:
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS subscriptions (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER,
-                plan TEXT NOT NULL,
-                billing_cycle TEXT,
-                razorpay_subscription_id TEXT,
-                razorpay_payment_id TEXT,
-                status TEXT DEFAULT 'active',
-                started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                expires_at TIMESTAMP,
-                FOREIGN KEY(user_id) REFERENCES users(id)
-            )
-        """)
+        # Ensure unique index exists for firebase_uid
+        cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_firebase_uid ON users(firebase_uid)")
 
-    # Check if ai_usage table exists
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='ai_usage'")
-    ai_usage_exists = cursor.fetchone()
-    if not ai_usage_exists:
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS ai_usage (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER,
-                usage_date DATE,
-                message_count INTEGER DEFAULT 0,
-                FOREIGN KEY(user_id) REFERENCES users(id),
-                UNIQUE(user_id, usage_date)
-            )
-        """)
+        # Check if auth_tokens table exists
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='auth_tokens'")
+        auth_tokens_exists = cursor.fetchone()
+        if not auth_tokens_exists:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS auth_tokens (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER,
+                    token TEXT UNIQUE NOT NULL,
+                    token_type TEXT NOT NULL,
+                    expires_at TIMESTAMP NOT NULL,
+                    used BOOLEAN DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY(user_id) REFERENCES users(id)
+                )
+            """)
 
-    cursor.execute("PRAGMA table_info(transactions)")
-    columns = [row[1] for row in cursor.fetchall()]
-    if "is_recurring" not in columns:
-        cursor.execute("ALTER TABLE transactions ADD COLUMN is_recurring INTEGER DEFAULT 0")
-    if "recurrence_type" not in columns:
-        cursor.execute("ALTER TABLE transactions ADD COLUMN recurrence_type TEXT CHECK(recurrence_type IN ('daily', 'weekly', 'monthly', 'yearly', NULL))")
-    if "next_due_date" not in columns:
-        cursor.execute("ALTER TABLE transactions ADD COLUMN next_due_date TEXT")
+        # Check if subscriptions table exists
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='subscriptions'")
+        subscriptions_exists = cursor.fetchone()
+        if not subscriptions_exists:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS subscriptions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER,
+                    plan TEXT NOT NULL,
+                    billing_cycle TEXT,
+                    razorpay_subscription_id TEXT,
+                    razorpay_payment_id TEXT,
+                    status TEXT DEFAULT 'active',
+                    started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    expires_at TIMESTAMP,
+                    FOREIGN KEY(user_id) REFERENCES users(id)
+                )
+            """)
 
-    conn.commit()
-    conn.close()
+        # Check if ai_usage table exists
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='ai_usage'")
+        ai_usage_exists = cursor.fetchone()
+        if not ai_usage_exists:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS ai_usage (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER,
+                    usage_date DATE,
+                    message_count INTEGER DEFAULT 0,
+                    FOREIGN KEY(user_id) REFERENCES users(id),
+                    UNIQUE(user_id, usage_date)
+                )
+            """)
+
+        cursor.execute("PRAGMA table_info(transactions)")
+        columns = [row[1] for row in cursor.fetchall()]
+        if "is_recurring" not in columns:
+            cursor.execute("ALTER TABLE transactions ADD COLUMN is_recurring INTEGER DEFAULT 0")
+        if "recurrence_type" not in columns:
+            cursor.execute("ALTER TABLE transactions ADD COLUMN recurrence_type TEXT CHECK(recurrence_type IN ('daily', 'weekly', 'monthly', 'yearly', NULL))")
+        if "next_due_date" not in columns:
+            cursor.execute("ALTER TABLE transactions ADD COLUMN next_due_date TEXT")
+
+        conn.commit()
+        conn.close()
+    except sqlite3.OperationalError as e:
+        if "locked" in str(e):
+            print("[DB MIGRATION WARNING] Database is locked, migration skipped (likely running in another process)")
+        else:
+            raise e
 
 
 @app.context_processor

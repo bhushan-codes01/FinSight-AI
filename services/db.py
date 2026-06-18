@@ -138,7 +138,7 @@ def get_db():
             return PostgresConnectionWrapper(conn)
         else:
             db_path = current_app.config.get("DATABASE") if current_app else "database/finance.db"
-            conn = sqlite3.connect(db_path)
+            conn = sqlite3.connect(db_path, timeout=60.0)
             conn.row_factory = sqlite3.Row
             return conn
 
@@ -154,7 +154,7 @@ def get_db():
             db = g._database = PostgresConnectionWrapper(conn)
         else:
             db_path = current_app.config["DATABASE"]
-            conn = sqlite3.connect(db_path)
+            conn = sqlite3.connect(db_path, timeout=60.0)
             conn.row_factory = sqlite3.Row
             db = g._database = conn
     return db
