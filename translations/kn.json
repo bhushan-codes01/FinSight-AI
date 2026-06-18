@@ -90,5 +90,12 @@
   "september": "ಸೆಪ್ಟೆಂಬರ್",
   "october": "ಅಕ್ಟೋಬರ್",
   "november": "ನವೆಂಬರ್",
-  "december": "ಡಿಸೆಂಬರ್"
+  "december": "ಡಿಸೆಂಬರ್",
+  "name": "ಹೆಸರು",
+  "forgot_password": "ಪಾಸ್ವರ್ಡ್ ಮರೆತಿರಾ?",
+  "confirm_password": "ಪಾಸ್ವರ್ಡ್ ದೃಢೀಕರಿಸಿ",
+  "continue_with_google": "ಗೂಗಲ್‌ನೊಂದಿಗೆ ಮುಂದುವರಿಯಿರಿ",
+  "new_here": "ಹೊಸಬರೇ?",
+  "create_account": "ಖಾತೆ ರಚಿಸಿ",
+  "already_have_account": "ಈಗಾಗಲೇ ಖಾತೆ ಹೊಂದಿದ್ದೀರಾ?"
 }

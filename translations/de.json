@@ -90,5 +90,12 @@
   "september": "September",
   "october": "Oktober",
   "november": "November",
-  "december": "Dezember"
+  "december": "Dezember",
+  "name": "Name",
+  "forgot_password": "Passwort vergessen?",
+  "confirm_password": "Kennwort bestätigen",
+  "continue_with_google": "Mit Google fortfahren",
+  "new_here": "Neu hier?",
+  "create_account": "Konto erstellen",
+  "already_have_account": "Haben Sie bereits ein Konto?"
 }

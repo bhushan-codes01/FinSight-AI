@@ -90,5 +90,12 @@
   "september": "सप्टेंबर",
   "october": "ऑक्टोबर",
   "november": "नोव्हेंबर",
-  "december": "डिसेंबर"
+  "december": "डिसेंबर",
+  "name": "नाव",
+  "forgot_password": "पासवर्ड विसरलात?",
+  "confirm_password": "पासवर्डची पुष्टी करा",
+  "continue_with_google": "गुगलसह सुरू ठेवा",
+  "new_here": "तुम्ही नवीन आहात का?",
+  "create_account": "खाते तयार करा",
+  "already_have_account": "आधीच खाते आहे?"
 }
