@@ -1926,6 +1926,7 @@ body.theme-light .floating-chat-input-field {
   }
   .sidebar-wrapper-custom {
     transform: translateX(-100%);
+    max-width: 85%;
   }
   .sidebar-wrapper-custom.active {
     transform: translateX(0);
@@ -2722,10 +2723,14 @@ body.theme-light .footer-landing {
     padding-bottom: 1rem !important;
   }
   
-  /* Make Upgrade Pro buttons compact on mobile phones */
+  /* Hide navbar text buttons on mobile to prevent overflow stretching */
   .top-navbar-custom-new .btn-outline-light {
-    padding: 6px 12px !important;
-    font-size: 0.75rem !important;
+    display: none !important;
+  }
+
+  /* Compact card padding on mobile */
+  .card, .auth-card, .metric-card, .chart-card, .budget-card, .chat-card, .settings-card, .section-card {
+    padding: 1.25rem !important;
   }
 }
 
