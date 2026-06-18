@@ -249,8 +249,8 @@
                 <h5 class="mb-3" style="color: var(--text-primary) !important; font-weight: 700;">{{ _('expense_breakdown') }}</h5>
                 <div style="position: relative; height: 300px; width: 100%;">
                   <canvas id="expenseChart"
-                          data-categories='{{ (expense_breakdown.categories or []) | tojson if expense_breakdown else "[]" }}'
-                          data-values='{{ (expense_breakdown.values or []) | tojson if expense_breakdown else "[]" }}'></canvas>
+                          data-categories='{{ (expense_breakdown["categories"] or []) | tojson if expense_breakdown else "[]" }}'
+                          data-values='{{ (expense_breakdown["values"] or []) | tojson if expense_breakdown else "[]" }}'></canvas>
                 </div>
               </div>
             </div>
@@ -259,8 +259,8 @@
                 <h5 class="mb-3" style="color: var(--text-primary) !important; font-weight: 700;">{{ _('monthly_trend') }}</h5>
                 <div style="position: relative; height: 300px; width: 100%;">
                   <canvas id="trendChart"
-                          data-labels='{{ (monthly_trend.labels or []) | tojson if monthly_trend else "[]" }}'
-                          data-values='{{ (monthly_trend.values or []) | tojson if monthly_trend else "[]" }}'></canvas>
+                          data-labels='{{ (monthly_trend["labels"] or []) | tojson if monthly_trend else "[]" }}'
+                          data-values='{{ (monthly_trend["values"] or []) | tojson if monthly_trend else "[]" }}'></canvas>
                 </div>
               </div>
             </div>

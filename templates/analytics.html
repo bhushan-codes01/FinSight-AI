@@ -129,8 +129,8 @@
                 <h5 class="mb-4 text-white" style="color: var(--text-primary) !important; font-weight: 700;">Expense Category Distribution</h5>
                 <div style="position: relative; height:320px; width:100%">
                   <canvas id="expenseChart"
-                          data-categories='{{ (expense_breakdown.categories or []) | tojson if expense_breakdown else "[]" }}'
-                          data-values='{{ (expense_breakdown.values or []) | tojson if expense_breakdown else "[]" }}'></canvas>
+                          data-categories='{{ (expense_breakdown["categories"] or []) | tojson if expense_breakdown else "[]" }}'
+                          data-values='{{ (expense_breakdown["values"] or []) | tojson if expense_breakdown else "[]" }}'></canvas>
                 </div>
               </div>
             </div>
@@ -139,15 +139,15 @@
                 <h5 class="mb-4 text-white" style="color: var(--text-primary) !important; font-weight: 700;">Monthly Spending Trend</h5>
                 <div style="position: relative; height:320px; width:100%">
                   <canvas id="trendChart"
-                          data-labels='{{ (monthly_trend.labels or []) | tojson if monthly_trend else "[]" }}'
-                          data-values='{{ (monthly_trend.values or []) | tojson if monthly_trend else "[]" }}'></canvas>
+                          data-labels='{{ (monthly_trend["labels"] or []) | tojson if monthly_trend else "[]" }}'
+                          data-values='{{ (monthly_trend["values"] or []) | tojson if monthly_trend else "[]" }}'></canvas>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Month-over-Month Comparison Cards -->
-          {% if monthly_trend and monthly_trend.labels | length > 1 %}
+          {% if monthly_trend and monthly_trend["labels"] | length > 1 %}
           <div class="row g-4 mb-4">
             <div class="col-12">
               <div class="card border-0 p-4" style="background: var(--bg-card); border: 1px solid var(--border);">
@@ -163,14 +163,14 @@
                       </tr>
                     </thead>
                     <tbody>
-                      {% for month in monthly_trend.labels %}
-                        {% set current_val = monthly_trend.values[loop.index0] %}
+                      {% for month in monthly_trend["labels"] %}
+                        {% set current_val = monthly_trend["values"][loop.index0] %}
                         <tr style="border-bottom: 1px solid var(--border);">
                           <td class="fw-semibold">{{ month }}</td>
                           <td class="text-end fw-bold">{{ "{:,.2f}".format(current_val) }}</td>
                           <td class="text-end">
                             {% if loop.index0 > 0 %}
-                              {% set prev_val = monthly_trend.values[loop.index0 - 1] %}
+                              {% set prev_val = monthly_trend["values"][loop.index0 - 1] %}
                               {% if prev_val > 0 %}
                                 {% set change = ((current_val - prev_val) / prev_val * 100) | round(1) %}
                                 {% if change > 0 %}
@@ -189,7 +189,7 @@
                           </td>
                           <td class="text-end">
                             {% if loop.index0 > 0 %}
-                              {% set prev_val = monthly_trend.values[loop.index0 - 1] %}
+                              {% set prev_val = monthly_trend["values"][loop.index0 - 1] %}
                               {% if current_val > prev_val %}
                                 <span class="badge bg-danger px-2.5 py-1" style="border-radius: 20px;"><i class="fas fa-arrow-up-right-dots me-1"></i> Sped Up</span>
                               {% else %}
@@ -234,8 +234,8 @@
                       </tr>
                     </thead>
                     <tbody>
-                      {% set total_exp = summary.expenses if summary.expenses > 0 else 1.0 %}
-                      {% for cat in expense_breakdown.categories %}
+                      {% set total_exp = summary["expenses"] if summary["expenses"] > 0 else 1.0 %}
+                      {% for cat in expense_breakdown["categories"] %}
                         {% set amt = expense_breakdown['values'][loop.index0] %}
                         {% set pct = (amt / total_exp * 100) | round(1) %}
                         <tr style="border-bottom: 1px solid var(--border);">
