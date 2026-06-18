@@ -17,8 +17,15 @@ def get_user_plan(user_id):
         if not plan_expiry:
             return 'pro'
         try:
-            # Parse plan_expiry (format: YYYY-MM-DD or YYYY-MM-DD HH:MM:SS)
-            expiry_date = datetime.strptime(plan_expiry.split(" ")[0], "%Y-%m-%d").date()
+            # Parse plan_expiry (format: YYYY-MM-DD or YYYY-MM-DD HH:MM:SS, or date/datetime objects)
+            if isinstance(plan_expiry, str):
+                expiry_date = datetime.strptime(plan_expiry.split(" ")[0], "%Y-%m-%d").date()
+            elif isinstance(plan_expiry, datetime):
+                expiry_date = plan_expiry.date()
+            else:
+                # Assuming it is already a datetime.date object
+                expiry_date = plan_expiry
+                
             if expiry_date >= datetime.now().date():
                 return 'pro'
         except Exception:

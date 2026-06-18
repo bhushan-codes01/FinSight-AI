@@ -87,7 +87,7 @@
                 <div>
                   <h4 class="fw-bold mb-0" style="color: var(--text-primary) !important;">FinSight AI Pro — <span style="text-transform: capitalize;">{{ sub.billing_cycle }}</span></h4>
                   <p class="text-muted mb-0 small mt-1">
-                    Started on {{ sub.started_at.split(' ')[0] }} • Expires/Renews on {{ sub.expires_at.split(' ')[0] }}
+                    Started on {{ (sub.started_at | string).split(' ')[0] }} • Expires/Renews on {{ (sub.expires_at | string).split(' ')[0] }}
                   </p>
                 </div>
                 <div>
@@ -126,7 +126,7 @@
                 <tbody>
                   {% for sub in subscriptions %}
                   <tr style="border-bottom: 1px solid var(--border);">
-                    <td>{{ sub.started_at.split(' ')[0] }}</td>
+                    <td>{{ (sub.started_at | string).split(' ')[0] }}</td>
                     <td><span class="badge bg-purple px-3 py-1" style="background: var(--gradient-1) !important;">PRO</span></td>
                     <td style="text-transform: capitalize;">{{ sub.billing_cycle }}</td>
                     <td class="text-muted small">{{ sub.razorpay_payment_id or 'N/A' }}</td>

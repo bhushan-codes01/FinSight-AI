@@ -26,9 +26,14 @@ def upgrade():
     expiry_str = None
     if plan_expiry:
         try:
-            expiry_str = datetime.strptime(plan_expiry.split(" ")[0], "%Y-%m-%d").strftime("%B %d, %Y")
+            if isinstance(plan_expiry, str):
+                expiry_str = datetime.strptime(plan_expiry.split(" ")[0], "%Y-%m-%d").strftime("%B %d, %Y")
+            elif hasattr(plan_expiry, 'strftime'):
+                expiry_str = plan_expiry.strftime("%B %d, %Y")
+            else:
+                expiry_str = str(plan_expiry)
         except Exception:
-            expiry_str = plan_expiry
+            expiry_str = str(plan_expiry)
             
     # Check subscriptions table
     active_sub = db.execute(
