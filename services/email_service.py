@@ -284,17 +284,28 @@ def send_report_ready(user_email, user_name, month_year):
         return False
 
 
+def send_async_email(app, msg):
+    with app.app_context():
+        try:
+            import socket
+            # Set a 10-second timeout for the socket connection so it doesn't hang the worker
+            socket.setdefaulttimeout(10.0)
+            mail = app.extensions.get('mail') or getattr(app, 'mail', None)
+            if mail:
+                mail.send(msg)
+                print(f"[EMAIL SUCCESS] Async invoice sent successfully.", flush=True)
+        except Exception as e:
+            print(f"[EMAIL ERROR] Async invoice send failed: {e}", flush=True)
+
+
 def send_invoice_email(user_email, user_name, payment_id, 
                        amount, billing_cycle, expiry_date):
     try:
         from flask import render_template, current_app
         from flask_mail import Message
         from datetime import datetime
+        from threading import Thread
         import random
-        
-        mail = current_app.extensions.get('mail') or getattr(current_app, 'mail', None)
-        if not mail:
-            raise RuntimeError("Flask-Mail extension not initialized on current_app")
         
         # Generate invoice number
         invoice_number = f"FSA-{datetime.now().strftime('%Y%m')}-{random.randint(1000,9999)}"
@@ -324,10 +335,13 @@ def send_invoice_email(user_email, user_name, payment_id,
             recipients=[user_email],
             html=html_body
         )
-        mail.send(msg)
-        print(f"[EMAIL SUCCESS] Invoice sent to {user_email} | Invoice: {invoice_number}", flush=True)
+        
+        # Spawn background thread to send the email asynchronously
+        app = current_app._get_current_object()
+        Thread(target=send_async_email, args=(app, msg)).start()
+        print(f"[EMAIL SUCCESS] Spawning background thread to send invoice to {user_email} | Invoice: {invoice_number}", flush=True)
         return True
         
     except Exception as e:
-        print(f"[EMAIL ERROR] Invoice send failed: {str(e)}", flush=True)
+        print(f"[EMAIL ERROR] Invoice send thread setup failed: {str(e)}", flush=True)
         return False
