@@ -88,36 +88,21 @@ Most young Indians have no idea where their money goes. Existing apps are either
 <div align="center">
 
 ### 🏠 Landing Page
-```
-[ Add screenshot: screenshots/landing.png ]
-```
+![Landing Page](screenshots/landing.png)
 
 ### 📊 Dashboard
-```
-[ Add screenshot: screenshots/dashboard.png ]
-```
+![Dashboard](screenshots/dashboard.png)
 
 ### 🤖 AI Financial Assistant
-```
-[ Add screenshot: screenshots/chatbot.png ]
-```
+![AI Financial Assistant](screenshots/chatbot.png)
 
 ### 💰 Budget Manager
-```
-[ Add screenshot: screenshots/budgets.png ]
-```
+![Budget Manager](screenshots/budgets.png)
 
 ### 📄 PDF Report
-```
-[ Add screenshot: screenshots/report.png ]
-```
+![PDF Report](screenshots/report.png)
 
 </div>
-
-> 📁 Add a `screenshots/` folder and replace placeholders with:
-> ```md
-> ![Dashboard](screenshots/dashboard.png)
-> ```
 
 ---
 
