@@ -3,13 +3,16 @@ const trendEl = document.getElementById("trendChart");
 
 if (expenseEl) {
   const expenseCtx = expenseEl.getContext("2d");
+  const categories = JSON.parse(expenseEl.getAttribute("data-categories") || "[]");
+  const values = JSON.parse(expenseEl.getAttribute("data-values") || "[]");
+  
   window.expenseChartInst = new Chart(expenseCtx, {
     type: "pie",
     data: {
-      labels: window.expenseCategories || [],
+      labels: categories,
       datasets: [
         {
-          data: window.expenseValues || [],
+          data: values,
           backgroundColor: ["#4f9dff", "#7c3aed", "#14b8a6", "#f97316", "#e11d48", "#facc15"],
           borderColor: "rgba(255,255,255,0.08)",
           borderWidth: 1,
@@ -28,14 +31,17 @@ if (expenseEl) {
 
 if (trendEl) {
   const trendCtx = trendEl.getContext("2d");
+  const labels = JSON.parse(trendEl.getAttribute("data-labels") || "[]");
+  const values = JSON.parse(trendEl.getAttribute("data-values") || "[]");
+  
   window.trendChartInst = new Chart(trendCtx, {
     type: "line",
     data: {
-      labels: window.trendLabels || [],
+      labels: labels,
       datasets: [
         {
           label: "Monthly Expenses",
-          data: window.trendValues || [],
+          data: values,
           borderColor: "#4f9dff",
           backgroundColor: "rgba(79, 157, 255, 0.2)",
           tension: 0.35,

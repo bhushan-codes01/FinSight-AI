@@ -143,7 +143,7 @@
                    <li>
                      <form action="/set-language" method="POST" class="m-0">
                        <input type="hidden" name="language" value="{{ code }}">
-                       <button type="submit" class="dropdown-item d-flex justify-content-between align-items-center rounded py-2 px-3" style="font-size: 0.85rem; color: #fff; {% if current_lang == code %}background-color: #7c3aed !important;{% endif %}">
+                       <button type="submit" class="dropdown-item d-flex justify-content-between align-items-center rounded py-2 px-3 {% if current_lang == code %}active-lang-item{% endif %}" style="font-size: 0.85rem; color: #fff;">
                          <span>{{ name }}</span>
                          {% if current_lang == code %}<i class="fas fa-check text-white ms-2"></i>{% endif %}
                        </button>

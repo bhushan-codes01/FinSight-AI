@@ -2643,6 +2643,9 @@ body.theme-light .footer-landing {
   background-color: var(--accent-purple) !important;
   color: #fff !important;
 }
+.active-lang-item {
+  background-color: #7c3aed !important;
+}
 
 
 

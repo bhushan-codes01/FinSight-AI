@@ -51,7 +51,7 @@
                   <li>
                     <form action="/set-language" method="POST" class="m-0">
                       <input type="hidden" name="language" value="{{ code }}">
-                      <button type="submit" class="dropdown-item d-flex justify-content-between align-items-center rounded py-2 px-3" style="font-size: 0.85rem; color: #fff; {% if current_lang == code %}background-color: #7c3aed !important;{% endif %}">
+                      <button type="submit" class="dropdown-item d-flex justify-content-between align-items-center rounded py-2 px-3 {% if current_lang == code %}active-lang-item{% endif %}" style="font-size: 0.85rem; color: #fff;">
                         <span>{{ name }}</span>
                         {% if current_lang == code %}<i class="fas fa-check text-white ms-2"></i>{% endif %}
                       </button>
@@ -248,7 +248,9 @@
               <div class="card chart-card border-0 shadow-sm p-4">
                 <h5 class="mb-3" style="color: var(--text-primary) !important; font-weight: 700;">{{ _('expense_breakdown') }}</h5>
                 <div style="position: relative; height: 300px; width: 100%;">
-                  <canvas id="expenseChart"></canvas>
+                  <canvas id="expenseChart"
+                          data-categories='{{ (expense_breakdown.categories or []) | tojson if expense_breakdown else "[]" }}'
+                          data-values='{{ (expense_breakdown.values or []) | tojson if expense_breakdown else "[]" }}'></canvas>
                 </div>
               </div>
             </div>
@@ -256,7 +258,9 @@
               <div class="card chart-card border-0 shadow-sm p-4">
                 <h5 class="mb-3" style="color: var(--text-primary) !important; font-weight: 700;">{{ _('monthly_trend') }}</h5>
                 <div style="position: relative; height: 300px; width: 100%;">
-                  <canvas id="trendChart"></canvas>
+                  <canvas id="trendChart"
+                          data-labels='{{ (monthly_trend.labels or []) | tojson if monthly_trend else "[]" }}'
+                          data-values='{{ (monthly_trend.values or []) | tojson if monthly_trend else "[]" }}'></canvas>
                 </div>
               </div>
             </div>
@@ -405,23 +409,6 @@
 
     <!-- Chart Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script>
-      {% if expense_breakdown %}
-      window.expenseCategories = {{ expense_breakdown['categories'] | tojson }};
-      window.expenseValues = {{ expense_breakdown['values'] | tojson }};
-      {% else %}
-      window.expenseCategories = [];
-      window.expenseValues = [];
-      {% endif %}
-      
-      {% if monthly_trend %}
-      window.trendLabels = {{ monthly_trend['labels'] | tojson }};
-      window.trendValues = {{ monthly_trend['values'] | tojson }};
-      {% else %}
-      window.trendLabels = [];
-      window.trendValues = [];
-      {% endif %}
-    </script>
     <script src="/static/js/dashboard.js?v=1.0.2"></script>
     <script src="/static/js/floating-chat.js?v=1.0.2"></script>
     <script>
