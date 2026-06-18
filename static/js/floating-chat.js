@@ -148,6 +148,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Set progress bar widths dynamically to avoid inline template styling warnings in CSS parser
+  document.querySelectorAll('.progress-bar[data-pct]').forEach(bar => {
+    const pct = parseFloat(bar.getAttribute('data-pct') || '0');
+    bar.style.width = Math.min(100, Math.max(0, pct)) + '%';
+  });
+
   // Initialize count-up counters
   document.querySelectorAll('.count-up').forEach(el => {
     const val = parseFloat(el.getAttribute('data-value') || '0');

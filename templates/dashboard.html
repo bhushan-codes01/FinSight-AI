@@ -322,7 +322,7 @@
                     </div>
                     <div class="mt-2.5 progress" style="height: 6px; background: rgba(0,0,0,0.05);">
                       {% set progress_percent = ((budget.spent / budget.budget_amount * 100) if budget.budget_amount > 0 else 0) %}
-                      <div class="progress-bar {% if budget.status == 'over-budget' %}bg-danger{% elif budget.status == 'warning' %}bg-warning{% else %}bg-success{% endif %}" role="progressbar" style="width: {{ progress_percent }}%;" aria-valuenow="{{ budget.spent }}" aria-valuemin="0" aria-valuemax="{{ budget.budget_amount }}"></div>
+                      <div class="progress-bar {% if budget.status == 'over-budget' %}bg-danger{% elif budget.status == 'warning' %}bg-warning{% else %}bg-success{% endif %}" role="progressbar" data-pct="{{ progress_percent }}" aria-valuenow="{{ budget.spent }}" aria-valuemin="0" aria-valuemax="{{ budget.budget_amount }}"></div>
                     </div>
                   </div>
                   {% else %}

@@ -187,7 +187,7 @@
                       <div class="progress mb-3" style="height: 8px; background: rgba(0,0,0,0.05);">
                         <div class="progress-bar {% if budget.status == 'over-budget' %}bg-danger{% elif budget.status == 'warning' %}bg-warning{% else %}bg-success{% endif %}" 
                              role="progressbar" 
-                             style="width: {{ 100 if pct > 100 else pct }}%;"></div>
+                             data-pct="{{ 100 if pct > 100 else pct }}"></div>
                       </div>
 
                       <div class="d-flex justify-content-between align-items-center mt-auto">
