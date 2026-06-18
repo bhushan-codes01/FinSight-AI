@@ -18,6 +18,7 @@ if (expenseEl) {
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: { position: "bottom", labels: { color: "#cbd5e1" } },
       },
@@ -46,6 +47,7 @@ if (trendEl) {
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       scales: {
         x: { ticks: { color: "#cbd5e1" }, grid: { color: "rgba(148, 163, 184, 0.1)" } },
         y: { ticks: { color: "#cbd5e1" }, grid: { color: "rgba(148, 163, 184, 0.1)" } },
