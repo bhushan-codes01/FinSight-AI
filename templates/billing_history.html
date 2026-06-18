@@ -36,6 +36,26 @@
             <!-- Upgrade button -->
             <a href="/upgrade" class="btn btn-outline-light btn-sm px-3" style="font-size: 0.8rem !important; border-radius: 20px !important;"><i class="fas fa-arrow-up"></i> Pricing Plans</a>
 
+            <!-- Language Selector Dropdown -->
+            <div class="dropdown d-inline-block me-1">
+              <button class="navbar-control-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Change Language">
+                <i class="fas fa-globe"></i>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark bg-dark border-secondary p-2" style="background-color: rgba(15, 23, 42, 0.95) !important; backdrop-filter: blur(10px); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                {% for code, name in supported_languages.items() %}
+                  <li>
+                    <form action="/set-language" method="POST" class="m-0">
+                      <input type="hidden" name="language" value="{{ code }}">
+                      <button type="submit" class="dropdown-item d-flex justify-content-between align-items-center rounded py-2 px-3" style="font-size: 0.85rem; color: #fff; {% if current_lang == code %}background-color: #7c3aed !important;{% endif %}">
+                        <span>{{ name }}</span>
+                        {% if current_lang == code %}<i class="fas fa-check text-white ms-2"></i>{% endif %}
+                      </button>
+                    </form>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+
             <!-- Theme Toggle Button -->
             <button class="navbar-control-btn" onclick="toggleTheme()" title="Toggle Visual Theme">
               <i class="{% if theme == 'light' %}fas fa-moon{% else %}fas fa-sun{% endif %} theme-toggle-icon"></i>

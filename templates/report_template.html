@@ -312,9 +312,9 @@
                     FinSight<span>AI</span>
                 </td>
                 <td class="period-info">
-                    Period: <strong>{{ month_name }} {{ year }}</strong><br>
-                    Prepared for: <strong>{{ user_name }}</strong><br>
-                    Generated: <strong>{{ generated_date }}</strong>
+                    {{ _('period') }}: <strong>{{ month_name }} {{ year }}</strong><br>
+                    {{ _('prepared_for') }}: <strong>{{ user_name }}</strong><br>
+                    {{ _('generated') }}: <strong>{{ generated_date }}</strong>
                 </td>
             </tr>
         </table>
@@ -322,19 +322,19 @@
         <table class="hero-stats-table">
             <tr>
                 <td>
-                    <div class="hero-label">Total Income</div>
+                    <div class="hero-label">{{ _('total_income') }}</div>
                     <div class="hero-value income">{{ currency_symbol }}{{ total_income }}</div>
                 </td>
                 <td>
-                    <div class="hero-label">Total Expenses</div>
+                    <div class="hero-label">{{ _('total_expenses') }}</div>
                     <div class="hero-value expense">{{ currency_symbol }}{{ total_expenses }}</div>
                 </td>
                 <td>
-                    <div class="hero-label">Net Savings</div>
+                    <div class="hero-label">{{ _('net_savings') }}</div>
                     <div class="hero-value savings">{{ currency_symbol }}{{ net_savings }}</div>
                 </td>
                 <td>
-                    <div class="hero-label">Savings Rate</div>
+                    <div class="hero-label">{{ _('savings_rate') }}</div>
                     <div class="hero-value rate">{{ savings_rate }}%</div>
                 </td>
             </tr>
@@ -342,10 +342,10 @@
     </div>
 
     <!-- AI Coaching insights -->
-    <div class="section-title">✦ AI Insights by Gemini</div>
+    <div class="section-title">✦ {{ _('ai_insights_gemini') }}</div>
     <div class="ai-insights-block">
         <div class="ai-badge-container">
-            <span class="ai-insights-badge">Financial Insights</span>
+            <span class="ai-insights-badge">{{ _('financial_insights') }}</span>
         </div>
         <div class="ai-summary-text">{{ ai_summary }}</div>
         {% if ai_tips %}
@@ -362,12 +362,12 @@
         <tr>
             <!-- Left Column: Spending Breakdown -->
             <td class="col left-col">
-                <div class="section-title">Spending Categories</div>
+                <div class="section-title">{{ _('spending_categories') }}</div>
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Category</th>
-                            <th class="text-right">Amount</th>
+                            <th>{{ _('category') }}</th>
+                            <th class="text-right">{{ _('amount') }}</th>
                             <th class="text-right">%</th>
                         </tr>
                     </thead>
@@ -388,7 +388,7 @@
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="3" class="text-center" style="color: #78716c;">No expenses recorded.</td>
+                            <td colspan="3" class="text-center" style="color: #78716c;">{{ _('no_expenses_recorded', 'No expenses recorded.') }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -397,14 +397,14 @@
 
             <!-- Right Column: Budget Status -->
             <td class="col right-col">
-                <div class="section-title">Budget Health</div>
+                <div class="section-title">{{ _('budget_health') }}</div>
                 {% if budgets %}
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Category</th>
-                            <th class="text-right">Spent / Limit</th>
-                            <th class="text-center">Status</th>
+                            <th>{{ _('category') }}</th>
+                            <th class="text-right">{{ _('spent_limit') }}</th>
+                            <th class="text-center">{{ _('status') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -416,7 +416,7 @@
                             </td>
                             <td class="text-center">
                                 <span class="status-badge {{ b.status }}">
-                                    {% if b.status == 'over' %}Over{% elif b.status == 'warning' %}Warn{% else %}Ok{% endif %}
+                                    {% if b.status == 'over' %}{{ _('over') }}{% elif b.status == 'warning' %}{{ _('warn') }}{% else %}{{ _('ok') }}{% endif %}
                                 </span>
                             </td>
                         </tr>
@@ -425,7 +425,7 @@
                 </table>
                 {% else %}
                 <div style="background: #fafaf9; border: 1px solid #e7e5e4; border-radius: 4px; padding: 15px; text-align: center; color: #78716c; font-size: 9pt;">
-                    No budgets configured.
+                    {{ _('no_budgets_configured') }}
                 </div>
                 {% endif %}
             </td>
@@ -434,7 +434,7 @@
 
     <!-- Savings goals milestones -->
     {% if goals %}
-    <div class="section-title">Goal Milestones</div>
+    <div class="section-title">{{ _('goal_milestones') }}</div>
     <table class="goals-grid-table">
         <tr>
             {% for g in goals %}
@@ -443,7 +443,7 @@
                     <tr>
                         <td class="goal-text-cell">
                             <div class="goal-title-lbl">{{ g.title }}</div>
-                            <div class="goal-amount-lbl">{{ currency_symbol }}{{ g.current }} saved of {{ currency_symbol }}{{ g.target }}</div>
+                            <div class="goal-amount-lbl">{{ currency_symbol }}{{ g.current }} {{ _('saved_of') }} {{ currency_symbol }}{{ g.target }}</div>
                         </td>
                         <td class="goal-svg-cell">
                             <svg width="44" height="44" viewBox="0 0 44 44" style="transform: rotate(-90deg);">
@@ -470,9 +470,9 @@
     <div class="footer-container">
         <table class="footer-table">
             <tr>
-                <td>FinSight AI Monthly Report • {{ month_name }} {{ year }}</td>
+                <td>FinSight AI {{ _('monthly_report') }} • {{ month_name }} {{ year }}</td>
                 <td class="text-right">
-                    <span class="confidential-badge">Confidential</span>
+                    <span class="confidential-badge">{{ _('confidential') }}</span>
                 </td>
             </tr>
         </table>
@@ -488,21 +488,21 @@
                     FinSight<span>AI</span>
                 </td>
                 <td class="period-info" style="font-size: 8.5pt;">
-                    Transaction History Ledger • <strong>{{ month_name }} {{ year }}</strong>
+                    {{ _('transaction_ledger') }} • <strong>{{ month_name }} {{ year }}</strong>
                 </td>
             </tr>
         </table>
     </div>
 
-    <div class="section-title">Detailed Transactions History</div>
+    <div class="section-title">{{ _('detailed_transactions') }}</div>
     <table class="data-table">
         <thead>
             <tr>
-                <th style="width: 15%;">Date</th>
-                <th style="width: 45%;">Description</th>
-                <th style="width: 15%;">Category</th>
-                <th style="width: 10%;">Type</th>
-                <th style="width: 15%;" class="text-right">Amount</th>
+                <th style="width: 15%;">{{ _('date') }}</th>
+                <th style="width: 45%;">{{ _('description') }}</th>
+                <th style="width: 15%;">{{ _('category') }}</th>
+                <th style="width: 10%;">{{ _('type') }}</th>
+                <th style="width: 15%;" class="text-right">{{ _('amount') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -520,7 +520,7 @@
             </tr>
             {% else %}
             <tr>
-                <td colspan="5" class="text-center" style="color: #78716c;">No transaction records available.</td>
+                <td colspan="5" class="text-center" style="color: #78716c;">{{ _('no_transactions') }}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -530,9 +530,9 @@
     <div class="footer-container">
         <table class="footer-table">
             <tr>
-                <td>FinSight AI Monthly Report • {{ month_name }} {{ year }}</td>
+                <td>FinSight AI {{ _('monthly_report') }} • {{ month_name }} {{ year }}</td>
                 <td class="text-right">
-                    <span class="confidential-badge">Confidential</span>
+                    <span class="confidential-badge">{{ _('confidential') }}</span>
                 </td>
             </tr>
         </table>

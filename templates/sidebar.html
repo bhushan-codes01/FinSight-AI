@@ -22,16 +22,16 @@
   <div style="display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; flex-grow: 1; margin-bottom: 1rem; padding-right: 2px;">
     <!-- Overview Section -->
     <div>
-      <div class="sidebar-category-header">Overview</div>
+      <div class="sidebar-category-header">{{ _('overview') }}</div>
       <ul class="sidebar-menu-custom">
         <li>
           <a href="/dashboard" class="{% if request.path == '/dashboard' %}active{% endif %}">
-            <i class="fas fa-chart-line"></i> Dashboard
+            <i class="fas fa-chart-line"></i> {{ _('dashboard') }}
           </a>
         </li>
         <li>
           <a href="/analytics" class="{% if request.path == '/analytics' %}active{% endif %}">
-            <i class="fas fa-chart-pie"></i> Analytics
+            <i class="fas fa-chart-pie"></i> {{ _('analytics') }}
           </a>
         </li>
       </ul>
@@ -39,21 +39,21 @@
 
     <!-- Manage Section -->
     <div>
-      <div class="sidebar-category-header">Manage</div>
+      <div class="sidebar-category-header">{{ _('manage') }}</div>
       <ul class="sidebar-menu-custom">
         <li>
           <a href="/transactions" class="{% if request.path == '/transactions' %}active{% endif %}">
-            <i class="fas fa-exchange-alt"></i> Transactions
+            <i class="fas fa-exchange-alt"></i> {{ _('transactions') }}
           </a>
         </li>
         <li>
           <a href="/budgets" class="{% if request.path == '/budgets' %}active{% endif %}">
-            <i class="fas fa-wallet"></i> Budgets
+            <i class="fas fa-wallet"></i> {{ _('budgets') }}
           </a>
         </li>
         <li>
           <a href="/goals" class="{% if request.path == '/goals' %}active{% endif %}">
-            <i class="fas fa-bullseye"></i> Savings Goals
+            <i class="fas fa-bullseye"></i> {{ _('savings_goals') }}
           </a>
         </li>
       </ul>
@@ -61,11 +61,11 @@
 
     <!-- AI Tools Section -->
     <div>
-      <div class="sidebar-category-header">AI Tools</div>
+      <div class="sidebar-category-header">{{ _('ai_tools') }}</div>
       <ul class="sidebar-menu-custom">
         <li>
           <a href="/chatbot" class="{% if request.path == '/chatbot' %}active{% endif %}">
-            <i class="fas fa-robot"></i> AI Assistant
+            <i class="fas fa-robot"></i> {{ _('ai_assistant') }}
           </a>
         </li>
       </ul>
@@ -73,16 +73,16 @@
 
     <!-- Account Section -->
     <div>
-      <div class="sidebar-category-header">Account</div>
+      <div class="sidebar-category-header">{{ _('account') }}</div>
       <ul class="sidebar-menu-custom">
         <li>
           <a href="/profile" class="{% if request.path == '/profile' %}active{% endif %}">
-            <i class="fas fa-user"></i> Profile
+            <i class="fas fa-user"></i> {{ _('profile') }}
           </a>
         </li>
         <li>
           <a href="/settings" class="{% if request.path == '/settings' %}active{% endif %}">
-            <i class="fas fa-cog"></i> Settings
+            <i class="fas fa-cog"></i> {{ _('settings') }}
           </a>
         </li>
       </ul>
@@ -92,9 +92,9 @@
     {% if user_plan != 'pro' %}
     <div class="sidebar-promo-card">
       <div class="promo-content">
-        <h5>Upgrade to Pro</h5>
-        <p>Unlock ultimate financial insights, custom alerts & premium support.</p>
-        <a href="/upgrade" class="btn btn-primary btn-sm w-100 promo-btn">Go Pro ⭐</a>
+        <h5>{{ _('upgrade_to_pro') }}</h5>
+        <p>{{ _('promo_text') }}</p>
+        <a href="/upgrade" class="btn btn-primary btn-sm w-100 promo-btn">{{ _('go_pro') }}</a>
       </div>
     </div>
     {% endif %}
@@ -103,7 +103,7 @@
   <!-- Logout Footer -->
   <div class="sidebar-footer-custom">
     <form method="POST" action="/logout" style="margin: 0;">
-      <button class="btn btn-outline-danger w-100 btn-sm logout-btn-sidebar"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      <button class="btn btn-outline-danger w-100 btn-sm logout-btn-sidebar"><i class="fas fa-sign-out-alt"></i> {{ _('logout') }}</button>
     </form>
   </div>
 </aside>

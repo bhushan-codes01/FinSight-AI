@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS users (
     risk_appetite TEXT DEFAULT 'Moderate',
     advice_level TEXT DEFAULT 'Balanced',
     theme TEXT DEFAULT 'dark',
+    language TEXT DEFAULT 'en',
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 

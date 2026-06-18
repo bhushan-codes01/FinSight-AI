@@ -57,13 +57,49 @@ def generate_pdf_report(user_id, month, year, db_conn, gemini_service=None):
 
     # ── Fetch user info ──
     user = conn.execute(
-        'SELECT name, email, currency_symbol FROM users WHERE id = ?',
+        'SELECT name, email, currency_symbol, language FROM users WHERE id = ?',
         (user_id,)
     ).fetchone()
 
-    currency_symbol = user['currency_symbol'] if (user and user['currency_symbol']) else '₹'
-    user_name = user['name'] if user else 'Valued Client'
-    user_email = user['email'] if user else ''
+    currency_symbol = "₹"
+    user_name = "Valued Client"
+    user_email = ""
+    user_lang = "en"
+    if user:
+        try:
+            user_name = user["name"] or "Valued Client"
+        except (TypeError, KeyError, IndexError):
+            user_name = user[0] or "Valued Client"
+        try:
+            user_email = user["email"] or ""
+        except (TypeError, KeyError, IndexError):
+            user_email = user[1] or ""
+        try:
+            currency_symbol = user["currency_symbol"] or "₹"
+        except (TypeError, KeyError, IndexError):
+            currency_symbol = user[2] or "₹"
+        try:
+            user_lang = user["language"] or "en"
+        except (TypeError, KeyError, IndexError):
+            user_lang = user[3] or "en"
+
+    from flask import has_request_context, session
+    if has_request_context() and "lang" in session:
+        user_lang = session["lang"]
+
+    LANGUAGES_MAP = {
+        "en": "English",
+        "hi": "Hindi (हिंदी)",
+        "mr": "Marathi (मराठी)",
+        "es": "Spanish (Español)",
+        "fr": "French (Français)",
+        "de": "German (Deutsch)",
+        "gu": "Gujarati (ગુજરાતી)",
+        "bn": "Bengali (বাংলা)",
+        "ta": "Tamil (தமிழ்)",
+        "kn": "Kannada (ಕನ್ನಡ)"
+    }
+    target_language = LANGUAGES_MAP.get(user_lang, "English")
 
     # ── Fetch transactions for the month ──
     # Note: Using substr to support both SQLite and PostgreSQL.
@@ -169,6 +205,7 @@ def generate_pdf_report(user_id, month, year, db_conn, gemini_service=None):
             - Savings: {currency_symbol}{net_savings:,.2f} ({savings_rate}%)
             - Top category: {categories[0]['name'] if categories else 'N/A'}
 
+            You MUST write the entire response strictly in the language: {target_language}. Do not write in any other language.
             Format your response as:
             SUMMARY: [2 sentence summary]
             TIP1: [tip 1]
@@ -188,15 +225,28 @@ def generate_pdf_report(user_id, month, year, db_conn, gemini_service=None):
                         ai_tips.append(tip)
         except Exception as e:
             print(f"[PDF] Gemini AI summary failed: {e}")
-            ai_summary = (
-                f"For {datetime(year, month, 1).strftime('%B %Y')}, "
-                f"{user_name} had total income of {currency_symbol}{total_income:,.2f} "
-                f"and expenses of {currency_symbol}{total_expenses:,.2f}, "
-                f"resulting in net savings of {currency_symbol}{net_savings:,.2f}."
-            )
+            from services.translation import translate
+            fallback_fmt = translate(user_lang, "pdf_fallback_summary", "For {month_year}, {name} had total income of {income} and expenses of {expenses}, resulting in net savings of {savings}.")
+            try:
+                ai_summary = fallback_fmt.format(
+                    month_year=datetime(year, month, 1).strftime('%B %Y'),
+                    name=user_name,
+                    income=f"{currency_symbol}{total_income:,.2f}",
+                    expenses=f"{currency_symbol}{total_expenses:,.2f}",
+                    savings=f"{currency_symbol}{net_savings:,.2f}"
+                )
+            except Exception:
+                ai_summary = (
+                    f"For {datetime(year, month, 1).strftime('%B %Y')}, "
+                    f"{user_name} had total income of {currency_symbol}{total_income:,.2f} "
+                    f"and expenses of {currency_symbol}{total_expenses:,.2f}, "
+                    f"resulting in net savings of {currency_symbol}{net_savings:,.2f}."
+                )
 
     # ── Month name ──
-    month_name = datetime(year, month, 1).strftime('%B')
+    from services.translation import translate
+    month_key = datetime(year, month, 1).strftime('%B').lower()
+    month_name = translate(user_lang, month_key, datetime(year, month, 1).strftime('%B'))
     generated_date = datetime.now().strftime('%d %b %Y, %I:%M %p')
 
     # ── Load HTML template ──
@@ -208,9 +258,13 @@ def generate_pdf_report(user_id, month, year, db_conn, gemini_service=None):
     with open(template_path, 'r', encoding='utf-8') as f:
         template_str = f.read()
 
+    def translate_key(key, default=None):
+        return translate(user_lang, key, default)
+
     # ── Render Jinja2 template ──
     rendered_html = render_template_string(
         template_str,
+        _ = translate_key,
         user_name=user_name,
         user_email=user_email,
         month_name=month_name,

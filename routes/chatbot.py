@@ -74,9 +74,36 @@ def chat():
     user_id = session["user_id"]
     db = get_db()
     
-    # Fetch user currency settings
-    user = db.execute("SELECT currency_symbol FROM users WHERE id = ?", (user_id,)).fetchone()
-    currency_symbol = user["currency_symbol"] if (user and user["currency_symbol"]) else "₹"
+    # Fetch user currency and language settings
+    user = db.execute("SELECT currency_symbol, language FROM users WHERE id = ?", (user_id,)).fetchone()
+    currency_symbol = "₹"
+    user_lang = "en"
+    if user:
+        try:
+            currency_symbol = user["currency_symbol"] or "₹"
+        except (TypeError, KeyError, IndexError):
+            currency_symbol = user[0] or "₹"
+        try:
+            user_lang = user["language"] or "en"
+        except (TypeError, KeyError, IndexError):
+            user_lang = user[1] or "en"
+    
+    if "lang" in session:
+        user_lang = session["lang"]
+        
+    LANGUAGES_MAP = {
+        "en": "English",
+        "hi": "Hindi (हिंदी)",
+        "mr": "Marathi (मराठी)",
+        "es": "Spanish (Español)",
+        "fr": "French (Français)",
+        "de": "German (Deutsch)",
+        "gu": "Gujarati (ગુજરાતી)",
+        "bn": "Bengali (বাংলা)",
+        "ta": "Tamil (தமிழ்)",
+        "kn": "Kannada (ಕನ್ನಡ)"
+    }
+    target_language = LANGUAGES_MAP.get(user_lang, "English")
     
     # 1. Check AI Quota for Free Plan
     from services.plan_gate import check_ai_quota, increment_ai_usage, get_user_plan
@@ -199,6 +226,7 @@ def chat():
         "- Tone: Professional, encouraging, realistic, and highly mathematical.\n"
         "- Math-Focused: Always cite exact figures (totals, averages, progress percentages, days remaining) in your advice.\n"
         f"- Currency formatting: Use {currency_symbol} as the currency symbol for all monetary amounts in your replies.\n"
+        f"- LANGUAGE REQUIREMENT: You MUST speak, respond, and analyze strictly in the language: {target_language}. Do not write in any other language, even if the user prompts you in a different language. However, keep the function calls in standard schema format.\n"
         "- Restrictive scope: Only answer questions related to personal finance, budgeting, saving, or financial analysis. "
         "If the user asks an unrelated question (like coding, history, or science), politely decline to answer and redirect them back to their finances.\n\n"
         "CURRENT USER PROFILE SUMMARY CONTEXT:\n"

@@ -125,6 +125,23 @@ def init_database():
 
 def migrate_database():
     if is_postgres_configured():
+        db = get_db()
+        cursor = db.cursor()
+        try:
+            cursor.execute("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name='users' AND column_name='language'
+            """)
+            col_exists = cursor.fetchone()
+            if not col_exists:
+                cursor.execute("ALTER TABLE users ADD COLUMN language VARCHAR(10) DEFAULT 'en'")
+                db.commit()
+                print("[DB MIGRATION] Added language column to users table in PostgreSQL")
+        except Exception as e:
+            print(f"[DB MIGRATION ERROR] PostgreSQL migration failed: {e}")
+        finally:
+            cursor.close()
         return
         
     conn = sqlite3.connect(app.config["DATABASE"])
@@ -235,6 +252,8 @@ def migrate_database():
         cursor.execute("ALTER TABLE users ADD COLUMN advice_level TEXT DEFAULT 'Balanced'")
     if "theme" not in user_cols:
         cursor.execute("ALTER TABLE users ADD COLUMN theme TEXT DEFAULT 'dark'")
+    if "language" not in user_cols:
+        cursor.execute("ALTER TABLE users ADD COLUMN language TEXT DEFAULT 'en'")
 
     # Ensure unique index exists for firebase_uid
     cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_firebase_uid ON users(firebase_uid)")
@@ -344,6 +363,58 @@ def inject_global_user_data():
     except Exception:
         pass
     return context
+
+
+@app.context_processor
+def inject_translations_helper():
+    from services.translation import translate, LANGUAGES
+    
+    def get_current_lang():
+        if not has_request_context():
+            return "en"
+        if "lang" in session:
+            return session["lang"]
+        user_id = session.get("user_id")
+        if user_id:
+            try:
+                db = get_db()
+                user = db.execute("SELECT language FROM users WHERE id = ?", (user_id,)).fetchone()
+                if user and user["language"]:
+                    session["lang"] = user["language"]
+                    return user["language"]
+            except Exception:
+                pass
+        return "en"
+        
+    current_lang = get_current_lang()
+    
+    def translate_key(key, default=None):
+        return translate(current_lang, key, default)
+        
+    return {
+        "_": translate_key,
+        "current_lang": current_lang,
+        "supported_languages": LANGUAGES
+    }
+
+
+@app.route("/set-language", methods=["POST"])
+def set_language():
+    lang = request.form.get("language", "en").strip().lower()
+    from services.translation import LANGUAGES
+    if lang in LANGUAGES:
+        session["lang"] = lang
+        user_id = session.get("user_id")
+        if user_id:
+            try:
+                db = get_db()
+                db.execute("UPDATE users SET language = ? WHERE id = ?", (lang, user_id))
+                db.commit()
+            except Exception as e:
+                current_app.logger.error(f"Failed to update language in database: {e}")
+                
+    referrer = request.referrer or url_for("home")
+    return redirect(referrer)
 
 
 @app.route("/")
@@ -500,13 +571,27 @@ def dashboard_ai_insight():
     user_id = session["user_id"]
     db = get_db()
     
+    # Fetch active language settings
+    user_lang = session.get("lang")
+    if not user_lang:
+        user = db.execute("SELECT language FROM users WHERE id = ?", (user_id,)).fetchone()
+        user_lang = "en"
+        if user:
+            try:
+                user_lang = user["language"] or "en"
+            except (TypeError, KeyError, IndexError):
+                user_lang = user[0] or "en"
+                
+    from services.translation import translate
+    
     analytics = AnalyticsService(db, user_id)
     summary = analytics.generate_dashboard_summary()
     budget_status = analytics.budget_status_summary()
     
     if not summary or (summary.get('income', 0) == 0 and summary.get('expenses', 0) == 0):
+        welcome_insight = translate(user_lang, "welcome_insight", "Welcome to FinSight AI! Log your first transaction under the Transactions page to unlock personalized, real-time AI-powered financial advisory. 🚀")
         return jsonify({
-            "insight": "Welcome to FinSight AI! Log your first transaction under the Transactions page to unlock personalized, real-time AI-powered financial advisory. 🚀"
+            "insight": welcome_insight
         })
         
     context = f"Income: {summary.get('income', 0)}, Expenses: {summary.get('expenses', 0)}, Net Balance: {summary.get('balance', 0)}, Savings Rate: {summary.get('savings_rate', 0)}%."
@@ -515,9 +600,24 @@ def dashboard_ai_insight():
         if over_budgets:
             context += f" Over budget categories: {', '.join(over_budgets)}."
             
+    LANGUAGES_MAP = {
+        "en": "English",
+        "hi": "Hindi (हिंदी)",
+        "mr": "Marathi (मराठी)",
+        "es": "Spanish (Español)",
+        "fr": "French (Français)",
+        "de": "German (Deutsch)",
+        "gu": "Gujarati (ગુજરાતી)",
+        "bn": "Bengali (বাংলা)",
+        "ta": "Tamil (தமிழ்)",
+        "kn": "Kannada (ಕನ್ನಡ)"
+    }
+    target_language = LANGUAGES_MAP.get(user_lang, "English")
+            
     prompt = (
         f"You are FinSight AI, a premium personal finance coach. Analyze this snapshot of the user's monthly finances: {context}. "
-        f"Provide a short, extremely actionable, 2-sentence financial health recommendation or insight. Be encouraging and direct. Do not use markdown headers, but you can use emojis."
+        f"Provide a short, extremely actionable, 2-sentence financial health recommendation or insight. Be encouraging and direct. "
+        f"You MUST write the response in the language: {target_language}. Do not use markdown headers, but you can use emojis."
     )
     
     try:
