@@ -1891,9 +1891,38 @@ body.theme-light .floating-chat-input-field {
   margin-right: 1rem;
 }
 
+.sidebar-overlay-custom {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 98;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay-custom.active {
+  display: block;
+  opacity: 1;
+}
+
+.mobile-logo-custom {
+  display: none;
+}
+
 @media (max-width: 992px) {
   .sidebar-hamburger-btn {
     display: block;
+  }
+  .mobile-logo-custom {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
   .sidebar-wrapper-custom {
     transform: translateX(-100%);
@@ -2661,6 +2690,43 @@ body.theme-light .footer-landing {
 }
 .flash-warning {
   border: 1px solid var(--accent-yellow) !important;
+}
+
+/* Mobile Responsiveness Improvements */
+@media (max-width: 576px) {
+  /* Floating AI Chat Panel scaling */
+  .floating-chat-panel-custom {
+    width: calc(100% - 32px) !important;
+    right: 16px !important;
+    left: 16px !important;
+    bottom: 90px !important;
+    height: calc(100vh - 120px) !important;
+    max-height: 520px !important;
+  }
+  
+  /* Top Navbar spacing & padding */
+  .top-navbar-custom-new {
+    padding: 0 1rem !important;
+    height: 64px !important;
+  }
+  
+  .navbar-right-controls {
+    gap: 0.6rem !important;
+  }
+  
+  /* Main content padding reduction to preserve dashboard canvas sizes */
+  main.container-fluid {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+  
+  /* Make Upgrade Pro buttons compact on mobile phones */
+  .top-navbar-custom-new .btn-outline-light {
+    padding: 6px 12px !important;
+    font-size: 0.75rem !important;
+  }
 }
 
 

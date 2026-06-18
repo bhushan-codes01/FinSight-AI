@@ -196,8 +196,12 @@ function formatNumber(num, hasDecimals) {
 // Sidebar Mobile Toggle Hamburger Helper
 function toggleSidebarMobile() {
   const sidebar = document.getElementById('sidebarWrapper');
+  const overlay = document.getElementById('sidebarOverlay');
   if (sidebar) {
     sidebar.classList.toggle('active');
+  }
+  if (overlay) {
+    overlay.classList.toggle('active');
   }
 }
 
