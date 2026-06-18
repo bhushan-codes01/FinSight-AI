@@ -52,6 +52,9 @@ class EmailAlertsService:
     def send_password_reset_email(self, user_email, token):
         return send_password_reset_email(user_email, token)
 
+    def send_invoice_email(self, user_email, user_name, payment_id, amount, billing_cycle, expiry_date):
+        return send_invoice_email(user_email, user_name, payment_id, amount, billing_cycle, expiry_date)
+
 
 # Standalone email functions to support absolute imports in test routes and routes
 def send_verification_email(user_email, token):
@@ -278,4 +281,53 @@ def send_report_ready(user_email, user_name, month_year):
         return True
     except Exception as e:
         print(f"[EMAIL ERROR] Failed to send report ready email to {user_email}: {str(e)}", flush=True)
+        return False
+
+
+def send_invoice_email(user_email, user_name, payment_id, 
+                       amount, billing_cycle, expiry_date):
+    try:
+        from flask import render_template, current_app
+        from flask_mail import Message
+        from datetime import datetime
+        import random
+        
+        mail = current_app.extensions.get('mail') or getattr(current_app, 'mail', None)
+        if not mail:
+            raise RuntimeError("Flask-Mail extension not initialized on current_app")
+        
+        # Generate invoice number
+        invoice_number = f"FSA-{datetime.now().strftime('%Y%m')}-{random.randint(1000,9999)}"
+        payment_date = datetime.now().strftime('%d %b %Y, %I:%M %p')
+        
+        # Format expiry date
+        if isinstance(expiry_date, str):
+            expiry_formatted = expiry_date
+        else:
+            expiry_formatted = expiry_date.strftime('%d %b %Y')
+        
+        html_body = render_template(
+            'emails/invoice_email.html',
+            user_name=user_name,
+            user_email=user_email,
+            invoice_number=invoice_number,
+            payment_id=payment_id,
+            payment_date=payment_date,
+            amount=f"{amount:,.2f}",
+            billing_cycle=billing_cycle.capitalize(),
+            expiry_date=expiry_formatted
+        )
+        
+        msg = Message(
+            subject=f"🧾 Invoice — FinSight AI Pro ({billing_cycle.capitalize()})",
+            sender=current_app.config.get('MAIL_DEFAULT_SENDER'),
+            recipients=[user_email],
+            html=html_body
+        )
+        mail.send(msg)
+        print(f"[EMAIL SUCCESS] Invoice sent to {user_email} | Invoice: {invoice_number}", flush=True)
+        return True
+        
+    except Exception as e:
+        print(f"[EMAIL ERROR] Invoice send failed: {str(e)}", flush=True)
         return False

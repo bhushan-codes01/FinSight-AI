@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 0; }
+  .wrapper { max-width: 600px; margin: 0 auto; background: #ffffff; }
+  
+  .header { background: #1c1917; padding: 32px; text-align: center; }
+  .logo { font-size: 28px; font-weight: 800; color: #ffffff; }
+  .logo span { color: #f59e0b; }
+  .tagline { font-size: 12px; color: #78716c; margin-top: 4px; }
+  
+  .success-banner { 
+    background: linear-gradient(135deg, #4ade80, #22d3ee); 
+    padding: 24px; text-align: center; 
+  }
+  .success-banner h2 { 
+    color: #fff; font-size: 22px; margin: 0; font-weight: 800; 
+  }
+  .success-banner p { color: rgba(255,255,255,0.9); margin: 6px 0 0; font-size: 14px; }
+  
+  .content { padding: 32px; }
+  
+  .greeting { font-size: 16px; color: #1c1917; margin-bottom: 20px; }
+  
+  .invoice-box { 
+    border: 1px solid #e7e5e4; border-radius: 12px; 
+    overflow: hidden; margin-bottom: 24px; 
+  }
+  .invoice-header { 
+    background: #fafaf9; padding: 16px 20px; 
+    display: flex; justify-content: space-between; 
+    border-bottom: 1px solid #e7e5e4;
+  }
+  .invoice-title { font-size: 14px; font-weight: 700; color: #1c1917; }
+  .invoice-number { font-size: 12px; color: #f59e0b; font-weight: 600; }
+  
+  .invoice-row { 
+    display: flex; justify-content: space-between; 
+    padding: 12px 20px; border-bottom: 1px solid #f5f5f4; 
+    font-size: 13px;
+  }
+  .invoice-row:last-child { border-bottom: none; }
+  .invoice-label { color: #78716c; }
+  .invoice-value { color: #1c1917; font-weight: 600; }
+  
+  .total-row { 
+    background: #1c1917; padding: 16px 20px; 
+    display: flex; justify-content: space-between; 
+  }
+  .total-label { color: #f59e0b; font-weight: 700; font-size: 14px; }
+  .total-amount { color: #ffffff; font-weight: 800; font-size: 18px; }
+  
+  .pro-features { 
+    background: #fafaf9; border-radius: 12px; 
+    padding: 20px; margin-bottom: 24px; 
+  }
+  .pro-features h3 { 
+    font-size: 13px; font-weight: 700; color: #1c1917; 
+    margin: 0 0 12px; text-transform: uppercase; letter-spacing: 1px;
+  }
+  .feature-item { 
+    display: flex; align-items: center; gap: 8px; 
+    font-size: 13px; color: #57534e; padding: 4px 0; 
+  }
+  .check { color: #4ade80; font-weight: 700; }
+  
+  .cta-btn { 
+    display: block; background: #1c1917; color: #f59e0b; 
+    text-decoration: none; text-align: center; 
+    padding: 14px 32px; border-radius: 10px; 
+    font-weight: 700; font-size: 14px; margin: 0 auto 24px; 
+    width: fit-content;
+  }
+  
+  .footer { 
+    background: #1c1917; padding: 20px 32px; text-align: center; 
+  }
+  .footer p { font-size: 11px; color: #57534e; margin: 4px 0; }
+  .footer a { color: #f59e0b; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">Fin<span>Sight</span> AI</div>
+    <div class="tagline">Financial Intelligence Platform</div>
+  </div>
+
+  <!-- Success Banner -->
+  <div class="success-banner">
+    <h2>🎉 Payment Successful!</h2>
+    <p>Welcome to FinSight AI Pro — you're all set!</p>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+    <div class="greeting">
+      Hi <strong>{{ user_name }}</strong>,<br><br>
+      Thank you for upgrading to <strong>FinSight AI Pro</strong>! 
+      Your payment has been confirmed and your account has been 
+      upgraded. Here's your invoice for your records.
+    </div>
+
+    <!-- Invoice Box -->
+    <div class="invoice-box">
+      <div class="invoice-header">
+        <div class="invoice-title">🧾 Payment Invoice</div>
+        <div class="invoice-number">#{{ invoice_number }}</div>
+      </div>
+      <div class="invoice-row">
+        <span class="invoice-label">Customer Name</span>
+        <span class="invoice-value">{{ user_name }}</span>
+      </div>
+      <div class="invoice-row">
+        <span class="invoice-label">Email</span>
+        <span class="invoice-value">{{ user_email }}</span>
+      </div>
+      <div class="invoice-row">
+        <span class="invoice-label">Plan</span>
+        <span class="invoice-value">FinSight AI Pro ({{ billing_cycle }})</span>
+      </div>
+      <div class="invoice-row">
+        <span class="invoice-label">Payment ID</span>
+        <span class="invoice-value">{{ payment_id }}</span>
+      </div>
+      <div class="invoice-row">
+        <span class="invoice-label">Payment Date</span>
+        <span class="invoice-value">{{ payment_date }}</span>
+      </div>
+      <div class="invoice-row">
+        <span class="invoice-label">Valid Until</span>
+        <span class="invoice-value">{{ expiry_date }}</span>
+      </div>
+      <div class="invoice-row">
+        <span class="invoice-label">Amount Paid</span>
+        <span class="invoice-value">₹{{ amount }}</span>
+      </div>
+      <div class="total-row">
+        <span class="total-label">TOTAL PAID</span>
+        <span class="total-amount">₹{{ amount }}</span>
+      </div>
+    </div>
+
+    <!-- Pro Features -->
+    <div class="pro-features">
+      <h3>✦ Your Pro Benefits</h3>
+      <div class="feature-item"><span class="check">✓</span> Unlimited AI Financial Assistant</div>
+      <div class="feature-item"><span class="check">✓</span> Monthly PDF Report Downloads</div>
+      <div class="feature-item"><span class="check">✓</span> CSV Bank Statement Analysis</div>
+      <div class="feature-item"><span class="check">✓</span> Advanced Analytics & Insights</div>
+      <div class="feature-item"><span class="check">✓</span> Priority AI Responses</div>
+      <div class="feature-item"><span class="check">✓</span> Email Budget Alerts</div>
+    </div>
+
+    <!-- CTA -->
+    <a href="https://finsight-ai-7nhd.onrender.com/dashboard" 
+       class="cta-btn">
+      Go to Dashboard →
+    </a>
+
+    <p style="font-size:12px;color:#a8a29e;text-align:center">
+      Questions? Contact us at 
+      <a href="mailto:bhushanwanere@gmail.com" 
+         style="color:#f59e0b">bhushanwanere@gmail.com</a>
+    </p>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>FinSight AI · Intelligent Personal Finance Platform</p>
+    <p>
+      <a href="https://finsight-ai-7nhd.onrender.com">
+        finsight-ai-7nhd.onrender.com
+      </a>
+    </p>
+    <p style="margin-top:8px">
+      © 2026 Bhushan Wanere · All rights reserved
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

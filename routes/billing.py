@@ -170,6 +170,25 @@ def verify_payment():
             )
             db.commit()
             
+            # Send invoice email
+            try:
+                user = db.execute(
+                    'SELECT name, email FROM users WHERE id = ?', 
+                    (user_id,)
+                ).fetchone()
+                if user:
+                    from services.email_service import send_invoice_email
+                    send_invoice_email(
+                        user_email=user['email'],
+                        user_name=user['name'],
+                        payment_id=payment_id,
+                        amount=199 if billing_cycle == 'monthly' else 1999,
+                        billing_cycle=billing_cycle,
+                        expiry_date=expiry
+                    )
+            except Exception as email_err:
+                current_app.logger.error(f"Failed to send invoice email: {email_err}")
+            
             # Update user session details (optional but helpful)
             session["user_plan"] = "pro"
             
