@@ -107,6 +107,38 @@ function sendFloatingChatMessage(promptText = null) {
 
 // Key Listener for Enter Key in Input
 document.addEventListener('DOMContentLoaded', () => {
+  // Manual dropdown toggle fallback for language selector
+  const globeBtns = document.querySelectorAll('[title="Change Language"]');
+  globeBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const parent = btn.closest('.dropdown');
+      if (parent) {
+        const menu = parent.querySelector('.dropdown-menu');
+        if (menu) {
+          const isShown = menu.classList.contains('show');
+          // Hide all other dropdowns
+          document.querySelectorAll('.dropdown-menu.show').forEach(m => m.classList.remove('show'));
+          document.querySelectorAll('[title="Change Language"].show').forEach(b => b.classList.remove('show'));
+          
+          if (!isShown) {
+            menu.classList.add('show');
+            btn.classList.add('show');
+          } else {
+            menu.classList.remove('show');
+            btn.classList.remove('show');
+          }
+        }
+      }
+    });
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.dropdown-menu.show').forEach(m => m.classList.remove('show'));
+    document.querySelectorAll('[title="Change Language"].show').forEach(btn => btn.classList.remove('show'));
+  });
+
   const inputEl = document.getElementById('floatingChatInputField');
   if (inputEl) {
     inputEl.addEventListener('keydown', (e) => {

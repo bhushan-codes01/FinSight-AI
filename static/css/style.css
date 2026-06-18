@@ -2632,6 +2632,18 @@ body.theme-light .footer-landing {
   border-top: 1px solid rgba(15, 23, 42, 0.08) !important;
 }
 
+/* Language Selector Dropdown Visibility and Premium Overrides */
+.dropdown-menu-dark.bg-dark {
+  display: none !important;
+}
+.dropdown-menu-dark.bg-dark.show {
+  display: block !important;
+}
+.dropdown-menu-dark.bg-dark li form button:hover {
+  background-color: var(--accent-purple) !important;
+  color: #fff !important;
+}
+
 
 
 
