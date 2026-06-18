@@ -107,8 +107,8 @@ function sendFloatingChatMessage(promptText = null) {
 
 // Key Listener for Enter Key in Input
 document.addEventListener('DOMContentLoaded', () => {
-  // Manual dropdown toggle fallback for language selector
-  const globeBtns = document.querySelectorAll('[title="Change Language"]');
+  // Manual dropdown toggle fallback for language selector (bulletproof to browser translations)
+  const globeBtns = Array.from(document.querySelectorAll('.dropdown button')).filter(btn => btn.querySelector('.fa-globe'));
   globeBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const isShown = menu.classList.contains('show');
           // Hide all other dropdowns
           document.querySelectorAll('.dropdown-menu.show').forEach(m => m.classList.remove('show'));
-          document.querySelectorAll('[title="Change Language"].show').forEach(b => b.classList.remove('show'));
+          document.querySelectorAll('.dropdown button.show').forEach(b => b.classList.remove('show'));
           
           if (!isShown) {
             menu.classList.add('show');
@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Close dropdown when clicking outside
   document.addEventListener('click', () => {
     document.querySelectorAll('.dropdown-menu.show').forEach(m => m.classList.remove('show'));
-    document.querySelectorAll('[title="Change Language"].show').forEach(btn => btn.classList.remove('show'));
+    document.querySelectorAll('.dropdown button.show').forEach(btn => btn.classList.remove('show'));
   });
 
   const inputEl = document.getElementById('floatingChatInputField');
