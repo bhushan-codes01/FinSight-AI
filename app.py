@@ -134,16 +134,151 @@ def migrate_database():
         db = get_db()
         cursor = db.cursor()
         try:
-            cursor.execute("""
-                SELECT column_name 
-                FROM information_schema.columns 
-                WHERE table_name='users' AND column_name='language'
-            """)
-            col_exists = cursor.fetchone()
-            if not col_exists:
-                cursor.execute("ALTER TABLE users ADD COLUMN language VARCHAR(10) DEFAULT 'en'")
+            # 1. Create tables if they do not exist
+            tables_to_create = {
+                "goals": """
+                    CREATE TABLE IF NOT EXISTS goals (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER,
+                        title TEXT,
+                        target_amount REAL,
+                        current_amount REAL DEFAULT 0,
+                        deadline DATE,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+                    )
+                """,
+                "sent_alerts": """
+                    CREATE TABLE IF NOT EXISTS sent_alerts (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER,
+                        category TEXT,
+                        month TEXT,
+                        alert_type TEXT,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+                    )
+                """,
+                "budgets": """
+                    CREATE TABLE IF NOT EXISTS budgets (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER NOT NULL,
+                        category TEXT NOT NULL,
+                        budget_amount REAL NOT NULL,
+                        month TEXT NOT NULL,
+                        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+                    )
+                """,
+                "chat_history": """
+                    CREATE TABLE IF NOT EXISTS chat_history (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER NOT NULL,
+                        user_message TEXT NOT NULL,
+                        ai_response TEXT NOT NULL,
+                        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+                    )
+                """,
+                "auth_tokens": """
+                    CREATE TABLE IF NOT EXISTS auth_tokens (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER,
+                        token TEXT UNIQUE NOT NULL,
+                        token_type TEXT NOT NULL,
+                        expires_at TIMESTAMP NOT NULL,
+                        used BOOLEAN DEFAULT FALSE,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY(user_id) REFERENCES users(id)
+                    )
+                """,
+                "subscriptions": """
+                    CREATE TABLE IF NOT EXISTS subscriptions (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER,
+                        plan TEXT NOT NULL,
+                        billing_cycle TEXT,
+                        razorpay_subscription_id TEXT,
+                        razorpay_payment_id TEXT,
+                        status TEXT DEFAULT 'active',
+                        started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        expires_at TIMESTAMP,
+                        FOREIGN KEY(user_id) REFERENCES users(id)
+                    )
+                """,
+                "ai_usage": """
+                    CREATE TABLE IF NOT EXISTS ai_usage (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER,
+                        usage_date DATE,
+                        message_count INTEGER DEFAULT 0,
+                        FOREIGN KEY(user_id) REFERENCES users(id),
+                        UNIQUE(user_id, usage_date)
+                    )
+                """
+            }
+            
+            for table_name, create_sql in tables_to_create.items():
+                cursor.execute(f"SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '{table_name}')")
+                exists = cursor.fetchone()[0]
+                if not exists:
+                    cursor.execute(create_sql)
+                    db.commit()
+                    print(f"[DB MIGRATION] Created missing table: {table_name} in PostgreSQL")
+            
+            # 2. Check and add columns for 'users'
+            users_columns = [
+                ("firebase_uid", "TEXT UNIQUE"),
+                ("auth_provider", "TEXT DEFAULT 'local'"),
+                ("profile_picture", "TEXT"),
+                ("email_verified", "BOOLEAN DEFAULT FALSE"),
+                ("plan", "TEXT DEFAULT 'free'"),
+                ("plan_expiry", "DATE"),
+                ("currency", "TEXT DEFAULT 'INR'"),
+                ("currency_symbol", "TEXT DEFAULT '₹'"),
+                ("email_notifications", "INTEGER DEFAULT 1"),
+                ("google_id", "TEXT UNIQUE"),
+                ("occupation", "TEXT DEFAULT ''"),
+                ("monthly_income", "REAL DEFAULT 0.0"),
+                ("savings_goal", "REAL DEFAULT 0.0"),
+                ("budget_style", "TEXT DEFAULT '50/30/20'"),
+                ("risk_appetite", "TEXT DEFAULT 'Moderate'"),
+                ("advice_level", "TEXT DEFAULT 'Balanced'"),
+                ("theme", "TEXT DEFAULT 'dark'"),
+                ("language", "VARCHAR(10) DEFAULT 'en'")
+            ]
+            
+            for col_name, col_def in users_columns:
+                cursor.execute(f"SELECT EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'users' AND column_name = '{col_name}')")
+                exists = cursor.fetchone()[0]
+                if not exists:
+                    cursor.execute(f"ALTER TABLE users ADD COLUMN {col_name} {col_def}")
+                    db.commit()
+                    print(f"[DB MIGRATION] Added column {col_name} to users table in PostgreSQL")
+                    
+            # 3. Check and create unique indexes
+            cursor.execute("SELECT EXISTS (SELECT FROM pg_indexes WHERE indexname = 'idx_users_google_id')")
+            if not cursor.fetchone()[0]:
+                cursor.execute("CREATE UNIQUE INDEX idx_users_google_id ON users(google_id)")
                 db.commit()
-                print("[DB MIGRATION] Added language column to users table in PostgreSQL")
+            cursor.execute("SELECT EXISTS (SELECT FROM pg_indexes WHERE indexname = 'idx_users_firebase_uid')")
+            if not cursor.fetchone()[0]:
+                cursor.execute("CREATE UNIQUE INDEX idx_users_firebase_uid ON users(firebase_uid)")
+                db.commit()
+
+            # 4. Check and add columns for 'transactions'
+            tx_columns = [
+                ("is_recurring", "INTEGER DEFAULT 0"),
+                ("recurrence_type", "TEXT CHECK(recurrence_type IN ('daily', 'weekly', 'monthly', 'yearly', NULL))"),
+                ("next_due_date", "TEXT")
+            ]
+            for col_name, col_def in tx_columns:
+                cursor.execute(f"SELECT EXISTS (SELECT FROM information_schema.columns WHERE table_name = 'transactions' AND column_name = '{col_name}')")
+                exists = cursor.fetchone()[0]
+                if not exists:
+                    cursor.execute(f"ALTER TABLE transactions ADD COLUMN {col_name} {col_def}")
+                    db.commit()
+                    print(f"[DB MIGRATION] Added column {col_name} to transactions table in PostgreSQL")
+                    
         except Exception as e:
             print(f"[DB MIGRATION ERROR] PostgreSQL migration failed: {e}")
         finally:
