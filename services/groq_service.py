@@ -24,7 +24,12 @@ def to_lowercase_types(obj):
 
 class GroqService:
     def __init__(self, model_name=None):
-        self.api_key = os.getenv("GROQ_API_KEY")
+        api_key = os.getenv("GROQ_API_KEY")
+        if api_key:
+            api_key = api_key.strip()
+            if api_key.upper().startswith("GROQ_API_KEY="):
+                api_key = api_key[len("GROQ_API_KEY="):].strip()
+        self.api_key = api_key
         if not model_name:
             model_name = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
         
