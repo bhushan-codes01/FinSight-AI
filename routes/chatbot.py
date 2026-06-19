@@ -13,6 +13,10 @@ def chatbot_page():
     if not session.get("user_id"):
         return redirect(url_for("auth.login"))
     db = get_db()
+    user = db.execute("SELECT id FROM users WHERE id = ?", (session["user_id"],)).fetchone()
+    if not user:
+        session.clear()
+        return redirect(url_for("auth.login"))
     history = db.execute(
         "SELECT user_message, ai_response FROM chat_history "
         "WHERE user_id = ? ORDER BY id ASC",
@@ -88,6 +92,10 @@ def chat():
         (user_id,)
     ).fetchone()
     
+    if not user:
+        session.clear()
+        return jsonify({"error": "Unauthorized", "message": "User not found in database. Please log in again."}), 401
+        
     user_name = "FinSighter"
     currency_symbol = "₹"
     user_lang = "en"
@@ -98,27 +106,26 @@ def chat():
     risk_appetite = "Moderate"
     advice_level = "Balanced"
     
-    if user:
-        try:
-            user_name = user["name"] or "FinSighter"
-            currency_symbol = user["currency_symbol"] or "₹"
-            user_lang = user["language"] or "en"
-            occupation = user["occupation"] or "Not specified"
-            monthly_income = float(user["monthly_income"] or 0.0)
-            savings_goal_val = float(user["savings_goal"] or 0.0)
-            budget_style = user["budget_style"] or "50/30/20"
-            risk_appetite = user["risk_appetite"] or "Moderate"
-            advice_level = user["advice_level"] or "Balanced"
-        except (TypeError, KeyError, IndexError):
-            user_name = user[0] or "FinSighter"
-            currency_symbol = user[1] or "₹"
-            user_lang = user[2] or "en"
-            occupation = user[3] or "Not specified"
-            monthly_income = float(user[4] or 0.0)
-            savings_goal_val = float(user[5] or 0.0)
-            budget_style = user[6] or "50/30/20"
-            risk_appetite = user[7] or "Moderate"
-            advice_level = user[8] or "Balanced"
+    try:
+        user_name = user["name"] or "FinSighter"
+        currency_symbol = user["currency_symbol"] or "₹"
+        user_lang = user["language"] or "en"
+        occupation = user["occupation"] or "Not specified"
+        monthly_income = float(user["monthly_income"] or 0.0)
+        savings_goal_val = float(user["savings_goal"] or 0.0)
+        budget_style = user["budget_style"] or "50/30/20"
+        risk_appetite = user["risk_appetite"] or "Moderate"
+        advice_level = user["advice_level"] or "Balanced"
+    except (TypeError, KeyError, IndexError):
+        user_name = user[0] or "FinSighter"
+        currency_symbol = user[1] or "₹"
+        user_lang = user[2] or "en"
+        occupation = user[3] or "Not specified"
+        monthly_income = float(user[4] or 0.0)
+        savings_goal_val = float(user[5] or 0.0)
+        budget_style = user[6] or "50/30/20"
+        risk_appetite = user[7] or "Moderate"
+        advice_level = user[8] or "Balanced"
     
     if "lang" in session:
         user_lang = session["lang"]
