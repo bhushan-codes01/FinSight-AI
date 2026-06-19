@@ -56,7 +56,13 @@ def handle_log_transaction(user_id, db, args, currency_symbol="₹"):
     description = args.get("description", "").strip()
     transaction_type = args.get("transaction_type", "expense").strip().lower()
     transaction_date = args.get("transaction_date", "").strip()
-    is_recurring = 1 if args.get("is_recurring") else 0
+    
+    is_rec_val = args.get("is_recurring")
+    if isinstance(is_rec_val, str):
+        is_recurring = 1 if is_rec_val.strip().lower() in ("true", "1", "yes") else 0
+    else:
+        is_recurring = 1 if is_rec_val else 0
+        
     recurrence_type = args.get("recurrence_type", "none").strip().lower() if is_recurring else "none"
 
     if amount <= 0 or transaction_type not in ["income", "expense"] or not transaction_date:
@@ -312,8 +318,8 @@ def chat():
                                 "description": "Budget category name (e.g. food, transport, shopping, rent, utilities)"
                             },
                             "budget_amount": {
-                                "type": "NUMBER",
-                                "description": "The budget limit amount"
+                                "type": "STRING",
+                                "description": "The budget limit amount (e.g. '5000' or '1000.50')"
                             },
                             "month": {
                                 "type": "STRING",
@@ -330,8 +336,8 @@ def chat():
                         "type": "OBJECT",
                         "properties": {
                             "amount": {
-                                "type": "NUMBER",
-                                "description": "The transaction amount"
+                                "type": "STRING",
+                                "description": "The transaction amount (e.g. '150' or '250.75')"
                             },
                             "category": {
                                 "type": "STRING",
@@ -350,8 +356,8 @@ def chat():
                                 "description": "Date of transaction in YYYY-MM-DD format"
                             },
                             "is_recurring": {
-                                "type": "BOOLEAN",
-                                "description": "Whether the transaction is recurring"
+                                "type": "STRING",
+                                "description": "Whether the transaction is recurring, must be 'true' or 'false'"
                             },
                             "recurrence_type": {
                                 "type": "STRING",
