@@ -7,7 +7,7 @@
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![Flask](https://img.shields.io/badge/Flask-3.0-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com)
 [![Firebase](https://img.shields.io/badge/Firebase-Auth-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com)
-[![Google Gemini](https://img.shields.io/badge/Gemini-1.5%20Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev)
+[![Groq AI](https://img.shields.io/badge/Groq-Llama%203-F35325?style=for-the-badge&logo=fastapi&logoColor=white)](https://ai.google.dev)
 [![Razorpay](https://img.shields.io/badge/Razorpay-Payments-02042B?style=for-the-badge&logo=razorpay&logoColor=white)](https://razorpay.com)
 [![Render](https://img.shields.io/badge/Deployed-Render-46E3B7?style=for-the-badge&logo=render&logoColor=black)](https://render.com)
 
@@ -21,7 +21,7 @@
 <br/>
 
 > **FinSight AI** is a Gen-Z styled, AI-powered personal finance platform.  
-> Track money. Understand habits. Grow wealth — with Google Gemini as your financial coach.
+> Track money. Understand habits. Grow wealth — with Groq AI as your financial coach.
 
 <br/>
 
@@ -52,7 +52,7 @@
 
 ## 🌟 Overview
 
-**FinSight AI** is a full-stack personal finance management platform built with **Python Flask** and powered by **Google Gemini 1.5 Flash**. It combines intelligent financial coaching, real-time budget tracking, savings goal management, and Razorpay-powered subscription payments — all wrapped in a stunning Gen-Z dark glassmorphism UI.
+**FinSight AI** is a full-stack personal finance management platform built with **Python Flask** and powered by **Groq Llama 3**. It combines intelligent financial coaching, real-time budget tracking, savings goal management, and Razorpay-powered subscription payments — all wrapped in a stunning Gen-Z dark glassmorphism UI.
 
 ```
 💡 Built for: Placement Portfolios · Hackathons · Real-World Use · Internship Showcases
@@ -62,7 +62,7 @@
 
 Most young Indians have no idea where their money goes. Existing apps are either too complex, too generic, or not built for Indian users. FinSight AI solves this with:
 
-- 🤖 **AI that knows YOUR data** — Gemini reads your actual transactions, not generic advice
+- 🤖 **AI that knows YOUR data** — Groq reads your actual transactions, not generic advice
 - 📊 **Visual clarity** — Charts, progress rings, and color-coded budgets at a glance
 - 💳 **Real payments** — Razorpay-powered Pro subscriptions
 - 🔐 **Enterprise-grade auth** — Firebase + Google OAuth + email verification
@@ -120,7 +120,7 @@ Most young Indians have no idea where their money goes. Existing apps are either
 - [x] Real-time Total Income, Expenses, Net Balance, Savings Rate cards
 - [x] Monthly Spending Trend chart (Chart.js area chart)
 - [x] Expense by Category doughnut chart
-- [x] AI Coach widget with personalized Gemini insights
+- [x] AI Coach widget with personalized Groq insights
 - [x] Quick action pills (Add Transaction, Add Budget, New Goal, Ask AI)
 - [x] Recent transactions overview (last 10)
 - [x] Budget status with color-coded progress bars
@@ -144,11 +144,11 @@ Most young Indians have no idea where their money goes. Existing apps are either
 - [x] Create goals with title, target amount, and deadline
 - [x] Animated SVG circular progress rings
 - [x] Deadline countdown display
-- [x] AI-powered goal advice via Google Gemini
+- [x] AI-powered goal advice via Groq AI
 - [x] Add money to goals with progress updates
 
 ### 🤖 AI Financial Assistant
-- [x] ChatGPT-style interface powered by **Google Gemini 1.5 Flash**
+- [x] ChatGPT-style interface powered by **Groq Llama 3**
 - [x] Context-aware responses using your real transaction data
 - [x] Spending pattern analysis
 - [x] Personalized savings recommendations
@@ -177,7 +177,7 @@ Most young Indians have no idea where their money goes. Existing apps are either
 - [x] Category breakdown with progress bars
 - [x] SVG savings goal progress rings
 - [x] Full transaction history table
-- [x] Gemini AI-generated insights paragraph
+- [x] Groq AI-generated insights paragraph
 - [x] Generated via WeasyPrint
 
 ### 📧 Email Notifications
@@ -198,7 +198,7 @@ Most young Indians have no idea where their money goes. Existing apps are either
 | **Database** | SQLite (dev) · PostgreSQL (prod) | Data persistence |
 | **Auth** | Firebase Auth + Google OAuth 2.0 | User authentication |
 | **Password Security** | Werkzeug | Password hashing |
-| **AI / LLM** | Google Gemini 1.5 Flash | Financial intelligence & chat |
+| **AI / LLM** | Groq Llama 3 | Financial intelligence & chat |
 | **Payments** | Razorpay Checkout | Subscription payments |
 | **PDF Generation** | WeasyPrint | HTML → PDF conversion |
 | **Email** | Flask-Mail + Gmail SMTP | Notifications & verification |
@@ -234,7 +234,7 @@ FinSight-AI/
 │   ├── auth.py                      # /register /login /logout /verify
 │   ├── billing.py                   # /upgrade /billing/create-order /verify-payment
 │   ├── budget.py                    # Budget CRUD
-│   ├── chatbot.py                   # POST /chat (Gemini AI)
+│   ├── chatbot.py                   # POST /chat (Groq AI)
 │   ├── goals.py                     # Goals CRUD + /goals/advice
 │   ├── profile.py                   # User profile + settings
 │   ├── reports.py                   # GET /reports/pdf
@@ -246,7 +246,7 @@ FinSight-AI/
 │   ├── currency.py                  # Currency config + helpers
 │   ├── db.py                        # Database connection helpers
 │   ├── email_service.py             # Flask-Mail email functions
-│   ├── gemini_service.py            # Google Gemini API wrapper
+│   ├── groq_service.py            # Groq API wrapper
 │   ├── pdf_service.py               # PDF generation helpers
 │   ├── plan_gate.py                 # Feature gating (free vs pro)
 │   └── report_generator.py         # WeasyPrint PDF generator
@@ -284,7 +284,7 @@ FinSight-AI/
 ### Prerequisites
 - [Python 3.10+](https://python.org/downloads/)
 - [Git](https://git-scm.com/)
-- [Google Gemini API Key](https://aistudio.google.com/app/apikey)
+- [Groq API Key](https://console.groq.com/keys)
 - [Firebase Project](https://console.firebase.google.com/)
 - [Razorpay Account](https://razorpay.com/) *(optional for payments)*
 
@@ -372,8 +372,9 @@ FIREBASE_STORAGE_BUCKET=your_project.appspot.com
 FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 FIREBASE_APP_ID=your_app_id
 
-# Google Gemini AI
-GEMINI_API_KEY=your_gemini_api_key_here
+# Groq AI
+GROQ_API_KEY=your_groq_api_key_here
+GROQ_MODEL=llama-3.3-70b-versatile
 
 # Razorpay Payments
 RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxx
@@ -398,7 +399,7 @@ DEFAULT_CURRENCY=INR
 
 | Service | Where to Get |
 |:--------|:-------------|
-| **Gemini API Key** | [aistudio.google.com](https://aistudio.google.com/app/apikey) |
+| **Groq API Key** | [console.groq.com](https://console.groq.com/keys) |
 | **Google OAuth** | [console.cloud.google.com](https://console.cloud.google.com) → Credentials |
 | **Firebase Config** | [console.firebase.google.com](https://console.firebase.google.com) → Project Settings |
 | **Razorpay Keys** | [dashboard.razorpay.com](https://dashboard.razorpay.com) → Settings → API Keys |
@@ -488,7 +489,7 @@ requirements.txt → must include gunicorn
 | ✅ | Full transaction CRUD with recurring support |
 | ✅ | Budget management with alerts |
 | ✅ | Savings goals with SVG progress rings |
-| ✅ | Google Gemini AI financial assistant |
+| ✅ | Groq AI financial assistant |
 | ✅ | Razorpay subscription payments |
 | ✅ | WeasyPrint PDF monthly reports |
 | ✅ | Multi-currency support (9 currencies) |
@@ -571,7 +572,7 @@ See the full [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgements
 
-- [Google Gemini](https://ai.google.dev) — AI financial intelligence
+- [Groq AI](https://groq.com) — AI financial intelligence
 - [Firebase](https://firebase.google.com) — Authentication platform
 - [Razorpay](https://razorpay.com) — Payment gateway
 - [Flask](https://flask.palletsprojects.com) — Python web framework
