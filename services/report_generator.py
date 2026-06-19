@@ -40,7 +40,7 @@ CATEGORY_EMOJIS = {
 }
 
 
-def generate_pdf_report(user_id, month, year, db_conn, gemini_service=None):
+def generate_pdf_report(user_id, month, year, db_conn, ai_service=None):
     """
     Generate a Warm Premium PDF report for the given user and month.
     Returns PDF bytes for download.
@@ -194,7 +194,7 @@ def generate_pdf_report(user_id, month, year, db_conn, gemini_service=None):
     ai_summary = "Financial summary not available."
     ai_tips = []
 
-    if gemini_service and total_income > 0:
+    if ai_service and total_income > 0:
         try:
             prompt = f"""
             Generate a brief 2-sentence financial summary and 3 actionable tips for:
@@ -214,8 +214,13 @@ def generate_pdf_report(user_id, month, year, db_conn, gemini_service=None):
 
             Use {currency_symbol} for all amounts. Be specific and actionable.
             """
-            response = gemini_service.generate_content(prompt)
-            lines = response.text.strip().split('\n')
+            if hasattr(ai_service, 'analyze'):
+                response_text = ai_service.analyze(prompt)
+            else:
+                response = ai_service.generate_content(prompt)
+                response_text = response.text
+                
+            lines = response_text.strip().split('\n')
             for line in lines:
                 if line.startswith('SUMMARY:'):
                     ai_summary = line.replace('SUMMARY:', '').strip()
@@ -224,7 +229,7 @@ def generate_pdf_report(user_id, month, year, db_conn, gemini_service=None):
                     if tip:
                         ai_tips.append(tip)
         except Exception as e:
-            print(f"[PDF] Gemini AI summary failed: {e}")
+            print(f"[PDF] AI summary failed: {e}")
             from services.translation import translate
             fallback_fmt = translate(user_lang, "pdf_fallback_summary", "For {month_year}, {name} had total income of {income} and expenses of {expenses}, resulting in net savings of {savings}.")
             try:

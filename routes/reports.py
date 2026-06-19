@@ -5,19 +5,18 @@ from services.email_service import EmailAlertsService
 from services.plan_gate import require_pro
 from datetime import datetime
 from services.db import get_db
-import google.generativeai as genai
+from services.groq_service import GroqService
 import os
 import io
 
 reports_bp = Blueprint("reports", __name__)
 
 
-def get_gemini_model():
+def get_groq_service():
     try:
-        genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
-        return genai.GenerativeModel('gemini-1.5-flash')
+        return GroqService()
     except Exception as e:
-        print(f"[GEMINI] Failed to initialize: {e}")
+        print(f"[GROQ] Failed to initialize: {e}")
         return None
 
 
@@ -30,14 +29,14 @@ def download_pdf():
         month = int(request.args.get('month', datetime.now().month))
         year = int(request.args.get('year', datetime.now().year))
 
-        gemini_model = get_gemini_model()
+        groq_service = get_groq_service()
 
         pdf_bytes = generate_pdf_report(
             user_id=session['user_id'],
             month=month,
             year=year,
             db_conn=get_db(),
-            gemini_service=gemini_model
+            ai_service=groq_service
         )
 
         filename = f"FinSight_Report_{year}_{str(month).zfill(2)}.pdf"

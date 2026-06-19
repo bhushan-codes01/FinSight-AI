@@ -47,9 +47,15 @@ class PostgresCursorWrapper:
         # Translate SQLite '?' placeholders to PostgreSQL '%s'
         pg_query = query.replace('?', '%s')
         
+        # Translate SQLite 'INSERT OR IGNORE INTO' to PostgreSQL 'INSERT INTO ... ON CONFLICT DO NOTHING'
+        if "INSERT OR IGNORE INTO" in pg_query.upper():
+            import re
+            pg_query = re.sub(r'(?i)\bINSERT\s+OR\s+IGNORE\s+INTO\b', 'INSERT INTO', pg_query)
+            pg_query = pg_query.rstrip('; \t\n') + " ON CONFLICT DO NOTHING"
+        
         # Handle lastrowid for INSERT statements
         is_insert = pg_query.strip().upper().startswith("INSERT")
-        if is_insert and "RETURNING" not in pg_query.upper():
+        if is_insert and "RETURNING" not in pg_query.upper() and "ON CONFLICT" not in pg_query.upper():
             pg_query = pg_query.rstrip('; \t\n') + " RETURNING id"
             
         if args is None:
