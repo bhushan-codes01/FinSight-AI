@@ -2,7 +2,7 @@ import os
 import datetime
 import pandas as pd
 from flask import Blueprint, render_template, request, redirect, url_for, session, current_app, g, flash, jsonify
-from services.gemini_service import GeminiService
+from services.groq_service import GroqService
 from services.db import get_db
 
 chatbot_bp = Blueprint("chatbot", __name__)
@@ -382,9 +382,9 @@ def chat():
     })
 
     user_plan = get_user_plan(user_id)
-    model_name = "gemini-2.5-pro" if user_plan == "pro" else "gemini-2.5-flash"
-    gemini = GeminiService(model_name=model_name)
-    response_data = gemini.analyze_with_history(
+    model_name = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+    ai_service = GroqService(model_name=model_name)
+    response_data = ai_service.analyze_with_history(
         contents=contents,
         system_instruction=system_instruction,
         tools=tools
@@ -429,8 +429,8 @@ def chat():
             ]
         })
 
-        # Call Gemini again with execution result to get the final conversational text response
-        second_resp = gemini.analyze_with_history(
+        # Call Groq again with execution result to get the final conversational text response
+        second_resp = ai_service.analyze_with_history(
             contents=contents,
             system_instruction=system_instruction,
             tools=tools
@@ -438,14 +438,14 @@ def chat():
         ai_response = second_resp.get("text", "")
         if not ai_response or "AI service error:" in ai_response:
             if result.get("success"):
-                ai_response = f"[System Note: Action executed successfully, but Gemini response limit was reached.] {result.get('message')}"
+                ai_response = f"[System Note: Action executed successfully, but Groq response limit was reached.] {result.get('message')}"
             else:
                 ai_response = f"Action failed: {result.get('error', 'Unknown database execution error.')}"
     else:
-        ai_response = response_data.get("text", "No response returned from Gemini.")
+        ai_response = response_data.get("text", "No response returned from Groq.")
         if "AI service error:" in ai_response:
             if "429" in ai_response or "quota" in ai_response.lower() or "limit" in ai_response.lower():
-                ai_response = "⚠️ The AI Assistant is currently experiencing a rate limit or has exceeded its daily/monthly quota. Please check your Gemini API key settings in Google AI Studio or try again in a few moments."
+                ai_response = "⚠️ The AI Assistant is currently experiencing a rate limit or has exceeded its daily/monthly quota. Please check your Groq API key settings in the .env file or try again in a few moments."
             else:
                 ai_response = f"⚠️ AI Service Error: {ai_response.replace('AI service error: ', '')}"
 

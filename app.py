@@ -633,11 +633,11 @@ def dashboard_ai_insight():
     )
     
     try:
-        from services.gemini_service import GeminiService
-        gemini = GeminiService()
-        insight = gemini.analyze(prompt)
+        from services.groq_service import GroqService
+        ai_service = GroqService()
+        insight = ai_service.analyze(prompt)
     except Exception as e:
-        insight = "FinSight AI could not retrieve insights at this time. Please ensure a valid Google Gemini API key is configured."
+        insight = "FinSight AI could not retrieve insights at this time. Please ensure a valid Groq API key is configured."
         
     return jsonify({"insight": insight})
 

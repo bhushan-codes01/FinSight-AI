@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, session, current_app, g, jsonify, flash
-from services.gemini_service import GeminiService
+from services.groq_service import GroqService
 from models.goal import Goal
 from services.db import get_db
 
@@ -245,7 +245,7 @@ def get_goal_advice():
         f"Provide your response using {currency_symbol} as the currency symbol for all monetary amounts."
     )
 
-    gemini = GeminiService()
-    advice = gemini.analyze(prompt)
+    ai_service = GroqService()
+    advice = ai_service.analyze(prompt)
 
     return jsonify({"advice": advice})

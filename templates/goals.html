@@ -1046,7 +1046,7 @@
             const adviceContent = document.getElementById(`advice-content-${goalId}`);
             
             adviceBox.style.display = 'block';
-            adviceContent.innerHTML = '<span style="display:flex; align-items:center; gap:0.5rem; color: var(--text-primary);"><i class="fas fa-spinner fa-spin"></i> Consulting Gemini AI for recommendations...</span>';
+            adviceContent.innerHTML = '<span style="display:flex; align-items:center; gap:0.5rem; color: var(--text-primary);"><i class="fas fa-spinner fa-spin"></i> Consulting Groq AI for recommendations...</span>';
             
             try {
                 const response = await fetch('/goals/advice', {
