@@ -98,6 +98,25 @@ def logout():
 
 @auth_bp.route("/bypass-login")
 def bypass_login():
+    db = get_db()
+    user = db.execute("SELECT id FROM users WHERE id = ?", (10000,)).fetchone()
+    if not user:
+        user_by_email = db.execute("SELECT id FROM users WHERE email = ?", ("bhushanwanere@gmail.com",)).fetchone()
+        if not user_by_email:
+            db.execute(
+                "INSERT INTO users (id, name, email, password, plan) VALUES (?, ?, ?, ?, ?)",
+                (10000, 'Bhushan Wanere', 'bhushanwanere@gmail.com', 'dummy_password', 'free')
+            )
+            db.commit()
+        else:
+            try:
+                uid = user_by_email["id"]
+            except Exception:
+                uid = user_by_email[0]
+            session["user_id"] = uid
+            session["user_name"] = "Bhushan Wanere"
+            return f"Bypass login successful as existing email! ID: {uid}"
+            
     session["user_id"] = 10000
     session["user_name"] = "Bhushan Wanere"
     return "Bypass login successful! You can now visit /chatbot or /dashboard."
